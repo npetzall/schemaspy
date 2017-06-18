@@ -18,6 +18,21 @@
  */
 package org.schemaspy;
 
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.schemaspy.cli.CommandLineArguments;
+import org.schemaspy.db.DatabaseModelFactory;
+import org.schemaspy.model.*;
+import org.schemaspy.util.*;
+import org.schemaspy.view.*;
+import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -31,34 +46,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 //import javax.xml.validation.Schema;
-
-import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.model.ConsoleProgressListener;
-import org.schemaspy.model.Database;
-import org.schemaspy.model.EmptySchemaException;
-import org.schemaspy.model.ForeignKeyConstraint;
-import org.schemaspy.model.ImpliedForeignKeyConstraint;
-import org.schemaspy.model.InvalidConfigurationException;
-import org.schemaspy.model.ProgressListener;
-import org.schemaspy.model.Table;
-import org.schemaspy.model.TableColumn;
-import org.schemaspy.model.xml.SchemaMeta;
-import org.schemaspy.service.DatabaseService;
-import org.schemaspy.service.SqlService;
-import org.schemaspy.util.*;
-
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.schemaspy.view.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * @author John Currier
@@ -68,15 +56,12 @@ public class SchemaAnalyzer {
     private final Logger logger = Logger.getLogger(getClass().getName());
     private boolean fineEnabled;
 
-    private final SqlService sqlService;
-
-    private final DatabaseService databaseService;
+    private final DatabaseModelFactory databaseModelFactory;
 
     private final CommandLineArguments commandLineArguments;
 
-    public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments) {
-        this.sqlService = Objects.requireNonNull(sqlService);
-        this.databaseService = Objects.requireNonNull(databaseService);
+    public SchemaAnalyzer(DatabaseModelFactory databaseModelFactory, CommandLineArguments commandLineArguments) {
+        this.databaseModelFactory = Objects.requireNonNull(databaseModelFactory);
         this.commandLineArguments = Objects.requireNonNull(commandLineArguments);
     }
 
@@ -184,49 +169,21 @@ public class SchemaAnalyzer {
                 }
             }
 
-            String dbName = config.getDb();
+            Database db = databaseModelFactory.createDatabaseModel(schema, config, progressListener);
 
-            String catalog = config.getCatalog();
-
-            DatabaseMetaData meta = sqlService.connect(config);
-
-            logger.fine("supportsSchemasInTableDefinitions: " + meta.supportsSchemasInTableDefinitions());
-            logger.fine("supportsCatalogsInTableDefinitions: " + meta.supportsCatalogsInTableDefinitions());
-
-            // set default Catalog and Schema of the connection
-            if(schema == null)
-            	schema = meta.getConnection().getSchema();
-            if(catalog == null)
-            	catalog = meta.getConnection().getCatalog();
-
-            SchemaMeta schemaMeta = config.getMeta() == null ? null : new SchemaMeta(config.getMeta(), dbName, schema);
             if (config.isHtmlGenerationEnabled()) {
                 new File(outputDir, "tables").mkdirs();
                 new File(outputDir, "diagrams/summary").mkdirs();
-
-                logger.info("Connected to " + meta.getDatabaseProductName() + " - " + meta.getDatabaseProductVersion());
-
-                if (schemaMeta != null && schemaMeta.getFile() != null) {
-                    logger.info("Using additional metadata from " + schemaMeta.getFile());
-                }
             }
 
-            //
-            // create our representation of the database
-            //
-            Database db = new Database(config, meta, dbName, catalog, schema, schemaMeta, progressListener);
-            databaseService.gatheringSchemaDetails(config, db, progressListener);
-
             long duration = progressListener.startedGraphingSummaries();
-
-            schemaMeta = null; // done with it so let GC reclaim it
 
             LineWriter out;
             Collection<Table> tables = new ArrayList<Table>(db.getTables());
             tables.addAll(db.getViews());
 
             if (tables.isEmpty()) {
-                dumpNoTablesMessage(schema, config.getUser(), meta, config.getTableInclusions() != null);
+                dumpNoTablesMessage(schema, config.getUser(), db.getMetaData(), config.getTableInclusions() != null);
                 if (!config.isOneOfMultipleSchemas()) // don't bail if we're doing the whole enchilada
                     throw new EmptySchemaException();
             }
@@ -242,7 +199,7 @@ public class SchemaAnalyzer {
             Document document = builder.newDocument();
             Element rootNode = document.createElement("database");
             document.appendChild(rootNode);
-            DOMUtil.appendAttribute(rootNode, "name", dbName);
+            DOMUtil.appendAttribute(rootNode, "name", db.getName());
             if (schema != null)
                 DOMUtil.appendAttribute(rootNode, "schema", schema);
             DOMUtil.appendAttribute(rootNode, "type", db.getDatabaseProduct());
@@ -253,7 +210,7 @@ public class SchemaAnalyzer {
 
             XmlTableFormatter.getInstance().appendTables(rootNode, tables);
 
-            String xmlName = dbName;
+            String xmlName = db.getName();
 
             // some dbNames have path info in the name...strip it
             xmlName = new File(xmlName).getName();
@@ -280,7 +237,6 @@ public class SchemaAnalyzer {
             builder = null;
             document = null;
             factory = null;
-            meta = null;
             rootNode = null;
 
             List<ForeignKeyConstraint> recursiveConstraints = new ArrayList<ForeignKeyConstraint>();
