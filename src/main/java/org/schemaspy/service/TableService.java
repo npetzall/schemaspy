@@ -1,26 +1,14 @@
 package org.schemaspy.service;
 
 import org.schemaspy.Config;
-import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.model.Database;
-import org.schemaspy.model.ForeignKey;
-import org.schemaspy.model.ForeignKeyConstraint;
-import org.schemaspy.model.LogicalRemoteTable;
-import org.schemaspy.model.RemoteTable;
-import org.schemaspy.model.Table;
-import org.schemaspy.model.TableColumn;
-import org.schemaspy.model.TableIndex;
+import org.schemaspy.app.cli.CommandLineArguments;
+import org.schemaspy.model.*;
 import org.schemaspy.model.xml.ForeignKeyMeta;
 import org.schemaspy.model.xml.TableColumnMeta;
 import org.schemaspy.model.xml.TableMeta;
 import org.schemaspy.util.Markdown;
-import org.springframework.stereotype.Service;
 
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
@@ -31,21 +19,22 @@ import java.util.regex.Pattern;
 /**
  * Created by rkasa on 2016-12-05.
  */
-@Service
+
 public class TableService {
 
     private static final Logger LOGGER = Logger.getLogger(TableService.class.getName());
 
     private final SqlService sqlService;
-
     private final CommandLineArguments commandLineArguments;
+    private final Config config;
 
     private final static boolean finerEnabled = LOGGER.isLoggable(Level.FINER);
     private final static boolean fineEnabled = LOGGER.isLoggable(Level.FINE);
 
-    public TableService(SqlService sqlService, CommandLineArguments commandLineArguments) {
+    public TableService(SqlService sqlService, CommandLineArguments commandLineArguments, Config config) {
         this.sqlService = Objects.requireNonNull(sqlService);
         this.commandLineArguments = Objects.requireNonNull(commandLineArguments);
+        this.config = Objects.requireNonNull(config);
     }
 
     public void gatheringTableDetails(Database db, Table table) throws SQLException {
@@ -194,8 +183,8 @@ public class TableService {
         column.setComments(rs.getString("REMARKS"));
         column.setId(rs.getInt("ORDINAL_POSITION") - 1);
 
-        Pattern excludeIndirectColumns = Config.getInstance().getIndirectColumnExclusions();
-        Pattern excludeColumns = Config.getInstance().getColumnExclusions();
+        Pattern excludeIndirectColumns = config.getIndirectColumnExclusions();
+        Pattern excludeColumns = config.getColumnExclusions();
 
         column.setAllExcluded(column.matches(excludeColumns));
         column.setExcluded(column.isAllExcluded() || column.matches(excludeIndirectColumns));
@@ -312,7 +301,7 @@ public class TableService {
         } catch (SQLException sqlExc) {
             if (!remoteTable.isLogical()) {
                 // if explicitly asking for these details then propagate the exception
-                if (Config.getInstance().isOneOfMultipleSchemas())
+                if (config.isOneOfMultipleSchemas())
                     throw sqlExc;
 
                 // otherwise just report the fact that we tried & couldn't
@@ -343,8 +332,8 @@ public class TableService {
         if (fkName == null)
             return;
 
-        Pattern include = Config.getInstance().getTableInclusions();
-        Pattern exclude = Config.getInstance().getTableExclusions();
+        Pattern include = config.getTableInclusions();
+        Pattern exclude = config.getTableExclusions();
 
         if (!include.matcher(pkTableName).matches() || exclude.matcher(pkTableName).matches()) {
             if (fineEnabled)
@@ -363,7 +352,6 @@ public class TableService {
         if (childColumn != null) {
             foreignKey.addChildColumn(childColumn);
 
-            Config config = Config.getInstance();
             Table parentTable = tables.get(pkTableName);
 
             String parentContainer = pkSchema != null ? pkSchema : pkCatalog != null ? pkCatalog : db.getName();
@@ -456,7 +444,7 @@ public class TableService {
 
         SQLException originalFailure = null;
 
-        String sql = Config.getInstance().getDbProperties().getProperty("selectRowCountSql");
+        String sql = config.getDbProperties().getProperty("selectRowCountSql");
         if (sql != null) {
             PreparedStatement stmt = null;
             ResultSet rs = null;
@@ -604,7 +592,7 @@ public class TableService {
         // first try to initialize using the index query spec'd in the .properties
         // do this first because some DB's (e.g. Oracle) do 'bad' things with getIndexInfo()
         // (they try to do a DDL analyze command that has some bad side-effects)
-        if (initIndexes(db, table, Config.getInstance().getDbProperties().getProperty("selectIndexesSql")))
+        if (initIndexes(db, table, config.getDbProperties().getProperty("selectIndexesSql")))
             return;
 
         // couldn't, so try the old fashioned approach

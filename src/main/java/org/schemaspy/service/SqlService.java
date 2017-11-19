@@ -2,11 +2,10 @@ package org.schemaspy.service;
 
 import org.schemaspy.Config;
 import org.schemaspy.DbDriverLoader;
-import org.schemaspy.cli.CommandLineArguments;
+import org.schemaspy.app.cli.CommandLineArguments;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.InvalidConfigurationException;
 import org.schemaspy.util.ConnectionURLBuilder;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -20,10 +19,11 @@ import java.util.logging.Logger;
 /**
  * Created by rkasa on 2016-12-10.
  */
-@Service
+
 public class SqlService {
 
     private final CommandLineArguments commandLineArguments;
+    private final Config config;
 
     private final Logger logger = Logger.getLogger(getClass().getName());
     private final boolean fineEnabled = logger.isLoggable(Level.FINE);
@@ -31,11 +31,9 @@ public class SqlService {
     private Connection connection;
     private DatabaseMetaData meta;
 
-    private String defaultSchema;
-    private String databaseName;
-
-    public SqlService(CommandLineArguments commandLineArguments) {
+    public SqlService(CommandLineArguments commandLineArguments, Config config) {
         this.commandLineArguments = Objects.requireNonNull(commandLineArguments);
+        this.config = Objects.requireNonNull(config);
     }
 
     public Connection getConnection() {
@@ -46,7 +44,7 @@ public class SqlService {
         return meta;
     }
 
-    public DatabaseMetaData connect(Config config) throws IOException, SQLException {
+    public DatabaseMetaData connect() throws IOException, SQLException {
         Properties properties = config.determineDbProperties(commandLineArguments.getDatabaseType());
 
         ConnectionURLBuilder urlBuilder = new ConnectionURLBuilder(config, properties);
@@ -65,9 +63,6 @@ public class SqlService {
         connection = driverLoader.getConnection(config, urlBuilder.build(), driverClass, driverPath);
 
         meta = connection.getMetaData();
-
-        databaseName = config.getDb();
-        defaultSchema = commandLineArguments.getSchema();
 
         if (config.isEvaluateAllEnabled()) {
             return null;    // no database to return

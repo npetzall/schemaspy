@@ -1,11 +1,8 @@
-package org.schemaspy;
+package org.schemaspy.app.config;
 
 import com.beust.jcommander.ParameterException;
-import org.schemaspy.cli.CommandLineArgumentParser;
-import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.cli.ConfigFileArgumentParser;
-import org.schemaspy.cli.PropertyFileDefaultProvider;
-import org.schemaspy.cli.PropertyFileDefaultProviderFactory;
+import org.schemaspy.Config;
+import org.schemaspy.app.cli.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
@@ -17,31 +14,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Configuration
-public class SchemaSpyConfiguration {
+public class ApplicationConfiguration {
 
-    private static final Logger LOGGER = Logger.getLogger(SchemaSpyConfiguration.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ApplicationConfiguration.class.getName());
 
     @Autowired
     private ConfigFileArgumentParser configFileArgumentParser;
 
     @Autowired
     private PropertyFileDefaultProviderFactory factory;
-
-    @Autowired
-    private ApplicationArguments applicationArguments;
-
-    @Bean
-    public CommandLineArguments commandLineArguments(ApplicationArguments applicationArguments, CommandLineArgumentParser commandLineArgumentParser) {
-        Objects.requireNonNull(applicationArguments);
-        Objects.requireNonNull(commandLineArgumentParser);
-
-        String[] args = applicationArguments.getSourceArgs();
-        Objects.requireNonNull(args);
-
-        CommandLineArguments arguments = parseArgumentsOrExit(commandLineArgumentParser, args);
-
-        return arguments;
-    }
 
     @Bean
     public CommandLineArgumentParser commandLineArgumentParser(ApplicationArguments applicationArguments) {
@@ -59,6 +40,19 @@ public class SchemaSpyConfiguration {
         return factory.create(configFileName.orElse(null));
     }
 
+    @Bean
+    public CommandLineArguments commandLineArguments(ApplicationArguments applicationArguments, CommandLineArgumentParser commandLineArgumentParser) {
+        Objects.requireNonNull(applicationArguments);
+        Objects.requireNonNull(commandLineArgumentParser);
+
+        String[] args = applicationArguments.getSourceArgs();
+        Objects.requireNonNull(args);
+
+        CommandLineArguments arguments = parseArgumentsOrExit(commandLineArgumentParser, args);
+
+        return arguments;
+    }
+
     private CommandLineArguments parseArgumentsOrExit(CommandLineArgumentParser commandLineArgumentParser, String... args) {
         try {
             return commandLineArgumentParser.parse(args);
@@ -67,6 +61,11 @@ public class SchemaSpyConfiguration {
             System.exit(1);
             return null;
         }
+    }
+
+    @Bean
+    public Config config(ApplicationArguments applicationArguments) {
+        return new Config(applicationArguments.getSourceArgs());
     }
 
 }

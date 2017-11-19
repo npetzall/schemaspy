@@ -1,4 +1,4 @@
-package org.schemaspy.cli;
+package org.schemaspy.app.cli;
 
 import org.springframework.stereotype.Component;
 

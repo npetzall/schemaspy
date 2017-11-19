@@ -16,10 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.schemaspy;
+package org.schemaspy.app;
 
-import org.schemaspy.cli.CommandLineArgumentParser;
-import org.schemaspy.cli.CommandLineArguments;
+import org.schemaspy.SchemaAnalyzer;
+import org.schemaspy.app.cli.CommandLineArgumentParser;
+import org.schemaspy.app.cli.CommandLineArguments;
 import org.schemaspy.model.ConnectionFailure;
 import org.schemaspy.model.EmptySchemaException;
 import org.schemaspy.model.InvalidConfigurationException;
@@ -76,7 +77,7 @@ public class Main implements CommandLineRunner {
         int rc = 1;
 
         try {
-            rc = analyzer.analyze(new Config(args)) == null ? 1 : 0;
+            rc = analyzer.analyze() == null ? 1 : 0;
         } catch (ConnectionFailure couldntConnect) {
             LOGGER.log(Level.WARNING, "Connection Failure", couldntConnect);
             rc = 3;

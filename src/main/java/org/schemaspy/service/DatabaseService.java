@@ -1,31 +1,17 @@
 package org.schemaspy.service;
 
 import org.schemaspy.Config;
-import org.schemaspy.model.Database;
-import org.schemaspy.model.LogicalTable;
-import org.schemaspy.model.ProgressListener;
-import org.schemaspy.model.Routine;
-import org.schemaspy.model.RoutineParameter;
-import org.schemaspy.model.Table;
-import org.schemaspy.model.TableColumn;
-import org.schemaspy.model.TableIndex;
-import org.schemaspy.model.View;
+import org.schemaspy.model.*;
 import org.schemaspy.model.xml.SchemaMeta;
 import org.schemaspy.model.xml.TableMeta;
 import org.schemaspy.service.helper.BasicTableMeta;
 import org.schemaspy.validator.NameValidator;
-import org.springframework.stereotype.Service;
 
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -33,7 +19,7 @@ import java.util.regex.Pattern;
 /**
  * Created by rkasa on 2016-12-10.
  */
-@Service
+
 public class DatabaseService {
 
     private final TableService tableService;
@@ -42,46 +28,49 @@ public class DatabaseService {
 
     private final SqlService sqlService;
 
+    private final Config config;
+
     private final Logger logger = Logger.getLogger(getClass().getName());
     private final boolean fineEnabled = logger.isLoggable(Level.FINE);
 
-    public DatabaseService(TableService tableService, ViewService viewService, SqlService sqlService) {
+    public DatabaseService(TableService tableService, ViewService viewService, SqlService sqlService, Config config) {
         this.tableService = Objects.requireNonNull(tableService);
         this.viewService = Objects.requireNonNull(viewService);
         this.sqlService = Objects.requireNonNull(sqlService);
+        this.config = Objects.requireNonNull(config);
     }
 
-    public void gatheringSchemaDetails(Config config, Database db, ProgressListener listener) throws SQLException {
+    public void gatheringSchemaDetails(Database db, ProgressListener listener) throws SQLException {
         logger.info("Gathering schema details");
 
         listener.startedGatheringDetails();
 
         DatabaseMetaData meta = sqlService.getMeta();
 
-        initTables(config, db, listener, meta);
+        initTables(db, listener, meta);
         if (config.isViewsEnabled())
-            initViews(config, db, listener, meta);
-        
-        initCatalogs(config, db, listener);
-        initSchemas(config, db, listener);
+            initViews(db, listener, meta);
 
-        initCheckConstraints(config, db, listener);
-        initTableIds(config, db);
-        initIndexIds(config, db);
-        initTableComments(config, db, listener);
-        initTableColumnComments(config, db, listener);
-        initViewComments(config, db, listener);
-        initViewColumnComments(config, db, listener);
-        initColumnTypes(config, db, listener);
-        initRoutines(config, db, listener);
+        initCatalogs(db, listener);
+        initSchemas(db, listener);
+
+        initCheckConstraints(db, listener);
+        initTableIds(db);
+        initIndexIds(db);
+        initTableComments(db, listener);
+        initTableColumnComments(db, listener);
+        initViewComments(db, listener);
+        initViewColumnComments(db, listener);
+        initColumnTypes(db, listener);
+        initRoutines(db, listener);
 
         listener.startedConnectingTables();
 
         connectTables(db, listener);
-        updateFromXmlMetadata(config, db, db.getSchemaMeta());
+        updateFromXmlMetadata(db, db.getSchemaMeta());
     }
-    
-   private void initCatalogs(Config config, Database db, ProgressListener listener) throws SQLException {
+
+    private void initCatalogs(Database db, ProgressListener listener) throws SQLException {
 
             String sql = Config.getInstance().getDbProperties().getProperty("selectCatalogsSql");
             PreparedStatement stmt = null;
@@ -103,8 +92,8 @@ public class DatabaseService {
             }
     }
 
-    private void initSchemas(Config config, Database db, ProgressListener listener) throws SQLException {
-    	  String sql = Config.getInstance().getDbProperties().getProperty("selectSchemasSql");
+    private void initSchemas(Database db, ProgressListener listener) throws SQLException {
+        String sql = Config.getInstance().getDbProperties().getProperty("selectSchemasSql");
           PreparedStatement stmt = null;
 			ResultSet rs =  null;
           if (sql != null &&  db.getSchema() != null) {
@@ -130,14 +119,14 @@ public class DatabaseService {
      * @param metadata
      * @throws SQLException
      */
-    private void initTables(Config config, Database db, ProgressListener listener, final DatabaseMetaData metadata) throws SQLException {
+    private void initTables(Database db, ProgressListener listener, final DatabaseMetaData metadata) throws SQLException {
         final Pattern include = config.getTableInclusions();
         final Pattern exclude = config.getTableExclusions();
         final int maxThreads = config.getMaxDbThreads();
 
-        String[] types = getTypes(config, "tableTypes", "TABLE");
+        String[] types = getTypes("tableTypes", "TABLE");
         NameValidator validator = new NameValidator("table", include, exclude, types);
-        List<BasicTableMeta> entries = getBasicTableMeta(config, db, listener, metadata, true, types);
+        List<BasicTableMeta> entries = getBasicTableMeta(db, listener, metadata, true, types);
 
         TableCreator creator;
         if (maxThreads == 1) {
@@ -178,14 +167,14 @@ public class DatabaseService {
      * @param metadata
      * @throws SQLException
      */
-    private void initViews(Config config, Database db, ProgressListener listener, DatabaseMetaData metadata) throws SQLException {
+    private void initViews(Database db, ProgressListener listener, DatabaseMetaData metadata) throws SQLException {
         Pattern includeTables = config.getTableInclusions();
         Pattern excludeTables = config.getTableExclusions();
 
-        String[] types = getTypes(config, "viewTypes", "VIEW");
+        String[] types = getTypes("viewTypes", "VIEW");
         NameValidator validator = new NameValidator("view", includeTables, excludeTables, types);
 
-        for (BasicTableMeta entry : getBasicTableMeta(config, db, listener, metadata, false, types)) {
+        for (BasicTableMeta entry : getBasicTableMeta(db, listener, metadata, false, types)) {
             if (validator.isValid(entry.getName(), entry.getType())) {
                 View view = new View(db, entry.getCatalog(), entry.getSchema(), entry.getName(),
                         entry.getRemarks(), entry.getViewSql());
@@ -214,7 +203,7 @@ public class DatabaseService {
      * @param defaultValue
      * @return
      */
-    private String[] getTypes(Config config, String propName, String defaultValue) {
+    private String[] getTypes(String propName, String defaultValue) {
         String value = config.getDbProperties().getProperty(propName, defaultValue);
         List<String> types = new ArrayList<String>();
         for (String type : value.split(",")) {
@@ -232,7 +221,7 @@ public class DatabaseService {
      * @param schemaMeta
      * @throws SQLException
      */
-    private void updateFromXmlMetadata(Config config, Database db, SchemaMeta schemaMeta) throws SQLException {
+    private void updateFromXmlMetadata(Database db, SchemaMeta schemaMeta) throws SQLException {
         if (schemaMeta != null) {
             config.setDescription(schemaMeta.getComments());
 
@@ -310,7 +299,7 @@ public class DatabaseService {
             }
 
             if (table.getNumRows() == 0) {
-                long numRows = Config.getInstance().isNumRowsEnabled() ? tableService.fetchNumRows(db, table) : -1;
+                long numRows = config.isNumRowsEnabled() ? tableService.fetchNumRows(db, table) : -1;
                 table.setNumRows(numRows);
             }
 
@@ -409,8 +398,7 @@ public class DatabaseService {
      * @return
      * @throws SQLException
      */
-    private List<BasicTableMeta> getBasicTableMeta(Config config,
-                                                   Database db,
+    private List<BasicTableMeta> getBasicTableMeta(Database db,
                                                    ProgressListener listener,
                                                    DatabaseMetaData metadata,
                                                    boolean forTables,
@@ -500,7 +488,7 @@ public class DatabaseService {
         }
     }
 
-    private void initCheckConstraints(Config config, Database db, ProgressListener listener) throws SQLException {
+    private void initCheckConstraints(Database db, ProgressListener listener) throws SQLException {
         String sql = config.getDbProperties().getProperty("selectCheckConstraintsSql");
         if (sql != null) {
             PreparedStatement stmt = null;
@@ -531,7 +519,7 @@ public class DatabaseService {
         }
     }
 
-    private void initColumnTypes(Config config, Database db, ProgressListener listener) throws SQLException {
+    private void initColumnTypes(Database db, ProgressListener listener) throws SQLException {
         String sql = config.getDbProperties().getProperty("selectColumnTypesSql");
         if (sql != null) {
             PreparedStatement stmt = null;
@@ -568,7 +556,7 @@ public class DatabaseService {
         }
     }
 
-    private void initTableIds(Config config, Database db) throws SQLException {
+    private void initTableIds(Database db) throws SQLException {
         String sql = config.getDbProperties().getProperty("selectTableIdsSql");
         if (sql != null) {
             PreparedStatement stmt = null;
@@ -597,7 +585,7 @@ public class DatabaseService {
         }
     }
 
-    private void initIndexIds(Config config, Database db) throws SQLException {
+    private void initIndexIds(Database db) throws SQLException {
         String sql = config.getDbProperties().getProperty("selectIndexIdsSql");
         if (sql != null) {
             PreparedStatement stmt = null;
@@ -636,7 +624,7 @@ public class DatabaseService {
      *
      * @throws SQLException
      */
-    private void initTableComments(Config config, Database db, ProgressListener listener) throws SQLException {
+    private void initTableComments(Database db, ProgressListener listener) throws SQLException {
         String sql = config.getDbProperties().getProperty("selectTableCommentsSql");
         if (sql != null) {
             PreparedStatement stmt = null;
@@ -672,7 +660,7 @@ public class DatabaseService {
      *
      * @throws SQLException
      */
-    private void initViewComments(Config config, Database db, ProgressListener listener) throws SQLException {
+    private void initViewComments(Database db, ProgressListener listener) throws SQLException {
         String sql = config.getDbProperties().getProperty("selectViewCommentsSql");
         if (sql != null) {
             PreparedStatement stmt = null;
@@ -713,7 +701,7 @@ public class DatabaseService {
      *
      * @throws SQLException
      */
-    private void initTableColumnComments(Config config, Database db, ProgressListener listener) throws SQLException {
+    private void initTableColumnComments(Database db, ProgressListener listener) throws SQLException {
         String sql = config.getDbProperties().getProperty("selectColumnCommentsSql");
         if (sql != null) {
             PreparedStatement stmt = null;
@@ -752,7 +740,7 @@ public class DatabaseService {
      *
      * @throws SQLException
      */
-    private void initViewColumnComments(Config config, Database db, ProgressListener listener) throws SQLException {
+    private void initViewColumnComments(Database db, ProgressListener listener) throws SQLException {
         String sql = config.getDbProperties().getProperty("selectViewColumnCommentsSql");
         if (sql != null) {
             PreparedStatement stmt = null;
@@ -794,7 +782,7 @@ public class DatabaseService {
      *
      * @throws SQLException
      */
-    private void initRoutines(Config config, Database db, ProgressListener listener) throws SQLException {
+    private void initRoutines(Database db, ProgressListener listener) throws SQLException {
         String sql = config.getDbProperties().getProperty("selectRoutinesSql");
 
         if (sql != null) {

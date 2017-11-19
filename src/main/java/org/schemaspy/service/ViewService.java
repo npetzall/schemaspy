@@ -3,7 +3,6 @@ package org.schemaspy.service;
 import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.View;
-import org.springframework.stereotype.Service;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,15 +14,17 @@ import java.util.logging.Logger;
 /**
  * Created by rkasa on 2016-12-10.
  */
-@Service
+
 public class ViewService {
 
     private final SqlService sqlService;
+    private final Config config;
 
     private static final Logger LOGGER = Logger.getLogger(ViewService.class.getName());
 
-    public ViewService(SqlService sqlService) {
+    public ViewService(SqlService sqlService, Config config) {
         this.sqlService = Objects.requireNonNull(sqlService);
+        this.config = Objects.requireNonNull(config);
     }
 
     /**
@@ -33,7 +34,7 @@ public class ViewService {
      * @throws SQLException
      */
     public String fetchViewSql(Database db, View view) throws SQLException {
-        String selectViewSql = Config.getInstance().getDbProperties().getProperty("selectViewSql");
+        String selectViewSql = config.getDbProperties().getProperty("selectViewSql");
         if (selectViewSql == null) {
             return null;
         }

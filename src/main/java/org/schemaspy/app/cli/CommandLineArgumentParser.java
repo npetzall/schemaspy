@@ -1,8 +1,7 @@
-package org.schemaspy.cli;
+package org.schemaspy.app.cli;
 
 import com.beust.jcommander.JCommander;
 import org.schemaspy.Config;
-import org.schemaspy.SchemaSpyConfiguration;
 import org.schemaspy.util.DbSpecificConfig;
 
 import java.util.logging.Level;

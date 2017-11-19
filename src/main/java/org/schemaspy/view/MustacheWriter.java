@@ -4,19 +4,10 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.schemaspy.Config;
-import org.schemaspy.model.InvalidConfigurationException;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 /**
@@ -30,6 +21,7 @@ public class MustacheWriter {
     private String databaseName;
     private boolean isMultipleSchemas;
     private String templateDirectory = Config.getInstance().getTemplateDirectory();
+    private static ResourceFinder resourceFinder = new ResourceFinder();
 
     public MustacheWriter(File outputDir, HashMap<String, Object> scopes, String rootPath, String databaseName, boolean isMultipleSchemas) {
         this.outputDir = outputDir;
@@ -88,6 +80,7 @@ public class MustacheWriter {
      * Search order is
      * <ol>
      * <li><code>fileName</code> as an explicitly-defined file in the parent directory</li>
+     * <li><code>fileName</code> as a file in the user's working directory</li>
      * <li><code>fileName</code> as a file in the user's home directory</li>
      * <li><code>fileName</code> as a resource from the class path</li>
      * </ol>
@@ -97,51 +90,9 @@ public class MustacheWriter {
      * @return
      * @throws IOException
      */
-    // TODO this methods needs some refactoring. I feel it can be done in a simpler way.
     public static Reader getReader(String parent, String fileName) throws IOException {
-        InputStream fileStream;
-        // first look into the directory where schemaspy is called from
-        File file = new File(parent, fileName);
-        if (file.exists()) {
-            fileStream = new FileInputStream(file);
-        } else {
-            // otherwise look in user's home directory
-            File fileInUserHomeDirectory = new File(System.getProperty("user.dir"), file.getPath());
-            if (fileInUserHomeDirectory.exists()) {
-                fileStream = new FileInputStream(fileInUserHomeDirectory);
-            } else {
-                // fallback to classpath resource
-                Resource resource = new ClassPathResource(parent + "/" + fileName);
-                fileStream = resource.getInputStream();
-            }
-        }
-
-        if (fileStream == null) {
-            throw new ParseException("Unable to find requested file: " + fileName + " in directory " + parent);
-        }
-        String fileContent = IOUtils.toString(fileStream, "UTF-8");
-        return new StringReader(fileContent);
-    }
-
-    /**
-     * Indicates an exception in parsing the css
-     */
-    public static class ParseException extends InvalidConfigurationException {
-        private static final long serialVersionUID = 1L;
-
-        /**
-         * @param cause root exception that caused the failure
-         */
-        public ParseException(Exception cause) {
-            super(cause);
-        }
-
-        /**
-         * @param msg textual description of the failure
-         */
-        public ParseException(String msg) {
-            super(msg);
-        }
+        InputStream inputStream = resourceFinder.find(parent, fileName);
+        return new InputStreamReader(inputStream, StandardCharsets.UTF_8);
     }
 
 }
