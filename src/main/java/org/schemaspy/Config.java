@@ -1438,8 +1438,7 @@ public final class Config {
                     dbPropertiesLoadedFrom = "[" + getLoadedFromJar() + "]" + File.separator + type + ".properties";
                 } catch (Exception notInJarWithoutPath) {
                     try {
-                        String path = TableOrderer.class.getPackage().getName() + ".types." + type;
-                        path = path.replace('.', '/');
+                        String path = "org/schemaspy/types/" + type;
                         bundle = ResourceBundle.getBundle(path);
                         dbPropertiesLoadedFrom = "[" + getLoadedFromJar() + "]/" + path + ".properties";
                     } catch (Exception notInJar) {

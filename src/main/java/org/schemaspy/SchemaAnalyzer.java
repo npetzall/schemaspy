@@ -20,6 +20,8 @@ package org.schemaspy;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.schemaspy.analyzer.DbAnalyzer;
+import org.schemaspy.analyzer.TableOrderer;
 import org.schemaspy.app.cli.CommandLineArguments;
 import org.schemaspy.model.*;
 import org.schemaspy.model.xml.SchemaMeta;

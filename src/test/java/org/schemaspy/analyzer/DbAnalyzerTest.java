@@ -1,4 +1,4 @@
-package org.schemaspy;
+package org.schemaspy.analyzer;
 
 import org.junit.Assert;
 import org.junit.Before;

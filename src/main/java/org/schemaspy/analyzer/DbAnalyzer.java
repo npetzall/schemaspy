@@ -16,7 +16,10 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.schemaspy;
+package org.schemaspy.analyzer;
+
+import org.schemaspy.model.*;
+import org.schemaspy.util.Inflection;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -26,9 +29,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import org.schemaspy.model.*;
-import org.schemaspy.util.Inflection;
 
 public class DbAnalyzer {
 	

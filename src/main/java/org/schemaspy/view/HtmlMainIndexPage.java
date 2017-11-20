@@ -19,7 +19,7 @@
 package org.schemaspy.view;
 
 import org.schemaspy.Config;
-import org.schemaspy.DbAnalyzer;
+import org.schemaspy.analyzer.DbAnalyzer;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.Markdown;

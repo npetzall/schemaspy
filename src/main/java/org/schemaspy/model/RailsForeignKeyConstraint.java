@@ -18,7 +18,7 @@
  */
 package org.schemaspy.model;
 
-import org.schemaspy.DbAnalyzer;
+import org.schemaspy.analyzer.DbAnalyzer;
 
 /**
  * See {@link DbAnalyzer#getRailsConstraints(java.util.Map)} for
