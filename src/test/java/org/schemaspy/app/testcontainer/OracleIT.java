@@ -90,7 +90,7 @@ public class OracleIT {
 
     private void createDatabaseRepresentation() throws SQLException, IOException, URISyntaxException {
         DatabaseMetaData databaseMetaData = sqlService.connect();
-        Database database = new Database(config, databaseMetaData, arguments.getDatabaseName(), arguments.getCatalog(), arguments.getSchema(), null, progressListener);
+        Database database = new Database(config.getDescription(), databaseMetaData, arguments.getDatabaseName(), arguments.getCatalog(), arguments.getSchema(), null, progressListener);
         databaseService.gatheringSchemaDetails(database, progressListener);
         this.database = database;
     }

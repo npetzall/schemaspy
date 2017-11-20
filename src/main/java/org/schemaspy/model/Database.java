@@ -18,7 +18,6 @@
  */
 package org.schemaspy.model;
 
-import org.schemaspy.Config;
 import org.schemaspy.model.xml.SchemaMeta;
 import org.schemaspy.util.CaseInsensitiveMap;
 
@@ -31,7 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Database {
-    private final Config config;
+    private final String description;
     private final String databaseName ;
     private final Catalog catalog ;
     private final Schema schema;
@@ -48,9 +47,9 @@ public class Database {
     private final Logger logger = Logger.getLogger(getClass().getName());
 	private final ProgressListener listener;
 
-    public Database(Config config, DatabaseMetaData meta, String name, String catalog, String schema, SchemaMeta schemaMeta,
-    				ProgressListener progressListener) throws SQLException, MissingResourceException {
-        this.config = config;
+    public Database(String description, DatabaseMetaData meta, String name, String catalog, String schema, SchemaMeta schemaMeta,
+                    ProgressListener progressListener) throws SQLException, MissingResourceException {
+        this.description = description;
         this.meta = meta;
         this.schemaMeta = schemaMeta;
         this.databaseName = name;
@@ -71,18 +70,13 @@ public class Database {
         return schema;
     }
 
-    public Config getConfig()
-    {
-        return config;
-    }
-
     /**
      * Details of the database type that's running under the covers.
      *
      * @return null if a description wasn't specified.
      */
     public String getDescription() {
-        return config.getDescription();
+        return description;
     }
 
     public Collection<Table> getTables() {

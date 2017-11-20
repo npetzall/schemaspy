@@ -10,7 +10,6 @@ import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
 import org.schemaspy.util.CaseInsensitiveMap;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 

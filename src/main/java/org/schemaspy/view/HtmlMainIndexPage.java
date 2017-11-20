@@ -18,14 +18,15 @@
  */
 package org.schemaspy.view;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
+import org.schemaspy.Config;
 import org.schemaspy.DbAnalyzer;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.Markdown;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * The main index that contains all tables and views that were evaluated
@@ -91,7 +92,7 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         scopes.put("database", database);
         scopes.put("databaseName", databaseName);
         scopes.put("description", database.getDescription());
-        scopes.put("paginationEnabled",database.getConfig().isPaginationEnabled());
+        scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
         scopes.put("schema", new MustacheSchema(database.getSchema(), ""));
         scopes.put("catalog", new MustacheCatalog(database.getCatalog(), ""));
         
