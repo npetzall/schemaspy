@@ -18,15 +18,8 @@
  */
 package org.schemaspy.util;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.io.*;
+import java.nio.charset.Charset;
 
 /**
  * BufferedWriter that adds a <code>writeln()</code> method
@@ -48,11 +41,19 @@ public class LineWriter extends BufferedWriter {
         this(new FileOutputStream(file), charset);
     }
 
+    public LineWriter(File file, Charset charset) throws FileNotFoundException {
+        this(new FileOutputStream(file), charset);
+    }
+
     public LineWriter(File file, int sz, String charset) throws UnsupportedEncodingException, IOException {
         this(new FileOutputStream(file), sz, charset);
     }
 
     public LineWriter(OutputStream out, String charset) throws UnsupportedEncodingException {
+        this(new OutputStreamWriter(out, charset), 8192);
+    }
+
+    public LineWriter(OutputStream out, Charset charset) {
         this(new OutputStreamWriter(out, charset), 8192);
     }
 

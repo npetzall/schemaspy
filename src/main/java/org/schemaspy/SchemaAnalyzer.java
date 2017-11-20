@@ -25,17 +25,12 @@ import org.schemaspy.analyzer.TableOrderer;
 import org.schemaspy.app.cli.CommandLineArguments;
 import org.schemaspy.model.*;
 import org.schemaspy.model.xml.SchemaMeta;
+import org.schemaspy.output.xml.XmlProducer;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
 import org.schemaspy.util.*;
 import org.schemaspy.view.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -67,11 +62,14 @@ public class SchemaAnalyzer {
 
     private final Config config;
 
-    public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, Config config) {
+    private final XmlProducer xmlProducer;
+
+    public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, Config config, XmlProducer xmlProducer) {
         this.sqlService = Objects.requireNonNull(sqlService);
         this.databaseService = Objects.requireNonNull(databaseService);
         this.commandLineArguments = Objects.requireNonNull(commandLineArguments);
         this.config = Objects.requireNonNull(config);
+        this.xmlProducer = Objects.requireNonNull(xmlProducer);
     }
 
     public Database analyze() throws SQLException, IOException {
@@ -212,7 +210,6 @@ public class SchemaAnalyzer {
             databaseService.gatheringSchemaDetails(db, progressListener);
 
             long duration = progressListener.startedGraphingSummaries();
-
             schemaMeta = null; // done with it so let GC reclaim it
 
             LineWriter out;
@@ -225,57 +222,15 @@ public class SchemaAnalyzer {
                     throw new EmptySchemaException();
             }
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder;
-			try {
-				builder = factory.newDocumentBuilder();
-			} catch (ParserConfigurationException exc) {
-				throw new RuntimeException(exc);
-			}
-
-            Document document = builder.newDocument();
-            Element rootNode = document.createElement("database");
-            document.appendChild(rootNode);
-            DOMUtil.appendAttribute(rootNode, "name", dbName);
-            if (schema != null)
-                DOMUtil.appendAttribute(rootNode, "schema", schema);
-            DOMUtil.appendAttribute(rootNode, "type", db.getDatabaseProduct());
+            xmlProducer.create(db, outputDir);
 
             if (config.isHtmlGenerationEnabled()) {
                 generateHtmlDoc(progressListener, outputDir, db, duration, tables);
             }
 
-            XmlTableFormatter.getInstance().appendTables(rootNode, tables);
-
-            String xmlName = dbName;
-
-            // some dbNames have path info in the name...strip it
-            xmlName = new File(xmlName).getName();
-
-            // some dbNames include jdbc driver details including :'s and @'s
-            String[] unusables = xmlName.split("[:@]");
-            xmlName = unusables[unusables.length - 1];
-
-            if (schema != null)
-                xmlName += '.' + schema;
-
-            out = new LineWriter(new File(outputDir, xmlName + ".xml"), Config.DOT_CHARSET);
-            try {
-                document.getDocumentElement().normalize();
-                DOMUtil.printDOM(document, out);
-			} catch (TransformerException exc) {
-				throw new IOException(exc);
-			} finally {
-                out.close();
-            }
-
             // 'try' to make some memory available for the sorting process
             // (some people have run out of memory while RI sorting tables)
-            builder = null;
-            document = null;
-            factory = null;
             meta = null;
-            rootNode = null;
 
             List<ForeignKeyConstraint> recursiveConstraints = new ArrayList<ForeignKeyConstraint>();
 

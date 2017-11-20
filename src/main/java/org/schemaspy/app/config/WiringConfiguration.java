@@ -3,6 +3,8 @@ package org.schemaspy.app.config;
 import org.schemaspy.Config;
 import org.schemaspy.SchemaAnalyzer;
 import org.schemaspy.app.cli.CommandLineArguments;
+import org.schemaspy.output.xml.DOMXmlProducer;
+import org.schemaspy.output.xml.XmlProducer;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
 import org.schemaspy.service.TableService;
@@ -34,7 +36,12 @@ public class WiringConfiguration {
     }
 
     @Bean
-    public SchemaAnalyzer schemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, Config config) {
-        return new SchemaAnalyzer(sqlService, databaseService, commandLineArguments, config);
+    public XmlProducer xmlProducer() {
+        return new DOMXmlProducer();
+    }
+
+    @Bean
+    public SchemaAnalyzer schemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, Config config, XmlProducer xmlProducer) {
+        return new SchemaAnalyzer(sqlService, databaseService, commandLineArguments, config, xmlProducer);
     }
 }
