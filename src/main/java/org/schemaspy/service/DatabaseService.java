@@ -223,6 +223,7 @@ public class DatabaseService {
      */
     private void updateFromXmlMetadata(Database db, SchemaMeta schemaMeta) throws SQLException {
         if (schemaMeta != null) {
+            //TODO Mutating config BAD
             config.setDescription(schemaMeta.getComments());
 
             // done in three passes:

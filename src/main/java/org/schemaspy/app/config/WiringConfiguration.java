@@ -3,6 +3,11 @@ package org.schemaspy.app.config;
 import org.schemaspy.Config;
 import org.schemaspy.SchemaAnalyzer;
 import org.schemaspy.app.cli.CommandLineArguments;
+import org.schemaspy.model.ConsoleProgressListener;
+import org.schemaspy.model.ProgressListener;
+import org.schemaspy.output.html.DotHtmlProducer;
+import org.schemaspy.output.html.HtmlConfig;
+import org.schemaspy.output.html.HtmlProducer;
 import org.schemaspy.output.xml.DOMXmlProducer;
 import org.schemaspy.output.xml.XmlProducer;
 import org.schemaspy.service.DatabaseService;
@@ -36,12 +41,46 @@ public class WiringConfiguration {
     }
 
     @Bean
+    public ProgressListener progressListener(Config config, CommandLineArguments commandLineArguments) {
+        boolean render = config.isHtmlGenerationEnabled();
+        return new ConsoleProgressListener(render, commandLineArguments);
+    }
+
+    @Bean
+    public HtmlConfig htmlConfig(CommandLineArguments commandLineArguments, Config config) {
+        return new HtmlConfig()
+                .outputDir(commandLineArguments.getOutputDirectory())
+                .detailedTablesLimit(config.getMaxDetailedTables())
+                .includeImpliedConstraints(config.isImpliedConstraintsEnabled())
+                .includeRailsConstraints(config.isRailsEnabled());
+    }
+
+    @Bean
+    public HtmlProducer htmlProducer(HtmlConfig config, ProgressListener progressListener) {
+        return new DotHtmlProducer(config, progressListener);
+    }
+
+    @Bean
     public XmlProducer xmlProducer() {
         return new DOMXmlProducer();
     }
 
     @Bean
-    public SchemaAnalyzer schemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, Config config, XmlProducer xmlProducer) {
-        return new SchemaAnalyzer(sqlService, databaseService, commandLineArguments, config, xmlProducer);
+    public SchemaAnalyzer schemaAnalyzer(
+            SqlService sqlService,
+            DatabaseService databaseService,
+            CommandLineArguments commandLineArguments,
+            Config config,
+            ProgressListener progressListener,
+            HtmlProducer htmlProducer,
+            XmlProducer xmlProducer) {
+        return new SchemaAnalyzer(
+                sqlService,
+                databaseService,
+                commandLineArguments,
+                config,
+                progressListener,
+                htmlProducer,
+                xmlProducer);
     }
 }

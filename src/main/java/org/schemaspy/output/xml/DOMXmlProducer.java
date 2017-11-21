@@ -28,7 +28,7 @@ public class DOMXmlProducer implements XmlProducer {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Override
-    public void create(Database database, File outputDir) {
+    public void generate(Database database, File outputDir) {
         Collection<Table> tables = new ArrayList<>(database.getTables());
         tables.addAll(database.getViews());
         if (tables.isEmpty()) {

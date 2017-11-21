@@ -49,6 +49,7 @@ public class SqlService {
 
         ConnectionURLBuilder urlBuilder = new ConnectionURLBuilder(config, properties);
         if (config.getDb() == null)
+            //TODO Mutating config BAD
             config.setDb(urlBuilder.build());
 
         String driverClass = properties.getProperty("driver");

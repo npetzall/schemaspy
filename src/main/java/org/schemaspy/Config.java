@@ -1302,36 +1302,6 @@ public final class Config {
     }
 
     /**
-     * Not a true configuration item in that it's determined at runtime
-     */
-    public void setHasOrphans(boolean hasOrphans) {
-        this.hasOrphans = hasOrphans;
-    }
-
-    /**
-     * @return
-     * @see #setHasOrphans()
-     */
-    public boolean hasOrphans() {
-        return hasOrphans;
-    }
-
-    /**
-     * Not a true configuration item in that it's determined at runtime
-     */
-    public void setHasRoutines(boolean hasRoutines) {
-        this.hasRoutines = hasRoutines;
-    }
-
-    /**
-     * @return
-     * @see #setHasRoutines()
-     */
-    public boolean hasRoutines() {
-        return hasRoutines;
-    }
-
-    /**
      * If enabled we'll turn on pagination in generated html<p/>
      * <p>
      * Defaults to <code>true</code> (enabled).
