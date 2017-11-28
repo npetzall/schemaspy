@@ -20,12 +20,12 @@ package org.schemaspy;
 
 import org.schemaspy.app.cli.CommandLineArgumentParser;
 import org.schemaspy.app.cli.CommandLineArguments;
+import org.schemaspy.app.cli.PasswordReader;
+import org.schemaspy.input.db.DbSpecificConfig;
 import org.schemaspy.model.InvalidConfigurationException;
-import org.schemaspy.util.DbSpecificConfig;
-import org.schemaspy.util.Dot;
-import org.schemaspy.util.PasswordReader;
-import org.schemaspy.view.DefaultSqlFormatter;
-import org.schemaspy.view.SqlFormatter;
+import org.schemaspy.output.diagram.graphviz.Dot;
+import org.schemaspy.output.html.dot.DefaultSqlFormatter;
+import org.schemaspy.output.html.dot.SqlFormatter;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -47,6 +47,12 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+//TODO BAD
+//TODO BAD
+//TODO BAD
+//TODO BAD
+//TODO BAD
 
 /**
  * Configuration of a SchemaSpy run
@@ -1463,7 +1469,7 @@ public final class Config {
         return props;
     }
 
-    protected String getDbPropertiesLoadedFrom() throws IOException {
+    public String getDbPropertiesLoadedFrom() throws IOException {
         if (dbPropertiesLoadedFrom == null)
             determineDbProperties(getDbType());
         return dbPropertiesLoadedFrom;
@@ -1693,7 +1699,7 @@ public final class Config {
      * @param detailedDb
      */
     @Deprecated
-    protected void dumpUsage(String errorMessage, boolean detailedDb) {
+    public void dumpUsage(String errorMessage, boolean detailedDb) {
         if (errorMessage != null) {
             System.out.flush();
             System.err.println("*** " + errorMessage + " ***");

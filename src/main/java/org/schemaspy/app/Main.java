@@ -18,7 +18,6 @@
  */
 package org.schemaspy.app;
 
-import org.schemaspy.SchemaAnalyzer;
 import org.schemaspy.app.cli.CommandLineArgumentParser;
 import org.schemaspy.app.cli.CommandLineArguments;
 import org.schemaspy.model.ConnectionFailure;

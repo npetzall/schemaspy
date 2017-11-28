@@ -19,7 +19,6 @@
 package org.schemaspy.model;
 
 import org.schemaspy.model.xml.SchemaMeta;
-import org.schemaspy.util.CaseInsensitiveMap;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;

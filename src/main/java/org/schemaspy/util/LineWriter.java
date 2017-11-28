@@ -49,6 +49,10 @@ public class LineWriter extends BufferedWriter {
         this(new FileOutputStream(file), sz, charset);
     }
 
+    public LineWriter(File file, int sz, Charset charset) throws UnsupportedEncodingException, IOException {
+        this(new FileOutputStream(file), sz, charset);
+    }
+
     public LineWriter(OutputStream out, String charset) throws UnsupportedEncodingException {
         this(new OutputStreamWriter(out, charset), 8192);
     }
@@ -58,6 +62,10 @@ public class LineWriter extends BufferedWriter {
     }
 
     public LineWriter(OutputStream out, int sz, String charset) throws UnsupportedEncodingException {
+        this(new OutputStreamWriter(out, charset), sz);
+    }
+
+    public LineWriter(OutputStream out, int sz, Charset charset) throws UnsupportedEncodingException {
         this(new OutputStreamWriter(out, charset), sz);
     }
 

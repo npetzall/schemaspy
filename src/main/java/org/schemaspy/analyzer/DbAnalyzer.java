@@ -19,7 +19,6 @@
 package org.schemaspy.analyzer;
 
 import org.schemaspy.model.*;
-import org.schemaspy.util.Inflection;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;

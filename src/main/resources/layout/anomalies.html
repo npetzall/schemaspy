@@ -56,18 +56,18 @@
 					<thead align='left'>
 					<tr>
 					  <th>Table</th>
-					  {{#displayNumRows}}
-					  <th>Rows</th>		
-					  {{/displayNumRows}}				  
+                        {{#showNumRows}}
+					  <th>Rows</th>
+                        {{/showNumRows}}
 					</tr>
 					</thead>
 					<tbody>
 					{{#unIndexedTables}}				
 					<tr>
 					 <td><a href='tables/{{name}}.html'>{{name}}</a></td>
-					 {{#displayNumRows}}
+                        {{#showNumRows}}
 					 <td>{{numRows}}</td>
-					 {{/displayNumRows}}
+                        {{/showNumRows}}
 					</tr>				
 					{{/unIndexedTables}}				
 					{{^unIndexedTables}}

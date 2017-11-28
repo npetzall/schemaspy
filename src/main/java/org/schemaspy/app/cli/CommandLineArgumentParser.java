@@ -2,7 +2,7 @@ package org.schemaspy.app.cli;
 
 import com.beust.jcommander.JCommander;
 import org.schemaspy.Config;
-import org.schemaspy.util.DbSpecificConfig;
+import org.schemaspy.input.db.DbSpecificConfig;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
