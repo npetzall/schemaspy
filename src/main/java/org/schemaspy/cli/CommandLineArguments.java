@@ -145,6 +145,15 @@ public class CommandLineArguments {
     )
     private Integer port;
 
+    @Parameter(
+            names = {
+                    "-progress", "--progress", "progress",
+                    "schemaspy.progress"
+            },
+            descriptionKey = "progress"
+    )
+    private String progressIndicator = "bars";
+
     public boolean isHelpRequired() {
         return helpRequired;
     }
@@ -187,5 +196,9 @@ public class CommandLineArguments {
 
     public Integer getPort() {
         return port;
+    }
+
+    public String getProgressIndicator() {
+        return progressIndicator;
     }
 }

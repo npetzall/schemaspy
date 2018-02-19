@@ -1,5 +1,6 @@
 package org.schemaspy;
 
+import org.schemaspy.api.progress.ProgressListenerFactory;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
@@ -27,13 +28,13 @@ public class WiringConfiguration {
     }
 
     @Bean
-    public DatabaseService databaseService(TableService tableService, ViewService viewService, SqlService sqlService) {
-        return new DatabaseService(tableService, viewService, sqlService);
+    public DatabaseService databaseService(TableService tableService, ViewService viewService, SqlService sqlService, ProgressListenerFactory progressListenerFactory) {
+        return new DatabaseService(tableService, viewService, sqlService, progressListenerFactory);
     }
 
     @Bean
-    public SchemaAnalyzer schemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments) {
-        return new SchemaAnalyzer(sqlService, databaseService, commandLineArguments);
+    public SchemaAnalyzer schemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, ProgressListenerFactory progressListenerFactory) {
+        return new SchemaAnalyzer(sqlService, databaseService, commandLineArguments, progressListenerFactory);
     }
 
 }

@@ -1,6 +1,9 @@
 package org.schemaspy;
 
 import com.beust.jcommander.ParameterException;
+import org.schemaspy.api.progress.ProgressListenerFactory;
+import org.schemaspy.api.progress.logging.LoggingProgressListenerFactory;
+import org.schemaspy.app.progressbar.ProgressManager;
 import org.schemaspy.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +77,15 @@ public class SchemaSpyConfiguration {
     public void enableDebug() {
         loggingSystem.setLogLevel("org.schemaspy", LogLevel.DEBUG);
         LOGGER.debug("Debug enabled");
+    }
+
+    @Bean
+    public ProgressListenerFactory progressListenerFactory(CommandLineArguments commandLineArguments) {
+        if ("logging".equals(commandLineArguments.getProgressIndicator())) {
+            return new LoggingProgressListenerFactory();
+        } else {
+            return new ProgressManager();
+        }
     }
 
 }
