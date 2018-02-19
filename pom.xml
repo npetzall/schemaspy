@@ -104,6 +104,11 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.fusesource.jansi</groupId>
+                <artifactId>jansi</artifactId>
+                <version>1.17</version>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot.version}</version>
@@ -183,6 +188,10 @@
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
             <version>1.69</version>
+        </dependency>
+        <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.npetzall.testcontainers.junit</groupId>

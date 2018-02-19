@@ -33,8 +33,8 @@ public class ResolutionInfo {
                         .replace(workDir, "")
         ).collect(
                 Collectors.joining(
-                        " ->" + System.lineSeparator() + "\t",
-                        "Resolving dbType: " + requested + " ->" + System.lineSeparator() + "\t",
+                        " ->" + System.lineSeparator() + "    ",
+                        "Resolving dbType: " + requested + " ->" + System.lineSeparator() + "    ",
                         ""));
     }
 }
