@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 
-
-
 /**
  * A <code>Table</code> is one of the basic building blocks of SchemaSpy
  * that knows everything about the database table's metadata.
@@ -48,7 +46,6 @@ public class Table implements Comparable<Table> {
     private Object id;
     private final Map<String, String> checkConstraints = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private long numRows;
-    protected final Database db;
     private String comments;
     private int maxChildren;
     private int maxParents;
@@ -58,21 +55,18 @@ public class Table implements Comparable<Table> {
     /**
      * Construct a table that knows everything about the database table's metadata
      *
-     * @param db
      * @param catalog
      * @param schema
      * @param name
      * @param comments
      */
-    public Table(Database db, String catalog, String schema, String name, String comments) {
-        this.db = db;
+    public Table(String dbName, String catalog, String schema, String name, String comments) {
         this.catalog = catalog;
         this.schema = schema;
-        this.container = schema != null ? schema : catalog != null ? catalog : db.getName();
+        this.container = schema != null ? schema : catalog != null ? catalog : dbName;
         this.name = name;
-        this.fullName = getFullName(db.getName(), catalog, schema, name);
+        this.fullName = getFullName(dbName, catalog, schema, name);
         LOGGER.debug("Creating {} {}", getClass().getSimpleName(), fullName);
-
         setComments(comments);
     }
 

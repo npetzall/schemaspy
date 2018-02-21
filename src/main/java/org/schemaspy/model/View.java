@@ -35,7 +35,7 @@ public class View extends Table {
      */
     public View(Database db, String catalog, String schema,
                 String name, String remarks, String viewDefinition) {
-        super(db, catalog, schema, name, remarks);
+        super(db.getName(), catalog, schema, name, remarks);
 
         if (viewDefinition != null && viewDefinition.trim().length() > 0)
             this.viewDefinition = viewDefinition;

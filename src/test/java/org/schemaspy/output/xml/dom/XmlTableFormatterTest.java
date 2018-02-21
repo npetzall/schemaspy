@@ -1,7 +1,7 @@
 package org.schemaspy.output.xml.dom;
 
 import org.junit.Test;
-import org.schemaspy.model.Database;
+import org.schemaspy.api.progress.logging.LoggingProgressListener;
 import org.schemaspy.model.Table;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -18,8 +18,6 @@ import java.io.ByteArrayOutputStream;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class XmlTableFormatterTest {
 
@@ -39,19 +37,13 @@ public class XmlTableFormatterTest {
         Element element = doc.createElement("database");
         doc.appendChild(element);
 
-        Table table = new Table(mockDatabase("database"),"catalog", "schema", "table", "table");
+        Table table = new Table("database","catalog", "schema", "table", "table");
         table.addCheckConstraint("this is a", "check");
 
-        XmlTableFormatter.getInstance().appendTables(element, Collections.singletonList(table));
+        XmlTableFormatter.getInstance().appendTables(element, Collections.singletonList(table), new LoggingProgressListener("XMLTableFormatterTest"));
 
         assertThat(toString(element)).isEqualTo(CHECK_CONSTRAINT_EXPECT);
 
-    }
-
-    private Database mockDatabase(String databaseName) {
-        Database database = mock(Database.class);
-        when(database.getName()).thenReturn(databaseName);
-        return database;
     }
 
     private String toString(Element element) throws TransformerException {

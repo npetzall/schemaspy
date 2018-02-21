@@ -23,6 +23,7 @@ package org.schemaspy;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.schemaspy.api.progress.ProgressListenerFactory;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.model.*;
 import org.schemaspy.model.xml.SchemaMeta;
@@ -64,13 +65,16 @@ public class SchemaAnalyzer {
 
     private final CommandLineArguments commandLineArguments;
 
+    private final ProgressListenerFactory progressListenerFactory;
+
     private final List<OutputProducer> outputProducers = new ArrayList<>();
 
-    public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments) {
+    public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, ProgressListenerFactory progressListenerFactory) {
         this.sqlService = Objects.requireNonNull(sqlService);
         this.databaseService = Objects.requireNonNull(databaseService);
         this.commandLineArguments = Objects.requireNonNull(commandLineArguments);
-        addOutputProducer(new XmlProducerUsingDOM());
+        this.progressListenerFactory = Objects.requireNonNull(progressListenerFactory);
+        addOutputProducer(new XmlProducerUsingDOM(progressListenerFactory));
     }
 
     public SchemaAnalyzer addOutputProducer(OutputProducer outputProducer) {
@@ -152,8 +156,10 @@ public class SchemaAnalyzer {
                 mustacheCatalog = new MustacheCatalog(db.getCatalog(), "");
             }
 
-            prepareLayoutFiles(outputDir);
-            HtmlMultipleSchemasIndexPage.getInstance().write(outputDir, dbName, mustacheCatalog, mustacheSchemas, meta);
+            if (config.isHtmlGenerationEnabled()) {
+                prepareLayoutFiles(outputDir);
+                HtmlMultipleSchemasIndexPage.getInstance().write(outputDir, dbName, mustacheCatalog, mustacheSchemas, meta);
+            }
 
             return db;
         } catch (Config.MissingRequiredParameterException missingParam) {
@@ -199,7 +205,7 @@ public class SchemaAnalyzer {
             // create our representation of the database
             //
             Database db = new Database(config, meta, dbName, catalog, schema, schemaMeta, progressListener);
-            databaseService.gatheringSchemaDetails(config, db, progressListener);
+            databaseService.gatheringSchemaDetails(config, db);
 
             long duration = progressListener.startedGraphingSummaries();
 

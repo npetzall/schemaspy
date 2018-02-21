@@ -26,7 +26,7 @@ public class ProgressLine implements ProgressListener {
     @Override
     public ProgressListener starting(int numberOfTasks) {
         if (startedAt > 0) {
-            LOG.warn("ProgressLine with label {} has already been started", label, new IllegalStateException());
+            LOG.warn("ProgressLine with label {} has already been started", label, new IllegalStateException("Already Started"));
             return this;
         }
         this.numberOfTasks = numberOfTasks > 0 ? numberOfTasks : -1;

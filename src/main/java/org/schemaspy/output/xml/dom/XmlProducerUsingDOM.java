@@ -21,6 +21,8 @@
 
 package org.schemaspy.output.xml.dom;
 
+import org.schemaspy.api.progress.ProgressListener;
+import org.schemaspy.api.progress.ProgressListenerFactory;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.output.xml.XmlProducer;
@@ -58,6 +60,12 @@ public class XmlProducerUsingDOM implements XmlProducer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    private final ProgressListenerFactory progressListenerFactory;
+
+    public XmlProducerUsingDOM(ProgressListenerFactory progressListenerFactory) {
+        this.progressListenerFactory = progressListenerFactory;
+    }
+
     @Override
     public void generate(Database database, File outputDir) {
         Collection<Table> tables = new ArrayList<>(database.getTables());
@@ -73,19 +81,43 @@ public class XmlProducerUsingDOM implements XmlProducer {
         try {
             builder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException exc) {
-            throw new XmlProducerException("Failed to get a newDocumentBuilder()",exc);
+            throw new XmlProducerException("Failed to get a newDocumentBuilder()", exc);
         }
 
-        Document document = builder.newDocument();
-        Element rootNode = document.createElement("database");
-        document.appendChild(rootNode);
-        DOMUtil.appendAttribute(rootNode, "name", database.getName());
-        if (Objects.nonNull(database.getSchema()))
-            DOMUtil.appendAttribute(rootNode, "schema", database.getSchema().getName());
-        DOMUtil.appendAttribute(rootNode, "type", database.getDatabaseProduct());
+        String fileName = getFileName(database);
+        ProgressListener xmlOutputProgressListener = progressListenerFactory.newProgressListener("Generating XMLOutput to "+ fileName).starting(1);
 
-        XmlTableFormatter.getInstance().appendTables(rootNode, tables);
+        try {
+            Document document = builder.newDocument();
+            Element rootNode = document.createElement("database");
+            document.appendChild(rootNode);
+            DOMUtil.appendAttribute(rootNode, "name", database.getName());
+            if (Objects.nonNull(database.getSchema()))
+                DOMUtil.appendAttribute(rootNode, "schema", database.getSchema().getName());
+            DOMUtil.appendAttribute(rootNode, "type", database.getDatabaseProduct());
 
+            ProgressListener xmlTableProgressListener = progressListenerFactory.newProgressListener("Generating table xml for " + fileName);
+            try {
+                XmlTableFormatter.getInstance().appendTables(rootNode, tables, xmlTableProgressListener);
+            } finally {
+                xmlTableProgressListener.finished();
+            }
+
+            document.getDocumentElement().normalize();
+            Path xmlFile = outputDir.toPath().resolve(fileName);
+            try (Writer writer = Files.newBufferedWriter(xmlFile, StandardCharsets.UTF_8)) {
+                write(document, writer);
+            } catch (IOException e) {
+                throw new XmlProducerException("Unable to write xml to disk", e);
+            } catch (TransformerException e) {
+                throw new XmlProducerException("Unable to transform dom document to xml", e);
+            }
+        } finally {
+            xmlOutputProgressListener.finished();
+        }
+    }
+
+    private String getFileName(Database database) {
         String xmlName = database.getName();
 
         // some dbNames have path info in the name...strip it
@@ -98,15 +130,7 @@ public class XmlProducerUsingDOM implements XmlProducer {
         if (Objects.nonNull(database.getSchema()))
             xmlName += '.' + database.getSchema().getName();
 
-        document.getDocumentElement().normalize();
-        Path xmlFile = outputDir.toPath().resolve(xmlName + ".xml");
-        try (Writer writer = Files.newBufferedWriter(xmlFile, StandardCharsets.UTF_8)){
-            write(document, writer);
-        } catch (IOException e) {
-            throw new XmlProducerException("Unable to write xml to disk", e);
-        } catch (TransformerException e) {
-            throw new XmlProducerException("Unable to transform dom document to xml", e);
-        }
+        return xmlName + ".xml";
     }
 
     private void write(Document document, Writer writer) throws TransformerException {

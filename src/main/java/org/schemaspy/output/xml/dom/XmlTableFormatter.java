@@ -20,6 +20,7 @@
  */
 package org.schemaspy.output.xml.dom;
 
+import org.schemaspy.api.progress.ProgressListener;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
@@ -75,7 +76,7 @@ public class XmlTableFormatter {
      * @param schemaNode
      * @param tables
      */
-    public void appendTables(Element schemaNode, Collection<Table> tables) {
+    public void appendTables(Element schemaNode, Collection<Table> tables, ProgressListener progressListener) {
         Set<Table> byName = new TreeSet<>((table1, table2) ->
                 table1.getName().compareToIgnoreCase(table2.getName())
         );
@@ -84,8 +85,15 @@ public class XmlTableFormatter {
         Document document = schemaNode.getOwnerDocument();
         Element tablesNode = document.createElement("tables");
         schemaNode.appendChild(tablesNode);
-        for (Table table : byName)
-            appendTable(tablesNode, table);
+        progressListener.starting(byName.size());
+        try {
+            for (Table table : byName) {
+                appendTable(tablesNode, table);
+                progressListener.finishedTask();
+            }
+        } finally {
+            progressListener.finished();
+        }
     }
 
     /**

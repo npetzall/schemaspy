@@ -10,7 +10,6 @@ import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
 import org.schemaspy.util.CaseInsensitiveMap;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +71,7 @@ public class DbAnalyzerTest {
     }
 
     private Table createAlbumTable() {
-        Table table = new Table(database, catalog, schema, "ALbum", "This is comment for database on PostgresSQL [Invoice] link is also working");
+        Table table = new Table(database.getName(), catalog, schema, "ALbum", "This is comment for database on PostgresSQL [Invoice] link is also working");
         TableColumn column1 = new TableColumn(table);
         column1.setName("ID");
         column1.setTypeName("int");
@@ -103,7 +102,7 @@ public class DbAnalyzerTest {
     }
 
     private Table createTrackTable() {
-        Table table = new Table(database, catalog, schema, "Track", "");
+        Table table = new Table(database.getName(), catalog, schema, "Track", "");
         TableColumn column1 = new TableColumn(table);
         column1.setName("Id");
         column1.setType(1);
@@ -186,7 +185,7 @@ public class DbAnalyzerTest {
     }
 
     private Table createArtistTable() {
-        Table table = new Table(database, catalog, schema, "Artist", "");
+        Table table = new Table(database.getName(), catalog, schema, "Artist", "");
         TableColumn column1 = new TableColumn(table);
         column1.setName("Id");
         column1.setTypeName("int");
@@ -210,7 +209,7 @@ public class DbAnalyzerTest {
     }
 
     private Table createInvoiceLineTable() {
-        Table table = new Table(database, catalog, schema, "InvoiceLine", "");
+        Table table = new Table(database.getName(), catalog, schema, "InvoiceLine", "");
         TableColumn column1 = new TableColumn(table);
         column1.setName("Id");
         column1.setTypeName("int");
@@ -259,7 +258,7 @@ public class DbAnalyzerTest {
     }
 
     private Table createTableWithObscureNamesParent() {
-        Table table = new Table(database, catalog, schema, "ObscureParentTable", "");
+        Table table = new Table(database.getName(), catalog, schema, "ObscureParentTable", "");
         TableColumn column1 = new TableColumn(table);
         column1.setName("{ColumnName}");
         column1.setTypeName("varchar");
@@ -283,7 +282,7 @@ public class DbAnalyzerTest {
     }
 
     private Table createTableWithObscureNamesChild1() {
-        Table table = new Table(database, catalog, schema, "Obscure{Child}Table", "");
+        Table table = new Table(database.getName(), catalog, schema, "Obscure{Child}Table", "");
         TableColumn column1 = new TableColumn(table);
         column1.setName("*()?@\",.#^$&/\\=");
         column1.setTypeName("varchar");
