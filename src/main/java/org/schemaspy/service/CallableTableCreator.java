@@ -1,6 +1,5 @@
 package org.schemaspy.service;
 
-import org.schemaspy.api.progress.ProgressListener;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.service.helper.BasicTableMeta;
@@ -14,7 +13,7 @@ public class CallableTableCreator implements Callable<Table>{
     private final TableService tableService;
     private final boolean withRowCount;
 
-    public CallableTableCreator(Database database, BasicTableMeta basicTableMeta, TableService tableService, boolean withRowCount, ProgressListener tableCreatorProgressListener) {
+    public CallableTableCreator(Database database, BasicTableMeta basicTableMeta, TableService tableService, boolean withRowCount) {
         this.database = database;
         this.basicTableMeta = basicTableMeta;
         this.tableService = tableService;

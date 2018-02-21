@@ -65,15 +65,12 @@ public class SchemaAnalyzer {
 
     private final CommandLineArguments commandLineArguments;
 
-    private final ProgressListenerFactory progressListenerFactory;
-
     private final List<OutputProducer> outputProducers = new ArrayList<>();
 
     public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, ProgressListenerFactory progressListenerFactory) {
         this.sqlService = Objects.requireNonNull(sqlService);
         this.databaseService = Objects.requireNonNull(databaseService);
         this.commandLineArguments = Objects.requireNonNull(commandLineArguments);
-        this.progressListenerFactory = Objects.requireNonNull(progressListenerFactory);
         addOutputProducer(new XmlProducerUsingDOM(progressListenerFactory));
     }
 

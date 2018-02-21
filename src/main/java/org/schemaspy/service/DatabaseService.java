@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 public class DatabaseService {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final TableService tableService;
 
@@ -91,7 +91,7 @@ public class DatabaseService {
         }
     }
     
-   private void initCatalogs(Database db) throws SQLException {
+    private void initCatalogs(Database db) throws SQLException {
 
             String sql = Config.getInstance().getDbProperties().getProperty("selectCatalogsSql");
 
@@ -134,7 +134,6 @@ public class DatabaseService {
     private void initTables(Config config, Database db, final DatabaseMetaData metadata) throws SQLException {
         final Pattern include = config.getTableInclusions();
         final Pattern exclude = config.getTableExclusions();
-        final int maxThreads = config.getMaxDbThreads();
 
         String[] types = getTypes(config, "tableTypes", "TABLE");
         NameValidator validator = new NameValidator("table", include, exclude, types);
@@ -150,25 +149,29 @@ public class DatabaseService {
         ProgressListener initTablesProgressListener = progressListenerFactory.newProgressListener("Initializing tables").starting(entries.size());
         try {
             entries.forEach(basicTableMeta -> {
-                CallableTableCreator callableTableCreator = new CallableTableCreator(db, basicTableMeta, tableService, config.isNumRowsEnabled(), progressListenerFactory.newProgressListener("Creating model for " + basicTableMeta.getName()));
+                CallableTableCreator callableTableCreator = new CallableTableCreator(db, basicTableMeta, tableService, config.isNumRowsEnabled());
                 executorCompletionService.submit(callableTableCreator);
             });
             for (int i = 0; i < entries.size(); i++) {
-                Future<Table> futureTable = executorCompletionService.take();
-                try {
-                    Table table = futureTable.get();
-                    db.getTablesMap().put(table.getName(), table);
-                    initTablesProgressListener.finishedTask();
-                } catch (ExecutionException e) {
-                    LOGGER.warn("Failed to create model", e);
-                    initTablesProgressListener.finishedTask();
-                }
+                addTableToDatabase(executorCompletionService, db);
+                initTablesProgressListener.finishedTask();
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         } finally {
             initTablesProgressListener.finished();
             executorService.shutdown();
+        }
+    }
+
+    private void addTableToDatabase(CompletionService<Table> completionService, Database database) {
+        try {
+            Future<Table> futureTable = completionService.take();
+            Table table = futureTable.get();
+            database.getTablesMap().put(table.getName(), table);
+        } catch (ExecutionException e) {
+            LOGGER.warn("Failed to create model", e);
+        } catch (InterruptedException e) {
+            LOGGER.warn("Interrupted during initialization of tables", e);
+            Thread.currentThread().interrupt();
         }
     }
 

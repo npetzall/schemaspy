@@ -7,18 +7,15 @@ import org.schemaspy.api.progress.ProgressListenerFactory;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static org.fusesource.jansi.Ansi.ansi;
 
 public class ProgressManager implements ProgressListenerFactory {
 
     private final ProgressAwareOutputStream progressAwareOutputStream;
-    private final Lock lock = new ReentrantLock();
 
     public ProgressManager() {
-        progressAwareOutputStream = new ProgressAwareOutputStream(this, lock);
+        progressAwareOutputStream = new ProgressAwareOutputStream(this);
     }
 
     private List<ProgressLine> progressLineList = new LinkedList<>();
@@ -35,21 +32,22 @@ public class ProgressManager implements ProgressListenerFactory {
         progressLineList.remove(progressLine);
     }
 
-    public void render(PrintStream ps){
+    public void render(){
         if(progressLineList.isEmpty()) {
             return;
         }
-        lock.lock();
+        progressAwareOutputStream.getLock().lock();
         try {
             Ansi ansi = ansi()/*.eraseLine().a("Running tasks:").newline()*/;
             for (int i = 0; i < progressLineList.size(); i++) {
                 ansi.eraseLine().a(progressLineList.get(i).toString()).newline();
             }
             ansi.cursorUp(progressLineList.size() /*+ 1*/).cursorToColumn(0);
-            ps.print(ansi);
-            ps.flush();
+            PrintStream printStream = progressAwareOutputStream.getProgressPrintStream();
+            printStream.print(ansi);
+            printStream.flush();
         } finally {
-            lock.unlock();
+            progressAwareOutputStream.getLock().unlock();
         }
     }
 }
