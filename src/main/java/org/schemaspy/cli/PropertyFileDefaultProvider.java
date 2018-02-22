@@ -3,14 +3,18 @@ package org.schemaspy.cli;
 import com.beust.jcommander.IDefaultProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.FileCopyUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Implementation of {@link IDefaultProvider} that provides values reading from a {@link Properties} file.
@@ -33,17 +37,16 @@ public class PropertyFileDefaultProvider implements IDefaultProvider {
     }
 
     private static Properties loadProperties(String path) {
-        try (Reader reader = new InputStreamReader(new FileInputStream(path), "UTF-8")){
-            Properties properties = new Properties();
-            String contents = FileCopyUtils.copyToString(reader);
-            // Replace backslashes with double backslashes to escape windows path separator.
-            // Example input: schemaspy.o=C:\tools\schemaspy\output
-            properties.load(new StringReader(contents.replace("\\", "\\\\")));
-            return properties;
+        Properties properties = new Properties();
+        try (Stream<String> lineStream = Files.lines(Paths.get(path))) {
+            String content = lineStream
+                    .map(l -> l.replace("\\", "\\\\"))
+                    .collect(Collectors.joining(System.lineSeparator()));
+            properties.load(new StringReader(content));
         } catch (IOException e) {
-            LOGGER.error("File not found: {}", path, e);
-            throw new IllegalArgumentException("Could not find or load properties file: " + path, e);
+            LOGGER.info("Configuration file not found");
         }
+        return properties;
     }
 
     @Override

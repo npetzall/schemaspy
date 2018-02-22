@@ -2,12 +2,10 @@ package org.schemaspy.cli;
 
 import com.beust.jcommander.JCommander;
 import org.schemaspy.Config;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.Optional;
 
-@Component
 public class ConfigFileArgumentParser {
 
     public Optional<String> parseConfigFileArgumentValue(String... args) {

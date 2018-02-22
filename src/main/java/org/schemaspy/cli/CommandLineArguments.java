@@ -7,21 +7,6 @@ import java.io.File;
 
 /**
  * Holds all supported command line arguments.
- * <p>
- * An instance of this class registered as singleton bean in {@link org.schemaspy.SchemaSpyConfiguration} via {@link CommandLineArgumentParser}.
- * Therefore it can be injected in other beans, for example:
- * <p>
- * <pre>
- *     public class MyService {
- *         private CommandLineArguments arguments;
- *
- *         // use constructor injection
- *         public MyService(CommandLineArguments arguments) {
- *             this.arguments = arguments
- *         }
- *     }
- * </pre>
- * <p>
  * TODO migrate other command line parameter from {@link org.schemaspy.Config}
  */
 @Parameters(resourceBundle = "commandlinearguments")

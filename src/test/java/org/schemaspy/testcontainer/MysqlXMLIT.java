@@ -5,7 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.schemaspy.Main;
+import org.schemaspy.SchemaSpy;
 import org.schemaspy.testing.IgnoreUsingXPath;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.MySQLContainer;
@@ -52,7 +52,7 @@ public class MysqlXMLIT {
                 "-o", "target/mysqlxmlit",
                 "-connprops","useSSL\\=false"
         };
-        Main.main(args);
+        SchemaSpy.main(args);
     }
 
     @Test

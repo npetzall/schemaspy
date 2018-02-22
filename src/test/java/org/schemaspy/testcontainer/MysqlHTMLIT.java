@@ -6,7 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.schemaspy.Main;
+import org.schemaspy.SchemaSpy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.MySQLContainer;
 import org.xmlunit.builder.DiffBuilder;
@@ -55,7 +55,7 @@ public class MysqlHTMLIT {
                 "-o", "target/mysqlhtml",
                 "-connprops", "useSSL\\=false"
         };
-        Main.main(args);
+        SchemaSpy.main(args);
     }
 
     @Test
