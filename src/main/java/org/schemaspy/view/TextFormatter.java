@@ -18,10 +18,11 @@
  */
 package org.schemaspy.view;
 
-import java.io.IOException;
-import java.util.Collection;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.LineWriter;
+
+import java.io.IOException;
+import java.util.Collection;
 
 public class TextFormatter {
     private static TextFormatter instance = new TextFormatter();

@@ -18,11 +18,12 @@
  */
 package org.schemaspy.view;
 
+import org.schemaspy.model.Table;
+import org.schemaspy.model.TableColumn;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import org.schemaspy.model.Table;
-import org.schemaspy.model.TableColumn;
 
 /**
  * Simple ugly hack that provides details of what was written.

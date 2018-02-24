@@ -18,17 +18,15 @@
  */
 package org.schemaspy.view;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import org.schemaspy.DbAnalyzer;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
-import org.schemaspy.model.TableColumn;
 import org.schemaspy.util.Markdown;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * The main index that contains all tables and views that were evaluated

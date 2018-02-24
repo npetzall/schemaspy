@@ -18,9 +18,10 @@
  */
 package org.schemaspy.view;
 
-import java.util.Set;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
+
+import java.util.Set;
 
 /**
  * Implementations of this interface know how to take SQL and format it

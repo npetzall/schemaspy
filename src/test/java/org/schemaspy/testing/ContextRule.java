@@ -3,8 +3,8 @@ package org.schemaspy.testing;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.schemaspy.app.Context;
-import org.schemaspy.app.SingletonContext;
+import org.schemaspy.app.context.Context;
+import org.schemaspy.app.context.SingletonContext;
 
 import java.util.function.Supplier;
 

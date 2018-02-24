@@ -1,11 +1,14 @@
-package org.schemaspy;
+package org.schemaspy.app;
 
-import org.schemaspy.app.Context;
-import org.schemaspy.app.SingletonContext;
+import org.schemaspy.Config;
+import org.schemaspy.SchemaAnalyzer;
+import org.schemaspy.app.context.Context;
+import org.schemaspy.app.context.SingletonContext;
 import org.schemaspy.model.ConnectionFailure;
 import org.schemaspy.model.EmptySchemaException;
 import org.schemaspy.model.InvalidConfigurationException;
 import org.schemaspy.model.ProcessExecutionException;
+import org.schemaspy.util.DurationFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,9 +20,23 @@ public class SchemaSpy {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
+        BannerPrinter.printBanner();
+        logStartup();
         try (Context context = SingletonContext.getInstance().addContext(new Context("schemaspy",args))) {
             analyze(context.getSchemaAnalyzer(), args);
+        } finally {
+            LOGGER.info("SchemaSpy ran for {}", DurationFormatter.formatMS(System.currentTimeMillis() - startTime));
         }
+    }
+
+    private static void logStartup() {
+        StringBuilder stringBuilder = new StringBuilder()
+            .append("Starting SchemaSpy ")
+                .append(ApplicationContextInfo.getVersion())
+                .append(" ")
+                .append(ApplicationContextInfo.getContext());
+        LOGGER.info("{}", stringBuilder.toString());
     }
 
     private static void analyze(SchemaAnalyzer schemaAnalyzer, String...args) {

@@ -18,9 +18,9 @@
  */
 package org.schemaspy.model;
 
-import java.util.Collection;
-
 import org.schemaspy.Config;
+
+import java.util.Collection;
 
 /**
  * Listener of schema analysis and ERD generation progress.

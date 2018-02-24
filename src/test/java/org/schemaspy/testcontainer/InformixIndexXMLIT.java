@@ -6,7 +6,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-import org.schemaspy.SchemaSpy;
+import org.schemaspy.app.SchemaSpy;
 import org.schemaspy.testing.AssumeClassIsPresentRule;
 import org.schemaspy.testing.IgnoreUsingXPath;
 import org.testcontainers.containers.InformixContainer;

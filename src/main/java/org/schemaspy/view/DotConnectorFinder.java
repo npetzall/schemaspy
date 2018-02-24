@@ -18,11 +18,12 @@
  */
 package org.schemaspy.view;
 
+import org.schemaspy.model.Table;
+import org.schemaspy.model.TableColumn;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import org.schemaspy.model.Table;
-import org.schemaspy.model.TableColumn;
 
 /**
  * Format table data into .dot format to feed to Graphvis' dot program.

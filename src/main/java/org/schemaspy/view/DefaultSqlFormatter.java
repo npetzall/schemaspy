@@ -18,17 +18,13 @@
  */
 package org.schemaspy.view;
 
-import java.sql.DatabaseMetaData;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.CaseInsensitiveMap;
 import org.schemaspy.util.HtmlEncoder;
+
+import java.sql.DatabaseMetaData;
+import java.util.*;
 
 /**
  * Default implementation of {@link SqlFormatter}

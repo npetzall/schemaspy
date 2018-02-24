@@ -18,6 +18,12 @@
  */
 package org.schemaspy.view;
 
+import org.schemaspy.DbAnalyzer;
+import org.schemaspy.model.Database;
+import org.schemaspy.model.ForeignKeyConstraint;
+import org.schemaspy.model.Table;
+import org.schemaspy.model.TableColumn;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -25,12 +31,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.schemaspy.DbAnalyzer;
-import org.schemaspy.model.Database;
-import org.schemaspy.model.ForeignKeyConstraint;
-import org.schemaspy.model.Table;
-import org.schemaspy.model.TableColumn;
 
 /**
  * This page lists all of the 'things that might not be quite right'

@@ -21,12 +21,7 @@ package org.schemaspy.model;
 import org.schemaspy.model.xml.TableColumnMeta;
 
 import java.sql.DatabaseMetaData;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class TableColumn {

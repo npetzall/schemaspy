@@ -18,11 +18,15 @@
  */
 package org.schemaspy.view;
 
-import java.io.*;
-import java.util.*;
-
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * The main index that contains all tables and views that were evaluated

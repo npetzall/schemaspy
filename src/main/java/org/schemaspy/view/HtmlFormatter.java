@@ -18,15 +18,15 @@
  */
 package org.schemaspy.view;
 
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.lang.invoke.MethodHandles;
-import java.net.URLEncoder;
-
 import com.github.mustachejava.util.HtmlEscaper;
 import org.schemaspy.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
+import java.net.URLEncoder;
 
 public class HtmlFormatter {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

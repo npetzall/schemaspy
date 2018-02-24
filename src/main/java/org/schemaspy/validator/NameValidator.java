@@ -6,8 +6,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
-
-
 import java.util.regex.Pattern;
 
 /**

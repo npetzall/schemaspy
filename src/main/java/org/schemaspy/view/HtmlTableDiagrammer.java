@@ -18,16 +18,16 @@
  */
 package org.schemaspy.view;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.util.List;
-
 import org.schemaspy.model.Table;
 import org.schemaspy.util.DiagramUtil;
 import org.schemaspy.util.Dot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 
 public class HtmlTableDiagrammer extends HtmlDiagramFormatter {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

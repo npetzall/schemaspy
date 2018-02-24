@@ -1,4 +1,4 @@
-package org.schemaspy.app;
+package org.schemaspy.app.context;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;

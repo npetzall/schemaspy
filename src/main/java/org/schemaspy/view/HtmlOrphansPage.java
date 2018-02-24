@@ -18,15 +18,15 @@
  */
 package org.schemaspy.view;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
 import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.Dot;
 import org.schemaspy.util.LineWriter;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * The page that contains the all tables that aren't related to others (orphans)

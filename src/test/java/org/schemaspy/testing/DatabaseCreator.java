@@ -1,7 +1,7 @@
 package org.schemaspy.testing;
 
 import org.schemaspy.Config;
-import org.schemaspy.app.Context;
+import org.schemaspy.app.context.Context;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ProgressListener;

@@ -21,15 +21,12 @@ package org.schemaspy.model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.sql.DatabaseMetaData.importedKeyCascade;
-import static java.sql.DatabaseMetaData.importedKeyNoAction;
-import static java.sql.DatabaseMetaData.importedKeyRestrict;
-import static java.sql.DatabaseMetaData.importedKeySetNull;
-
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static java.sql.DatabaseMetaData.*;
 
 
 

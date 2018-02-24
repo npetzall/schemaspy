@@ -4,7 +4,7 @@ import com.github.npetzall.testcontainers.junit.jdbc.JdbcContainerRule;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.schemaspy.SchemaSpy;
+import org.schemaspy.app.SchemaSpy;
 import org.schemaspy.testing.IgnoreUsingXPath;
 import org.testcontainers.containers.MySQLContainer;
 import org.xmlunit.builder.DiffBuilder;

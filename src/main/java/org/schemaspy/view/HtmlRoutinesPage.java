@@ -18,13 +18,14 @@
  */
 package org.schemaspy.view;
 
+import org.schemaspy.model.Database;
+import org.schemaspy.model.Routine;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-
-import org.schemaspy.model.*;
-import org.schemaspy.util.LineWriter;
-import org.schemaspy.util.Markdown;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.TreeSet;
 
 /**
  * The page that lists all of the routines (stored procedures and functions)

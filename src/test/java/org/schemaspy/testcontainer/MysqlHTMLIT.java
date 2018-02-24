@@ -5,7 +5,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.schemaspy.SchemaSpy;
+import org.schemaspy.app.SchemaSpy;
 import org.testcontainers.containers.MySQLContainer;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;

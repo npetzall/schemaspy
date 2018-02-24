@@ -6,7 +6,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.schemaspy.Config;
 import org.schemaspy.DbAnalyzer;
-import org.schemaspy.app.Context;
+import org.schemaspy.app.context.Context;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ProgressListener;
 import org.schemaspy.model.xml.SchemaMeta;

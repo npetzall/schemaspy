@@ -3,23 +3,15 @@ package org.schemaspy.integrationtesting;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.schemaspy.Config;
-import org.schemaspy.app.Context;
-import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.model.Database;
-import org.schemaspy.model.ProgressListener;
 import org.schemaspy.testing.ContextRule;
 import org.schemaspy.testing.DatabaseCreator;
 import org.schemaspy.testing.H2MemoryRule;
 
-import java.io.File;
 import java.io.IOException;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 public class H2ViewIT {
 

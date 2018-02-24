@@ -1,6 +1,6 @@
 package org.schemaspy.model;
 
-import java.util.*;
+import java.util.Set;
 
 /**
  * Created by rkasa on 2016-04-15.
