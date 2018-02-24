@@ -6,49 +6,22 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.schemaspy.Config;
-import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.model.*;
-import org.schemaspy.service.DatabaseService;
-import org.schemaspy.service.SqlService;
+import org.schemaspy.model.Database;
+import org.schemaspy.model.Table;
+import org.schemaspy.model.TableColumn;
+import org.schemaspy.model.TableIndex;
 import org.schemaspy.testing.AssumeClassIsPresentRule;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.schemaspy.testing.ContextRule;
+import org.schemaspy.testing.DatabaseCreator;
 import org.testcontainers.containers.InformixContainer;
 
-import java.io.File;
 import java.io.IOException;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import static com.github.npetzall.testcontainers.junit.jdbc.JdbcAssumptions.assumeDriverIsPresent;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
 public class InformixIndexIT {
-    @Autowired
-    private SqlService sqlService;
-
-    @Autowired
-    private DatabaseService databaseService;
-
-    @Mock
-    private ProgressListener progressListener;
-
-    @MockBean
-    private CommandLineArguments arguments;
-
-    @MockBean
-    private CommandLineRunner commandLineRunner;
-
-    private static Database database;
 
     public static TestRule jdbcDriverClassPresentRule = new AssumeClassIsPresentRule("com.informix.jdbc.IfxDriver");
 
@@ -58,21 +31,8 @@ public class InformixIndexIT {
                     .withAssumptions(assumeDriverIsPresent())
                     .withInitScript("integrationTesting/informixIndexXMLIT/dbScripts/informix.sql");
 
-    @ClassRule
-    public static final TestRule chain = RuleChain
-            .outerRule(jdbcContainerRule)
-            .around(jdbcDriverClassPresentRule);
-
-    @Before
-    public synchronized void gatheringSchemaDetailsTest() throws SQLException, IOException {
-        if (database == null) {
-            createDatabaseRepresentation();
-        }
-    }
-
-    private void createDatabaseRepresentation() throws SQLException, IOException {
-        String[] args = {
-                "-t", "informix",
+    public static ContextRule contextRule = new ContextRule(() -> new String[]{
+        "-t", "informix",
                 "-db", "test",
                 "-s", "informix",
                 "-cat", "test",
@@ -82,18 +42,21 @@ public class InformixIndexIT {
                 "-p", jdbcContainerRule.getContainer().getPassword(),
                 "-host", jdbcContainerRule.getContainer().getContainerIpAddress(),
                 "-port", jdbcContainerRule.getContainer().getJdbcPort().toString()
-        };
-        given(arguments.getOutputDirectory()).willReturn(new File("target/integrationtesting/informix"));
-        given(arguments.getDatabaseType()).willReturn("informix");
-        given(arguments.getUser()).willReturn(jdbcContainerRule.getContainer().getUsername());
-        given(arguments.getSchema()).willReturn("informix");
-        given(arguments.getCatalog()).willReturn("test");
-        given(arguments.getDatabaseName()).willReturn("test");
-        Config config = new Config(args);
-        DatabaseMetaData databaseMetaData = sqlService.connect(config);
-        Database database = new Database(config, databaseMetaData, arguments.getDatabaseName(), arguments.getCatalog(), arguments.getSchema(), null, progressListener);
-        databaseService.gatheringSchemaDetails(config, database, progressListener);
-        this.database = database;
+    });
+
+    @ClassRule
+    public static final TestRule chain = RuleChain
+            .outerRule(jdbcContainerRule)
+            .around(contextRule)
+            .around(jdbcDriverClassPresentRule);
+
+    private static Database database;
+
+    @Before
+    public synchronized void gatheringSchemaDetailsTest() throws SQLException, IOException {
+        if (database == null) {
+            database = DatabaseCreator.create(contextRule.getContext());
+        }
     }
 
     @Test

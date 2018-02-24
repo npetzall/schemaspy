@@ -11,10 +11,14 @@ import org.schemaspy.service.ViewService;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Optional;
 
-public class Context {
+public class Context implements AutoCloseable {
 
+    private final String contextName;
+
+    private final String[] args;
     private final CommandLineArguments commandLineArguments;
     private final SqlService sqlService;
     private final TableService tableService;
@@ -22,7 +26,9 @@ public class Context {
     private final DatabaseService databaseService;
     private final SchemaAnalyzer schemaAnalyzer;
 
-    public Context(String...args) {
+    public Context(String contextName, String...args) {
+        this.contextName = contextName;
+        this.args = args;
         commandLineArguments = getCommandLineArguments(args);
         if (commandLineArguments.isDebug()) {
             enableDebug();
@@ -62,6 +68,14 @@ public class Context {
         }
     }
 
+    public String getContextName() {
+        return contextName;
+    }
+
+    public String[] getArgs() {
+        return Arrays.copyOf(args, args.length);
+    }
+
     public CommandLineArguments getCommandLineArguments() {
         return commandLineArguments;
     }
@@ -84,5 +98,10 @@ public class Context {
 
     public SchemaAnalyzer getSchemaAnalyzer() {
         return schemaAnalyzer;
+    }
+
+    @Override
+    public void close() {
+        SingletonContext.getInstance().removeContext(this);
     }
 }

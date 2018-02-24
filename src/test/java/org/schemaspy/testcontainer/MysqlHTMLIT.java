@@ -5,9 +5,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.schemaspy.SchemaSpy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.MySQLContainer;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
@@ -27,7 +25,6 @@ import java.util.stream.Stream;
 import static com.github.npetzall.testcontainers.junit.jdbc.JdbcAssumptions.assumeDriverIsPresent;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 public class MysqlHTMLIT {
 
     private static URL expectedXML = MysqlHTMLIT.class.getResource("/integrationTesting/expecting/mysqlhtml/test.test.xml");

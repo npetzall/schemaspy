@@ -1,26 +1,21 @@
 package org.schemaspy.integrationtesting;
 
 import org.junit.*;
+import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.junit.rules.TestRule;
 import org.schemaspy.Config;
 import org.schemaspy.DbAnalyzer;
-import org.schemaspy.cli.CommandLineArguments;
+import org.schemaspy.app.Context;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ProgressListener;
 import org.schemaspy.model.xml.SchemaMeta;
 import org.schemaspy.service.DatabaseService;
-import org.schemaspy.service.SqlService;
+import org.schemaspy.testing.ContextRule;
 import org.schemaspy.testing.H2MemoryRule;
 import org.schemaspy.util.LineWriter;
 import org.schemaspy.view.DotFormatter;
 import org.schemaspy.view.WriteStats;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,59 +25,51 @@ import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
 public class SchemaMetaIT {
 
     private static String BY_SCRIPT_COMMENT = "Set by script";
     private static String BY_SCHEMA_META_COMMENT = "Set from SchemaMeta";
 
-    @ClassRule
     public static H2MemoryRule h2MemoryRule = new H2MemoryRule("SchemaMetaIT").addSqlScript("src/test/resources/integrationTesting/schemaMetaIT/dbScripts/shemaMetaIT.h2.sql");
+
+    private static String[] args = {
+            "-t", "src/test/resources/integrationTesting/dbTypes/h2memory",
+            "-db", "SchemaMetaIT",
+            "-s", "SCHEMAMETAIT",
+            "-cat", "SCHEMAMETAIT",
+            "-o", "target/integrationtesting/schemaMetaIT",
+            "-u", "sa"
+    };
+
+    public static ContextRule contextRule = new ContextRule(args);
+
+    @ClassRule
+    public static final TestRule chain = RuleChain
+            .outerRule(h2MemoryRule)
+            .around(contextRule);
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    @Autowired
-    private SqlService sqlService;
+    private static final ProgressListener progressListener = mock(ProgressListener.class);
 
-    @Autowired
-    private DatabaseService databaseService;
-
-    @Mock
-    private ProgressListener progressListener;
-
-    @MockBean
-    private CommandLineArguments arguments;
-
-    @MockBean
-    private CommandLineRunner commandLineRunner;
-
+    private Context context;
     private Config config;
     private DatabaseMetaData databaseMetaData;
     private String schema;
     private String catalog;
+    private DatabaseService databaseService;
 
     @Before
     public void setup() throws IOException, SQLException {
-        String[] args = {
-                "-t", "src/test/resources/integrationTesting/dbTypes/h2memory",
-                "-db", "SchemaMetaIT",
-                "-s", "SCHEMAMETAIT",
-                "-o", "target/integrationtesting/schemaMetaIT",
-                "-u", "sa"
-        };
-        given(arguments.getOutputDirectory()).willReturn(new File("target/integrationtesting/schemaMetaIT"));
-        given(arguments.getDatabaseType()).willReturn("src/test/resources/integrationTesting/dbTypes/h2memory");
-        given(arguments.getUser()).willReturn("sa");
-        given(arguments.getSchema()).willReturn("SCHEMAMETAIT");
-        given(arguments.getDatabaseName()).willReturn("SchemaMetaIT");
-        config = new Config(args);
-        databaseMetaData = sqlService.connect(config);
-        schema = h2MemoryRule.getConnection().getSchema();
-        catalog = h2MemoryRule.getConnection().getCatalog();
+        context = contextRule.getContext();
+        config = new Config(context.getArgs());
+        databaseMetaData = context.getSqlService().connect(config);
+        schema = context.getCommandLineArguments().getSchema();
+        catalog = context.getCommandLineArguments().getCatalog();
+        databaseService = context.getDatabaseService();
     }
 
     @Test

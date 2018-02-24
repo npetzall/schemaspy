@@ -1,7 +1,9 @@
 package org.schemaspy.app;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class SingletonContext {
 
@@ -15,11 +17,11 @@ public class SingletonContext {
 
     private SingletonContext() {}
 
-    public Context addContext(String name, Context context) {
-        if (contextMap.containsKey(name)) {
+    public Context addContext(Context context) {
+        if (contextMap.containsKey(context.getContextName())) {
             throw new IllegalStateException("Context already exists");
         }
-        contextMap.put(name, context);
+        contextMap.put(context.getContextName(), context);
         return context;
     }
 
@@ -29,5 +31,9 @@ public class SingletonContext {
 
     public Context removeContext(String name) {
         return contextMap.remove(name);
+    }
+
+    public Context removeContext(Context context) {
+        return contextMap.remove(context.getContextName());
     }
 }

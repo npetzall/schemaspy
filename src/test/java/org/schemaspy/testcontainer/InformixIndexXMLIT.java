@@ -6,11 +6,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
 import org.schemaspy.SchemaSpy;
 import org.schemaspy.testing.AssumeClassIsPresentRule;
 import org.schemaspy.testing.IgnoreUsingXPath;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testcontainers.containers.InformixContainer;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
@@ -26,7 +24,6 @@ import java.nio.file.StandardOpenOption;
 import static com.github.npetzall.testcontainers.junit.jdbc.JdbcAssumptions.assumeDriverIsPresent;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 public class InformixIndexXMLIT {
 
     private static URL expectedXML = InformixIndexXMLIT.class.getResource("/integrationTesting/informixIndexXMLIT/expecting/test.informix.xml");

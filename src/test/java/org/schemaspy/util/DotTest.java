@@ -8,7 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
 
 public class DotTest {

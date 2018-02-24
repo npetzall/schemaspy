@@ -6,12 +6,18 @@ import org.junit.runners.model.Statement;
 import org.schemaspy.app.Context;
 import org.schemaspy.app.SingletonContext;
 
+import java.util.function.Supplier;
+
 public class ContextRule implements TestRule {
 
-    private final String[] args;
+    private final Supplier<String[]> args;
     private Context context;
 
     public ContextRule(String...args) {
+        this(() -> args);
+    }
+
+    public ContextRule(Supplier<String[]> args){
         this.args = args;
     }
 
@@ -35,7 +41,7 @@ public class ContextRule implements TestRule {
     }
 
     private void before(Description description) {
-        SingletonContext.getInstance().addContext(getContextName(description), new Context(args));
+        context = SingletonContext.getInstance().addContext(new Context(getContextName(description), args.get()));
     }
 
     private void after(Description description) {

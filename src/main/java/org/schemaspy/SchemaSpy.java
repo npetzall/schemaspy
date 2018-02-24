@@ -17,8 +17,9 @@ public class SchemaSpy {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static void main(String[] args) {
-        Context context = SingletonContext.getInstance().addContext("schemaspy", new Context(args));
-        analyze(context.getSchemaAnalyzer(), args);
+        try (Context context = SingletonContext.getInstance().addContext(new Context("schemaspy",args))) {
+            analyze(context.getSchemaAnalyzer(), args);
+        }
     }
 
     private static void analyze(SchemaAnalyzer schemaAnalyzer, String...args) {
