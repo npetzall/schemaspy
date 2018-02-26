@@ -3,12 +3,10 @@ package org.schemaspy.integrationtesting;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.schemaspy.Config;
 import org.schemaspy.DbAnalyzer;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.model.Database;
-import org.schemaspy.model.ProgressListener;
 import org.schemaspy.model.xml.SchemaMeta;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
@@ -51,9 +49,6 @@ public class SchemaMetaIT {
     @Autowired
     private DatabaseService databaseService;
 
-    @Mock
-    private ProgressListener progressListener;
-
     @MockBean
     private CommandLineArguments arguments;
 
@@ -87,11 +82,11 @@ public class SchemaMetaIT {
 
     @Test
     public void commentsNullTableComment() throws Exception {
-        Database database = new Database(null, databaseMetaData, "DatabaseServiceIT", catalog, schema, null, progressListener);
+        Database database = new Database(null, databaseMetaData, "DatabaseServiceIT", catalog, schema, null);
         databaseService.gatheringSchemaDetails(config, database);
 
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/integrationTesting/schemaMetaIT/input/nullTableComment.xml","SchemaMetaIT", schema);
-        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta, progressListener);
+        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta);
         databaseService.gatheringSchemaDetails(config, databaseWithSchemaMeta);
 
         assertThat(database.getTables().size()).isGreaterThan(0);
@@ -108,11 +103,11 @@ public class SchemaMetaIT {
 
     @Test
     public void commentsNoTableComment() throws SQLException {
-        Database database = new Database(null, databaseMetaData, "DatabaseServiceIT", catalog, schema, null, progressListener);
+        Database database = new Database(null, databaseMetaData, "DatabaseServiceIT", catalog, schema, null);
         databaseService.gatheringSchemaDetails(config, database);
 
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/integrationTesting/schemaMetaIT/input/noTableComment.xml","SchemaMetaIT", schema);
-        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta, progressListener);
+        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta);
         databaseService.gatheringSchemaDetails(config, databaseWithSchemaMeta);
 
         assertThat(database.getTables().size()).isGreaterThan(0);
@@ -127,7 +122,7 @@ public class SchemaMetaIT {
     //Reported as issue #199
     public void commentsAreReplacedWithReplaceComments() throws Exception {
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/integrationTesting/schemaMetaIT/input/replaceComments.xml","SchemaMetaIT", schema);
-        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta, progressListener);
+        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta);
         databaseService.gatheringSchemaDetails(config, database);
 
         assertThat(database.getTables().size()).isGreaterThan(0);
@@ -138,11 +133,11 @@ public class SchemaMetaIT {
 
     @Test
     public void remoteTable() throws Exception {
-        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null, progressListener);
+        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null);
         databaseService.gatheringSchemaDetails(config, database);
 
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/integrationTesting/schemaMetaIT/input/remoteTable.xml","SchemaMetaIT", schema);
-        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta, progressListener);
+        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta);
         databaseService.gatheringSchemaDetails(config, databaseWithSchemaMeta);
 
         assertThat(database.getRemoteTables().size()).isLessThan(databaseWithSchemaMeta.getRemoteTables().size());
@@ -152,11 +147,11 @@ public class SchemaMetaIT {
 
     @Test
     public void remoteTableAndRelationShip() throws Exception {
-        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null, progressListener);
+        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null);
         databaseService.gatheringSchemaDetails(config, database);
 
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/integrationTesting/schemaMetaIT/input/remoteTable.xml","SchemaMetaIT", schema);
-        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta, progressListener);
+        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta);
         databaseService.gatheringSchemaDetails(config, databaseWithSchemaMeta);
 
         assertThat(database.getTablesByName().get("ACCOUNT").getNumChildren())
@@ -165,11 +160,11 @@ public class SchemaMetaIT {
 
     @Test
     public void addColumn() throws Exception {
-        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null, progressListener);
+        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null);
         databaseService.gatheringSchemaDetails(config, database);
 
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/integrationTesting/schemaMetaIT/input/addColumn.xml","SchemaMetaIT", schema);
-        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta, progressListener);
+        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta);
         databaseService.gatheringSchemaDetails(config, databaseWithSchemaMeta);
 
         assertThat(database.getTablesByName().get("ACCOUNT").getColumns().size())
@@ -178,11 +173,11 @@ public class SchemaMetaIT {
 
     @Test
     public void disableImpliedOnAgentAccountId() throws Exception {
-        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null, progressListener);
+        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null);
         databaseService.gatheringSchemaDetails(config, database);
 
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/integrationTesting/schemaMetaIT/input/disableImpliedOnAgent.xml","SchemaMetaIT", schema);
-        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta, progressListener);
+        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta);
         databaseService.gatheringSchemaDetails(config, databaseWithSchemaMeta);
 
         DbAnalyzer.getImpliedConstraints(database.getTables());
@@ -194,11 +189,11 @@ public class SchemaMetaIT {
 
     @Test
     public void addFKInsteadOfImplied() throws Exception {
-        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null, progressListener);
+        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null);
         databaseService.gatheringSchemaDetails(config, database);
 
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/integrationTesting/schemaMetaIT/input/addFKInsteadOfImplied.xml","SchemaMetaIT", schema);
-        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta, progressListener);
+        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta);
         databaseService.gatheringSchemaDetails(config, databaseWithSchemaMeta);
 
         assertThat(database.getTablesByName().get("ACCOUNT").getNumChildren())
@@ -207,11 +202,11 @@ public class SchemaMetaIT {
 
     @Test
     public void disableDiagramAssociations() throws Exception {
-        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null, progressListener);
+        Database database = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, null);
         databaseService.gatheringSchemaDetails(config, database);
 
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/integrationTesting/schemaMetaIT/input/disableDiagramAssociations.xml","SchemaMetaIT", schema);
-        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta, progressListener);
+        Database databaseWithSchemaMeta = new Database(null, databaseMetaData, "SchemaMetaIT", catalog, schema, schemaMeta);
         databaseService.gatheringSchemaDetails(config, databaseWithSchemaMeta);
 
         File withoutSchemaMetaOutput = temporaryFolder.newFolder("withOutSchemaMeta");
