@@ -1,10 +1,12 @@
 package org.schemaspy.app.progressbar;
 
 import org.schemaspy.api.progress.ProgressListener;
+import org.schemaspy.util.DurationFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProgressLine implements ProgressListener {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -16,7 +18,7 @@ public class ProgressLine implements ProgressListener {
     private long startedAt = 0;
     private long finishedAt = 0;
 
-    private int numberOfFinishedTasks = 0;
+    private AtomicInteger numberOfFinishedTasks = new AtomicInteger(0);
 
     public ProgressLine(String label, ProgressManager progressManager) {
         this.label = label;
@@ -37,8 +39,8 @@ public class ProgressLine implements ProgressListener {
 
     @Override
     public void finishedTask() {
-        numberOfFinishedTasks++;
-        if (numberOfFinishedTasks == numberOfTasks) {
+        int finished = numberOfFinishedTasks.incrementAndGet();
+        if (finished == numberOfTasks) {
             finished();
         }
     }
@@ -50,14 +52,25 @@ public class ProgressLine implements ProgressListener {
         }
         finishedAt = System.currentTimeMillis();
         progressManager.finished(this);
-        LOG.info("Finished {} in {} ms",label, finishedAt - startedAt);
+        LOG.info("Finished {} in {}",label, DurationFormatter.formatMS(finishedAt - startedAt));
     }
 
     public String toString() {
+        int finished = numberOfFinishedTasks.get();
         if (numberOfTasks > 0) {
-            return String.format("%s: (%s/%s)", label, numberOfFinishedTasks, numberOfTasks);
+            if (finished > 0) {
+                return String.format("%s: (%s/%s) est left: %s", label, finished, numberOfTasks, getEstTimeLeft(finished, System.currentTimeMillis()));
+            } else {
+                return String.format("%s: (%s/%s)", label, finished, numberOfTasks);
+            }
         } else {
-            return String.format("%s: (%s/?)", label, numberOfFinishedTasks);
+            return String.format("%s: (%s/?)", label, finished);
         }
+    }
+
+    private String getEstTimeLeft(int finished, long now) {
+        long duration = now - startedAt;
+        double perTask = (double)duration/finished;
+        return DurationFormatter.formatMS((long)((numberOfTasks-finished)*perTask));
     }
 }

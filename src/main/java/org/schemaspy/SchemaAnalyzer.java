@@ -479,14 +479,16 @@ public class SchemaAnalyzer {
                     "Also not that schema names are usually case sensitive.",
                     schema, user);
             LOGGER.info(
-                    "Available schemas(Some of these may be user or system schemas):" +
-                    System.lineSeparator() + "{}",
+                    "Available schemas(Some of these may be user or system schemas):{}{}",
+                    System.lineSeparator(),
                     schemas.stream().collect(Collectors.joining(System.lineSeparator())));
             List<String> populatedSchemas = DbAnalyzer.getPopulatedSchemas(meta);
             if (populatedSchemas.isEmpty()) {
                 LOGGER.error("Unable to determine if any of the schemas contain tables/views");
             } else {
-                LOGGER.info("Schemas with tables/views visible to '{}':" + System.lineSeparator() + "{}",
+                LOGGER.info("Schemas with tables/views visible to '{}':{}{}",
+                        user,
+                        System.lineSeparator(),
                         populatedSchemas.stream().collect(Collectors.joining(System.lineSeparator())));
             }
         }
