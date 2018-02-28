@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.schemaspy.api.progress.ProgressListenerFactory;
+import org.schemaspy.api.progress.ProgressListener;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.model.*;
 import org.schemaspy.model.xml.SchemaMeta;
@@ -65,12 +66,15 @@ public class SchemaAnalyzer {
 
     private final CommandLineArguments commandLineArguments;
 
+    private final ProgressListenerFactory progressListenerFactory;
+
     private final List<OutputProducer> outputProducers = new ArrayList<>();
 
     public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, ProgressListenerFactory progressListenerFactory) {
         this.sqlService = Objects.requireNonNull(sqlService);
         this.databaseService = Objects.requireNonNull(databaseService);
         this.commandLineArguments = Objects.requireNonNull(commandLineArguments);
+        this.progressListenerFactory = progressListenerFactory;
         addOutputProducer(new XmlProducerUsingDOM(progressListenerFactory));
     }
 
@@ -84,21 +88,20 @@ public class SchemaAnalyzer {
         // and not already logging fine details (to keep from obfuscating those)
 
         boolean render = config.isHtmlGenerationEnabled();
-        ProgressListener progressListener = new ConsoleProgressListener(render, commandLineArguments);
 
         // if -all(evaluteAll) or -schemas given then analyzeMultipleSchemas
         List<String> schemas = config.getSchemas();
         if (schemas != null || config.isEvaluateAllEnabled()) {
-            return this.analyzeMultipleSchemas(config, progressListener);
+            return this.analyzeMultipleSchemas(config);
         } else {
             File outputDirectory = commandLineArguments.getOutputDirectory();
             Objects.requireNonNull(outputDirectory);
             String schema = commandLineArguments.getSchema();
-            return analyze(schema, config, outputDirectory, progressListener);
+            return analyze(schema, config, outputDirectory);
         }
     }
 
-    public Database analyzeMultipleSchemas(Config config, ProgressListener progressListener) throws SQLException, IOException {
+    public Database analyzeMultipleSchemas(Config config) throws SQLException, IOException {
         try {
             // following params will be replaced by something appropriate
             List<String> args = config.asList();
@@ -125,7 +128,8 @@ public class SchemaAnalyzer {
                     schemas.add(config.getUser());
             }
 
-            LOGGER.info("Analyzing schemas: " + System.lineSeparator() + "{}",
+            LOGGER.info("Analyzing schemas: {}{}",
+                    System.lineSeparator(),
                     schemas.stream().collect(Collectors.joining(System.lineSeparator())));
 
             String dbName = config.getDb();
@@ -146,7 +150,7 @@ public class SchemaAnalyzer {
 
                 LOGGER.info("Analyzing {}", schema);
                 File outputDirForSchema = new File(outputDir, schema);
-                db = this.analyze(schema, config, outputDirForSchema, progressListener);
+                db = this.analyze(schema, config, outputDirForSchema);
                 if (db == null) //if any of analysed schema returns null
                     return null;
                 mustacheSchemas.add(new MustacheSchema(db.getSchema(), ""));
@@ -165,92 +169,93 @@ public class SchemaAnalyzer {
         }
     }
 
-    public Database analyze(String schema, Config config, File outputDir, ProgressListener progressListener) throws SQLException, IOException {
+    public Database analyze(String schema, Config config, File outputDir) throws SQLException, IOException {
         try {
-            LOGGER.info("Starting schema analysis");
+            ProgressListener schemaAnalysisProgressListener = progressListenerFactory.newProgressListener("Schema Analysis").starting(1);
+            try {
+                FileUtils.forceMkdir(outputDir);
 
-            FileUtils.forceMkdir(outputDir);
+                String dbName = config.getDb();
 
-            String dbName = config.getDb();
+                String catalog = commandLineArguments.getCatalog();
 
-            String catalog = commandLineArguments.getCatalog();
+                DatabaseMetaData meta = sqlService.connect(config);
 
-            DatabaseMetaData meta = sqlService.connect(config);
+                LOGGER.debug("supportsSchemasInTableDefinitions: {}", meta.supportsSchemasInTableDefinitions());
+                LOGGER.debug("supportsCatalogsInTableDefinitions: {}", meta.supportsCatalogsInTableDefinitions());
 
-            LOGGER.debug("supportsSchemasInTableDefinitions: {}", meta.supportsSchemasInTableDefinitions());
-            LOGGER.debug("supportsCatalogsInTableDefinitions: {}", meta.supportsCatalogsInTableDefinitions());
+                // set default Catalog and Schema of the connection
+                if (schema == null)
+                    schema = meta.getConnection().getSchema();
+                if (catalog == null)
+                    catalog = meta.getConnection().getCatalog();
 
-            // set default Catalog and Schema of the connection
-            if (schema == null)
-                schema = meta.getConnection().getSchema();
-            if (catalog == null)
-                catalog = meta.getConnection().getCatalog();
+                SchemaMeta schemaMeta = config.getMeta() == null ? null : new SchemaMeta(config.getMeta(), dbName, schema);
+                if (config.isHtmlGenerationEnabled()) {
+                    FileUtils.forceMkdir(new File(outputDir, "tables"));
+                    FileUtils.forceMkdir(new File(outputDir, "diagrams/summary"));
 
-            SchemaMeta schemaMeta = config.getMeta() == null ? null : new SchemaMeta(config.getMeta(), dbName, schema);
-            if (config.isHtmlGenerationEnabled()) {
-                FileUtils.forceMkdir(new File(outputDir, "tables"));
-                FileUtils.forceMkdir(new File(outputDir, "diagrams/summary"));
+                    LOGGER.info("Connected to {} - {}", meta.getDatabaseProductName(), meta.getDatabaseProductVersion());
 
-                LOGGER.info("Connected to {} - {}", meta.getDatabaseProductName(), meta.getDatabaseProductVersion());
-
-                if (schemaMeta != null && schemaMeta.getFile() != null) {
-                    LOGGER.info("Using additional metadata from {}", schemaMeta.getFile());
+                    if (schemaMeta != null && schemaMeta.getFile() != null) {
+                        LOGGER.info("Using additional metadata from {}", schemaMeta.getFile());
+                    }
                 }
-            }
 
-            //
-            // create our representation of the database
-            //
-            Database db = new Database(config, meta, dbName, catalog, schema, schemaMeta);
-            databaseService.gatheringSchemaDetails(config, db);
+                //
+                // create our representation of the database
+                //
+                Database db = new Database(config, meta, dbName, catalog, schema, schemaMeta);
+                databaseService.gatheringSchemaDetails(config, db);
 
-            long duration = progressListener.startedGraphingSummaries();
+                Collection<Table> tables = new ArrayList<>(db.getTables());
+                tables.addAll(db.getViews());
 
-            Collection<Table> tables = new ArrayList<>(db.getTables());
-            tables.addAll(db.getViews());
+                if (tables.isEmpty()) {
+                    dumpNoTablesMessage(schema, config.getUser(), meta, config.getTableInclusions() != null);
+                    if (!config.isOneOfMultipleSchemas()) // don't bail if we're doing the whole enchilada
+                        throw new EmptySchemaException();
+                }
 
-            if (tables.isEmpty()) {
-                dumpNoTablesMessage(schema, config.getUser(), meta, config.getTableInclusions() != null);
-                if (!config.isOneOfMultipleSchemas()) // don't bail if we're doing the whole enchilada
-                    throw new EmptySchemaException();
-            }
+                if (config.isHtmlGenerationEnabled()) {
+                    generateHtmlDoc(config, outputDir, db, tables);
+                }
 
-            if (config.isHtmlGenerationEnabled()) {
-                generateHtmlDoc(config, progressListener, outputDir, db, duration, tables);
-            }
-
-            outputProducers.forEach(
-                    outputProducer -> {
-                        try {
-                            outputProducer.generate(db, outputDir);
-                        } catch (OutputException oe) {
-                            if (config.isOneOfMultipleSchemas()) {
-                                LOGGER.warn("Failed to produce output", oe);
-                            } else {
-                                throw oe;
+                outputProducers.forEach(
+                        outputProducer -> {
+                            try {
+                                outputProducer.generate(db, outputDir);
+                            } catch (OutputException oe) {
+                                if (config.isOneOfMultipleSchemas()) {
+                                    LOGGER.warn("Failed to produce output", oe);
+                                } else {
+                                    throw oe;
+                                }
                             }
-                        }
-                    });
+                        });
 
-            List<ForeignKeyConstraint> recursiveConstraints = new ArrayList<>();
+                List<ForeignKeyConstraint> recursiveConstraints = new ArrayList<>();
 
-            // create an orderer to be able to determine insertion and deletion ordering of tables
-            TableOrderer orderer = new TableOrderer();
+                // create an orderer to be able to determine insertion and deletion ordering of tables
+                TableOrderer orderer = new TableOrderer();
 
-            // side effect is that the RI relationships get trashed
-            // also populates the recursiveConstraints collection
-            List<Table> orderedTables = orderer.getTablesOrderedByRI(db.getTables(), recursiveConstraints);
+                // side effect is that the RI relationships get trashed
+                // also populates the recursiveConstraints collection
+                List<Table> orderedTables = orderer.getTablesOrderedByRI(db.getTables(), recursiveConstraints);
 
-            writeOrders(outputDir, orderedTables);
+                writeOrders(outputDir, orderedTables);
 
-            duration = progressListener.finishedGatheringDetails();
-            long overallDuration = progressListener.finished(tables, config);
+                duration = progressListener.finishedGatheringDetails();
+                long overallDuration = progressListener.finished(tables, config);
 
-            if (config.isHtmlGenerationEnabled()) {
-                LOGGER.info("Wrote table details in {} seconds", duration / 1000);
+                if (config.isHtmlGenerationEnabled()) {
+                    LOGGER.info("Wrote table details in {} seconds", duration / 1000);
 
-                LOGGER.info("Wrote relationship details of {} tables/views to directory '{}' in {} seconds.", tables.size(), outputDir, overallDuration / 1000);
-                LOGGER.info("View the results by opening {}", new File(outputDir, "index.html"));
+                    LOGGER.info("Wrote relationship details of {} tables/views to directory '{}' in {} seconds.", tables.size(), outputDir, overallDuration / 1000);
+                    LOGGER.info("View the results by opening {}", new File(outputDir, "index.html"));
+                }
+            } finally {
+                schemaAnalysisProgressListener.finished();
             }
 
             return db;
@@ -282,14 +287,11 @@ public class SchemaAnalyzer {
         }
     }
 
-    private void generateHtmlDoc(Config config, ProgressListener progressListener, File outputDir, Database db, long duration, Collection<Table> tables) throws IOException {
+    private void generateHtmlDoc(Config config, File outputDir, Database db, Collection<Table> tables) throws IOException {
         LineWriter out;
-        LOGGER.info("Gathered schema details in {} seconds", duration / 1000);
         LOGGER.info("Writing/graphing summary");
 
         prepareLayoutFiles(outputDir);
-
-        progressListener.graphingSummaryProgressed();
 
         boolean showDetailedTables = tables.size() <= config.getMaxDetailedTables();
         final boolean includeImpliedConstraints = config.isImpliedConstraintsEnabled();
@@ -299,7 +301,7 @@ public class SchemaAnalyzer {
         // note that this is done before 'hasRealRelationships' gets evaluated so
         // we get a relationships ER diagram
         if (config.isRailsEnabled())
-            DbAnalyzer.getRailsConstraints(db.getTablesByName());
+            DbAnalyzer.getRailsConstraints(db.getTablesByName(), progressListenerFactory.newProgressListener("RailsConstraints"));
 
         File summaryDir = new File(outputDir, "diagrams/summary");
 

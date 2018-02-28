@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import org.schemaspy.api.progress.ProgressListener;
 import org.schemaspy.model.*;
 import org.schemaspy.util.Inflection;
 import org.slf4j.Logger;
@@ -133,26 +134,32 @@ public class DbAnalyzer {
      * @param tables
      * @return List of {@link RailsForeignKeyConstraint}s
      */
-    public static List<RailsForeignKeyConstraint> getRailsConstraints(Map<String, Table> tables) {
+    public static List<RailsForeignKeyConstraint> getRailsConstraints(Map<String, Table> tables, ProgressListener progressListener) {
         List<RailsForeignKeyConstraint> railsConstraints = new ArrayList<RailsForeignKeyConstraint>(tables.size());
 
         // iterate thru each column in each table looking for columns that
         // match Rails naming conventions
-        for (Table table : tables.values()) {
-            for (TableColumn column : table.getColumns()) {
-                String columnName = column.getName().toLowerCase();
-                if (!column.isForeignKey() && column.allowsImpliedParents() && columnName.endsWith("_id")) {
-                    String singular = columnName.substring(0, columnName.length() - 3);
-                    String primaryTableName = Inflection.pluralize(singular);
-                    Table primaryTable = tables.get(primaryTableName);
-                    if (primaryTable != null) {
-                        TableColumn primaryColumn = primaryTable.getColumn("ID");
-                        if (primaryColumn != null) {
-                            railsConstraints.add(new RailsForeignKeyConstraint(primaryColumn, column));
+        progressListener.starting(tables.size());
+        try {
+            for (Table table : tables.values()) {
+                for (TableColumn column : table.getColumns()) {
+                    String columnName = column.getName().toLowerCase();
+                    if (!column.isForeignKey() && column.allowsImpliedParents() && columnName.endsWith("_id")) {
+                        String singular = columnName.substring(0, columnName.length() - 3);
+                        String primaryTableName = Inflection.pluralize(singular);
+                        Table primaryTable = tables.get(primaryTableName);
+                        if (primaryTable != null) {
+                            TableColumn primaryColumn = primaryTable.getColumn("ID");
+                            if (primaryColumn != null) {
+                                railsConstraints.add(new RailsForeignKeyConstraint(primaryColumn, column));
+                            }
                         }
                     }
                 }
+                progressListener.finishedTask();
             }
+        } finally {
+            progressListener.finished();
         }
 
         return railsConstraints;
