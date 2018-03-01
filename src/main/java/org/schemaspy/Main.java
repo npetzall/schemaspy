@@ -53,13 +53,13 @@ public class Main implements CommandLineRunner {
     @Autowired
     private ApplicationContext context;
 
-    public static void main(String... args) throws Exception {
+    public static void main(String... args) {
         LogLevelConditionalThrowableProxyConverter.register();
         SpringApplication.run(Main.class, args);
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         if (arguments.isHelpRequired()) {
             commandLineArgumentParser.printUsage();
             exitApplication(0);

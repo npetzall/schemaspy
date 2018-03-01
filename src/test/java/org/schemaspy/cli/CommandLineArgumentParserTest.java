@@ -133,6 +133,29 @@ public class CommandLineArgumentParserTest {
         assertThat(arguments.isDbHelpRequired()).isTrue();
     }
 
+    @Test
+    public void skipHtmlIsFalseByDefault() {
+        String[] args = {
+                "-o", "aFolder",
+                "-sso"
+        };
+        CommandLineArgumentParser parser = new CommandLineArgumentParser(NO_DEFAULT_PROVIDER);
+        CommandLineArguments arguments = parser.parse(args);
+        assertThat(arguments.isSkipHtml()).isFalse();
+    }
+
+    @Test
+    public void skipHtmlCanBeEnabled() {
+        String[] args = {
+                "-o", "aFolder",
+                "-sso",
+                "-nohtml"
+        };
+        CommandLineArgumentParser parser = new CommandLineArgumentParser(NO_DEFAULT_PROVIDER);
+        CommandLineArguments arguments = parser.parse(args);
+        assertThat(arguments.isSkipHtml()).isTrue();
+    }
+
     //TODO Implement integration tests (?) for following scenarios, addressing the behavior of ApplicationStartListener.
 
     // given only parameter -configFile without value -> error

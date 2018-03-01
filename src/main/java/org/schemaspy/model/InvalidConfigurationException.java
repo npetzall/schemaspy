@@ -18,8 +18,6 @@
  */
 package org.schemaspy.model;
 
-import java.util.Objects;
-
 /**
  * Base class to indicate that there was problem with how SchemaSpy was configured / used.
  *
@@ -28,7 +26,7 @@ import java.util.Objects;
 public class InvalidConfigurationException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     private String paramName;
-    private String paramValue = "";
+    private String paramValue;
 
     /**
      * When a message is sufficient
@@ -69,8 +67,7 @@ public class InvalidConfigurationException extends RuntimeException {
     }
 
     public InvalidConfigurationException setParamValue(String paramValue) {
-        if (Objects.nonNull(paramValue))
-            this.paramValue = paramValue;
+        this.paramValue = paramValue;
         return this;
     }
 

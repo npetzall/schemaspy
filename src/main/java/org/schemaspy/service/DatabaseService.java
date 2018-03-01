@@ -28,7 +28,7 @@ public class DatabaseService {
 
     private final SqlService sqlService;
 
-    private final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public DatabaseService(TableService tableService, ViewService viewService, SqlService sqlService) {
         this.tableService = Objects.requireNonNull(tableService);

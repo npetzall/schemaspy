@@ -21,30 +21,27 @@
 package org.schemaspy;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.model.*;
 import org.schemaspy.model.xml.SchemaMeta;
 import org.schemaspy.output.OutputException;
 import org.schemaspy.output.OutputProducer;
+import org.schemaspy.output.html.mustache.HtmlProducerUsingMustache;
 import org.schemaspy.output.xml.dom.XmlProducerUsingDOM;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
 import org.schemaspy.util.ConnectionURLBuilder;
-import org.schemaspy.util.Dot;
 import org.schemaspy.util.LineWriter;
-import org.schemaspy.util.ResourceWriter;
-import org.schemaspy.view.*;
+import org.schemaspy.view.HtmlMultipleSchemasIndexPage;
+import org.schemaspy.view.MustacheCatalog;
+import org.schemaspy.view.MustacheSchema;
+import org.schemaspy.view.TextFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.net.URL;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -64,27 +61,29 @@ public class SchemaAnalyzer {
 
     private final CommandLineArguments commandLineArguments;
 
+    private final ProgressListener progressListener;
+
     private final List<OutputProducer> outputProducers = new ArrayList<>();
 
-    public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments) {
+    public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments, ProgressListener progressListener) {
         this.sqlService = Objects.requireNonNull(sqlService);
         this.databaseService = Objects.requireNonNull(databaseService);
         this.commandLineArguments = Objects.requireNonNull(commandLineArguments);
+        this.progressListener = progressListener;
+        if (!commandLineArguments.isSkipHtml()) {
+            addOutputProducer(new HtmlProducerUsingMustache(progressListener));
+        }
         addOutputProducer(new XmlProducerUsingDOM());
     }
 
-    public SchemaAnalyzer addOutputProducer(OutputProducer outputProducer) {
-        outputProducers.add(outputProducer);
+    public SchemaAnalyzer addOutputProducer(OutputProducer...outputProducers) {
+        for (OutputProducer outputProducer : outputProducers) {
+            this.outputProducers.add(outputProducer);
+        }
         return this;
     }
 
     public Database analyze(Config config) throws SQLException, IOException {
-        // don't render console-based detail unless we're generating HTML (those probably don't have a user watching)
-        // and not already logging fine details (to keep from obfuscating those)
-
-        boolean render = config.isHtmlGenerationEnabled();
-        ProgressListener progressListener = new ConsoleProgressListener(render, commandLineArguments);
-
         // if -all(evaluteAll) or -schemas given then analyzeMultipleSchemas
         List<String> schemas = config.getSchemas();
         if (schemas != null || config.isEvaluateAllEnabled()) {
@@ -124,8 +123,8 @@ public class SchemaAnalyzer {
                     schemas.add(config.getUser());
             }
 
-            LOGGER.info("Analyzing schemas: " + System.lineSeparator() + "{}",
-                    schemas.stream().collect(Collectors.joining(System.lineSeparator())));
+            LOGGER.info("Analyzing schemas: {}",
+                    schemas.stream().collect(Collectors.joining(", ")));
 
             String dbName = config.getDb();
             File outputDir = commandLineArguments.getOutputDirectory();
@@ -152,7 +151,7 @@ public class SchemaAnalyzer {
                 mustacheCatalog = new MustacheCatalog(db.getCatalog(), "");
             }
 
-            prepareLayoutFiles(outputDir);
+            HtmlProducerUsingMustache.prepareLayoutFiles(outputDir);
             HtmlMultipleSchemasIndexPage.getInstance().write(outputDir, dbName, mustacheCatalog, mustacheSchemas, meta);
 
             return db;
@@ -202,6 +201,7 @@ public class SchemaAnalyzer {
             databaseService.gatheringSchemaDetails(config, db, progressListener);
 
             long duration = progressListener.startedGraphingSummaries();
+            LOGGER.info("Gathered schema details in {} seconds", duration / 1000);
 
             Collection<Table> tables = new ArrayList<>(db.getTables());
             tables.addAll(db.getViews());
@@ -210,10 +210,6 @@ public class SchemaAnalyzer {
                 dumpNoTablesMessage(schema, config.getUser(), meta, config.getTableInclusions() != null);
                 if (!config.isOneOfMultipleSchemas()) // don't bail if we're doing the whole enchilada
                     throw new EmptySchemaException();
-            }
-
-            if (config.isHtmlGenerationEnabled()) {
-                generateHtmlDoc(config, progressListener, outputDir, db, duration, tables);
             }
 
             outputProducers.forEach(
@@ -279,136 +275,6 @@ public class SchemaAnalyzer {
         }
     }
 
-    private void generateHtmlDoc(Config config, ProgressListener progressListener, File outputDir, Database db, long duration, Collection<Table> tables) throws IOException {
-        LineWriter out;
-        LOGGER.info("Gathered schema details in {} seconds", duration / 1000);
-        LOGGER.info("Writing/graphing summary");
-
-        prepareLayoutFiles(outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        boolean showDetailedTables = tables.size() <= config.getMaxDetailedTables();
-        final boolean includeImpliedConstraints = config.isImpliedConstraintsEnabled();
-
-        // if evaluating a 'ruby on rails-based' database then connect the columns
-        // based on RoR conventions
-        // note that this is done before 'hasRealRelationships' gets evaluated so
-        // we get a relationships ER diagram
-        if (config.isRailsEnabled())
-            DbAnalyzer.getRailsConstraints(db.getTablesByName());
-
-        File summaryDir = new File(outputDir, "diagrams/summary");
-
-        // generate the compact form of the relationships .dot file
-        String dotBaseFilespec = "relationships";
-        out = new LineWriter(new File(summaryDir, dotBaseFilespec + ".real.compact.dot"), Config.DOT_CHARSET);
-        WriteStats stats = new WriteStats(tables);
-        DotFormatter.getInstance().writeRealRelationships(db, tables, true, showDetailedTables, stats, out, outputDir);
-        boolean hasRealRelationships = stats.getNumTablesWritten() > 0 || stats.getNumViewsWritten() > 0;
-        out.close();
-
-        if (hasRealRelationships) {
-            // real relationships exist so generate the 'big' form of the relationships .dot file
-            progressListener.graphingSummaryProgressed();
-            out = new LineWriter(new File(summaryDir, dotBaseFilespec + ".real.large.dot"), Config.DOT_CHARSET);
-            DotFormatter.getInstance().writeRealRelationships(db, tables, false, showDetailedTables, stats, out, outputDir);
-            out.close();
-        }
-
-        // getting implied constraints has a side-effect of associating the parent/child tables, so don't do it
-        // here unless they want that behavior
-        List<ImpliedForeignKeyConstraint> impliedConstraints = new ArrayList();
-        if (includeImpliedConstraints)
-            impliedConstraints.addAll(DbAnalyzer.getImpliedConstraints(tables));
-
-        List<Table> orphans = DbAnalyzer.getOrphans(tables);
-        config.setHasOrphans(!orphans.isEmpty() && Dot.getInstance().isValid());
-        config.setHasRoutines(!db.getRoutines().isEmpty());
-
-        progressListener.graphingSummaryProgressed();
-
-        File impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.compact.dot");
-        out = new LineWriter(impliedDotFile, Config.DOT_CHARSET);
-        boolean hasImplied = DotFormatter.getInstance().writeAllRelationships(db, tables, true, showDetailedTables, stats, out, outputDir);
-
-        Set<TableColumn> excludedColumns = stats.getExcludedColumns();
-        out.close();
-        if (hasImplied) {
-            impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.large.dot");
-            out = new LineWriter(impliedDotFile, Config.DOT_CHARSET);
-            DotFormatter.getInstance().writeAllRelationships(db, tables, false, showDetailedTables, stats, out, outputDir);
-            out.close();
-        } else {
-            Files.deleteIfExists(impliedDotFile.toPath());
-        }
-
-        HtmlRelationshipsPage.getInstance().write(db, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, excludedColumns,
-                progressListener, outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        File orphansDir = new File(outputDir, "diagrams/orphans");
-        FileUtils.forceMkdir(orphansDir);
-        HtmlOrphansPage.getInstance().write(db, orphans, orphansDir, outputDir);
-        out.close();
-
-        progressListener.graphingSummaryProgressed();
-
-        HtmlMainIndexPage.getInstance().write(db, tables, impliedConstraints, outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        List<ForeignKeyConstraint> constraints = DbAnalyzer.getForeignKeyConstraints(tables);
-        HtmlConstraintsPage constraintIndexFormatter = HtmlConstraintsPage.getInstance();
-        constraintIndexFormatter.write(db, constraints, tables, outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        HtmlAnomaliesPage.getInstance().write(db, tables, impliedConstraints, outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        for (HtmlColumnsPage.ColumnInfo columnInfo : HtmlColumnsPage.getInstance().getColumnInfos().values()) {
-            HtmlColumnsPage.getInstance().write(db, tables, columnInfo, outputDir);
-        }
-
-        progressListener.graphingSummaryProgressed();
-
-        HtmlRoutinesPage.getInstance().write(db, outputDir);
-
-        // create detailed diagrams
-
-        duration = progressListener.startedGraphingDetails();
-
-        LOGGER.info("Completed summary in {} seconds", duration / 1000);
-        LOGGER.info("Writing/diagramming details");
-
-        generateTables(progressListener, outputDir, db, tables, stats);
-        HtmlComponentPage.getInstance().write(db, tables, outputDir);
-    }
-
-    /**
-     * This method is responsible to copy layout folder to destination directory and not copy template .html files
-     *
-     * @param outputDir File
-     * @throws IOException when not possible to copy layout files to outputDir
-     */
-    private void prepareLayoutFiles(File outputDir) throws IOException {
-        URL url = null;
-        Enumeration<URL> possibleResources = getClass().getClassLoader().getResources("layout");
-        while (possibleResources.hasMoreElements() && Objects.isNull(url)) {
-            URL possibleResource = possibleResources.nextElement();
-            if (!possibleResource.getPath().contains("test-classes")) {
-                url = possibleResource;
-            }
-        }
-
-        IOFileFilter notHtmlFilter = FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".html"));
-        FileFilter filter = FileFilterUtils.and(notHtmlFilter);
-        ResourceWriter.copyResources(url, outputDir, filter);
-    }
-
     private Connection getConnection(Config config) throws IOException {
 
         Properties properties = config.getDbProperties();
@@ -427,16 +293,6 @@ public class SchemaAnalyzer {
 
         DbDriverLoader driverLoader = new DbDriverLoader();
         return driverLoader.getConnection(config, urlBuilder.build(), driverClass, driverPath);
-    }
-
-    private void generateTables(ProgressListener progressListener, File outputDir, Database db, Collection<Table> tables, WriteStats stats) throws IOException {
-        HtmlTablePage tableFormatter = HtmlTablePage.getInstance();
-        for (Table table : tables) {
-            progressListener.graphingDetailsProgressed(table);
-            LOGGER.debug("Writing details of {}", table.getName());
-
-            tableFormatter.write(db, table, outputDir, stats);
-        }
     }
 
     /**
@@ -476,14 +332,16 @@ public class SchemaAnalyzer {
                     "Also not that schema names are usually case sensitive.",
                     schema, user);
             LOGGER.info(
-                    "Available schemas(Some of these may be user or system schemas):" +
-                    System.lineSeparator() + "{}",
+                    "Available schemas(Some of these may be user or system schemas):{}{}",
+                    System.lineSeparator(),
                     schemas.stream().collect(Collectors.joining(System.lineSeparator())));
             List<String> populatedSchemas = DbAnalyzer.getPopulatedSchemas(meta);
             if (populatedSchemas.isEmpty()) {
                 LOGGER.error("Unable to determine if any of the schemas contain tables/views");
             } else {
-                LOGGER.info("Schemas with tables/views visible to '{}':" + System.lineSeparator() + "{}",
+                LOGGER.info("Schemas with tables/views visible to '{}':{}{}",
+                        user,
+                        System.lineSeparator(),
                         populatedSchemas.stream().collect(Collectors.joining(System.lineSeparator())));
             }
         }

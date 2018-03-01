@@ -6,8 +6,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
-
-
 import java.util.regex.Pattern;
 
 /**
@@ -20,7 +18,7 @@ public class NameValidator {
     private final Pattern exclude;
     private final Set<String> validTypes;
 
-    private final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * @param clazz table or view
