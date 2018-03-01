@@ -87,16 +87,16 @@ public class SchemaAnalyzer {
         // if -all(evaluteAll) or -schemas given then analyzeMultipleSchemas
         List<String> schemas = config.getSchemas();
         if (schemas != null || config.isEvaluateAllEnabled()) {
-            return this.analyzeMultipleSchemas(config, progressListener);
+            return this.analyzeMultipleSchemas(config);
         } else {
             File outputDirectory = commandLineArguments.getOutputDirectory();
             Objects.requireNonNull(outputDirectory);
             String schema = commandLineArguments.getSchema();
-            return analyze(schema, config, outputDirectory, progressListener);
+            return analyze(schema, config, outputDirectory);
         }
     }
 
-    public Database analyzeMultipleSchemas(Config config, ProgressListener progressListener) throws SQLException, IOException {
+    public Database analyzeMultipleSchemas(Config config) throws SQLException, IOException {
         try {
             // following params will be replaced by something appropriate
             List<String> args = config.asList();
@@ -144,7 +144,7 @@ public class SchemaAnalyzer {
 
                 LOGGER.info("Analyzing {}", schema);
                 File outputDirForSchema = new File(outputDir, schema);
-                db = this.analyze(schema, config, outputDirForSchema, progressListener);
+                db = this.analyze(schema, config, outputDirForSchema);
                 if (db == null) //if any of analysed schema returns null
                     return null;
                 mustacheSchemas.add(new MustacheSchema(db.getSchema(), ""));
@@ -161,7 +161,7 @@ public class SchemaAnalyzer {
         }
     }
 
-    public Database analyze(String schema, Config config, File outputDir, ProgressListener progressListener) throws SQLException, IOException {
+    public Database analyze(String schema, Config config, File outputDir) throws SQLException, IOException {
         try {
             LOGGER.info("Starting schema analysis");
 
@@ -198,7 +198,7 @@ public class SchemaAnalyzer {
             // create our representation of the database
             //
             Database db = new Database(config, meta, dbName, catalog, schema, schemaMeta);
-            databaseService.gatheringSchemaDetails(config, db, progressListener);
+            databaseService.gatheringSchemaDetails(config, db);
 
             long duration = progressListener.startedGraphingSummaries();
             LOGGER.info("Gathered schema details in {} seconds", duration / 1000);
