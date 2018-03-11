@@ -18,16 +18,13 @@
  */
 package org.schemaspy.model;
 
-import org.schemaspy.Config;
 import org.schemaspy.model.xml.SchemaMeta;
 import org.schemaspy.util.CaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,31 +33,32 @@ public class Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Config config;
+    private final String databaseProduct;
     private final String databaseName ;
     private final Catalog catalog ;
     private final Schema schema;
-    private final Map<String, Table> tables = new CaseInsensitiveMap<Table>();
-    private final Map<String, View> views = new CaseInsensitiveMap<View>();
-    private final Map<String, Table> remoteTables = new CaseInsensitiveMap<Table>(); // key: schema.tableName
+    private final Map<String, Table> tables = new CaseInsensitiveMap<>();
+    private final Map<String, View> views = new CaseInsensitiveMap<>();
+    private final Map<String, Table> remoteTables = new CaseInsensitiveMap<>(); // key: schema.tableName
     private final Map<String, Table> locals = new CombinedMap(tables, views);
-    private final Map<String, Routine> routines = new CaseInsensitiveMap<Routine>();
-    private final DatabaseMetaData meta;
+    private final Map<String, Routine> routines = new CaseInsensitiveMap<>();
     private final SchemaMeta schemaMeta;
-    private final String connectTime = new SimpleDateFormat("EEE MMM dd HH:mm z yyyy").format(new Date());
+
     private Set<String> sqlKeywords;
     private Pattern invalidIdentifierPattern;
-	private final ProgressListener listener;
 
-    public Database(Config config, DatabaseMetaData meta, String name, String catalog, String schema, SchemaMeta schemaMeta,
-    				ProgressListener progressListener) throws SQLException, MissingResourceException {
-        this.config = config;
-        this.meta = meta;
+    public Database(
+            String databaseProduct,
+            String name,
+            String catalog,
+            String schema,
+            SchemaMeta schemaMeta
+    ) {
+        this.databaseProduct = databaseProduct;
         this.schemaMeta = schemaMeta;
         this.databaseName = name;
         this.catalog = new Catalog(catalog);
         this.schema = new Schema(schema);
-        this.listener = progressListener;
     }
 
     public String getName() {
@@ -73,20 +71,6 @@ public class Database {
 
     public Schema getSchema() {
         return schema;
-    }
-
-    public Config getConfig()
-    {
-        return config;
-    }
-
-    /**
-     * Details of the database type that's running under the covers.
-     *
-     * @return null if a description wasn't specified.
-     */
-    public String getDescription() {
-        return config.getDescription();
     }
 
     public Collection<Table> getTables() {
@@ -134,24 +118,12 @@ public class Database {
         return routines;
     }
 
-    public DatabaseMetaData getMetaData() {
-        return meta;
-    }
-
     public SchemaMeta getSchemaMeta() {
         return schemaMeta;
     }
 
-    public String getConnectTime() {
-        return connectTime;
-    }
-
     public String getDatabaseProduct() {
-        try {
-            return meta.getDatabaseProductName() + " - " + meta.getDatabaseProductVersion();
-        } catch (SQLException exc) {
-            return "";
-        }
+        return databaseProduct;
     }
 
     /**
@@ -160,7 +132,7 @@ public class Database {
      *
      * @return
      */
-    public Set<String> getSqlKeywords() {
+    private Set<String> getSqlKeywords() {
         if (sqlKeywords == null) {
             // from http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt:
             String[] sql92Keywords =

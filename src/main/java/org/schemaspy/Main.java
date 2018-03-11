@@ -20,7 +20,7 @@ package org.schemaspy;
 
 import org.schemaspy.cli.CommandLineArgumentParser;
 import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.model.ConnectionFailure;
+import org.schemaspy.input.dbms.exceptions.ConnectionFailure;
 import org.schemaspy.model.EmptySchemaException;
 import org.schemaspy.model.InvalidConfigurationException;
 import org.schemaspy.model.ProcessExecutionException;

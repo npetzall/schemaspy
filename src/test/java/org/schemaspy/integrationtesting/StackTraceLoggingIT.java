@@ -71,7 +71,7 @@ public class StackTraceLoggingIT {
         main.run(applicationArguments.getSourceArgs());
         String log = loggingRule.getLog();
         assertThat(log).isNotEmpty();
-        assertThat(log).doesNotContain("Caused by: org.schemaspy.db.config.ResourceNotFoundException");
+        assertThat(log).doesNotContain("Caused by: org.schemaspy.input.dbms.config.ResourceNotFoundException");
     }
 
     @Test
@@ -83,7 +83,7 @@ public class StackTraceLoggingIT {
             main.run(applicationArguments.getSourceArgs());
             String log = loggingRule.getLog();
             assertThat(log).isNotEmpty();
-            assertThat(log).contains("Caused by: org.schemaspy.db.config.ResourceNotFoundException");
+            assertThat(log).contains("Caused by: org.schemaspy.input.dbms.config.ResourceNotFoundException");
         } finally {
             loggingSystem.setLogLevel("org.schemaspy", LogLevel.INFO);
         }
