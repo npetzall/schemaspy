@@ -268,7 +268,7 @@ public final class Config {
     }
 
     /**
-     * @deprecated use {@link CommandLineArguments#getDatabaseType()}
+     * @deprecated use {@link CommandLineArguments#getDbmsCommandLineArguments()}
      * @return
      */
     @Deprecated
@@ -300,7 +300,7 @@ public final class Config {
     }
 
     /**
-     * @deprecated use {@link CommandLineArguments#getSchema()}
+     * @deprecated use {@link CommandLineArguments#getDbmsCommandLineArguments()}
      * @return
      */
     @Deprecated

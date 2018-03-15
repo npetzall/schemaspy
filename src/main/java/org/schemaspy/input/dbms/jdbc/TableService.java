@@ -80,9 +80,9 @@ public class TableService {
         sql.append(getSchemaOrCatalog(db, table, forceQuotes));
 
         if (forceQuotes) {
-            sql.append(db.quoteIdentifier(table.getName()));
+            sql.append(sqlService.quoteIdentifier(table.getName()));
         } else
-            sql.append(db.getQuotedIdentifier(table.getName()));
+            sql.append(sqlService.getQuotedIdentifier(table.getName()));
 
         sql.append(" where 0 = 1");
 
@@ -361,9 +361,9 @@ public class TableService {
         sql.append(getSchemaOrCatalog(db, table, forceQuotes));
 
         if (forceQuotes) {
-            sql.append(db.quoteIdentifier(table.getName()));
+            sql.append(sqlService.quoteIdentifier(table.getName()));
         } else
-            sql.append(db.getQuotedIdentifier(table.getName()));
+            sql.append(sqlService.getQuotedIdentifier(table.getName()));
 
         LOGGER.trace(sql.toString());
         try (PreparedStatement stmt = sqlService.prepareStatement(sql.toString());
@@ -392,9 +392,9 @@ public class TableService {
             return "";
         }
         if (forceQuotes) {
-            return db.quoteIdentifier(schemaOrCatalog) + ".";
+            return sqlService.quoteIdentifier(schemaOrCatalog) + ".";
         } else {
-            return db.getQuotedIdentifier(schemaOrCatalog) + ".";
+            return sqlService.getQuotedIdentifier(schemaOrCatalog) + ".";
         }
     }
 

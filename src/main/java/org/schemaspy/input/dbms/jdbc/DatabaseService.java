@@ -1,6 +1,5 @@
 package org.schemaspy.input.dbms.jdbc;
 
-import org.schemaspy.Config;
 import org.schemaspy.input.dbms.NameValidator;
 import org.schemaspy.input.dbms.config.DbmsConfiguration;
 import org.schemaspy.input.dbms.config.DbmsSql;
@@ -115,7 +114,7 @@ public class DatabaseService {
         final Pattern exclude = dbmsConfiguration.getTableExclusions();
         final int maxThreads = dbmsConfiguration.getMaxDbThreads();
 
-        String[] types = dbmsConfiguration.getTableTypes();
+        String[] types = dbmsSql.getTableTypes();
 
         NameValidator validator = new NameValidator("table", include, exclude, types);
         List<BasicTableMeta> entries = getBasicTableMeta(db, listener, true, types);
@@ -162,7 +161,7 @@ public class DatabaseService {
         Pattern includeTables = dbmsConfiguration.getTableInclusions();
         Pattern excludeTables = dbmsConfiguration.getTableExclusions();
 
-        String[] types = dbmsConfiguration.getViewTypes();
+        String[] types = dbmsSql.getViewTypes();
         NameValidator validator = new NameValidator("view", includeTables, excludeTables, types);
 
         for (BasicTableMeta entry : getBasicTableMeta(db, listener, false, types)) {
@@ -192,6 +191,7 @@ public class DatabaseService {
      */
     private void updateFromXmlMetadata(Database db, SchemaMeta schemaMeta) throws SQLException {
         if (schemaMeta != null) {
+            LOGGER.info("Using additional metadata from {}", schemaMeta.getFile());
             if (Objects.nonNull(schemaMeta.getComments())) {
                 db.getSchema().setComment(schemaMeta.getComments());
             }
@@ -270,7 +270,7 @@ public class DatabaseService {
             }
 
             if (table.getNumRows() == 0) {
-                long numRows = Config.getInstance().isNumRowsEnabled() ? tableService.fetchNumRows(dbmsSql.getSelectRowCountSql(),db, table) : -1;
+                long numRows = dbmsConfiguration.isNumRowsEnabled() ? tableService.fetchNumRows(dbmsSql.getSelectRowCountSql(),db, table) : -1;
                 table.setNumRows(numRows);
             }
 

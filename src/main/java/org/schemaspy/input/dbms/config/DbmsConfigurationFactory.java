@@ -25,10 +25,17 @@ public class DbmsConfigurationFactory {
         String[] tableTypes = getTypes(dbProperties,"tableTypes", "TABLE");
         String[] viewTypes = getTypes(dbProperties,"viewTypes", "VIEW");
         SchemaMeta schemaMeta = createSchemaMeta(dbmsInputConfiguration);
-        DbmsSql dbmsSql = new DbmsSql(dbProperties);
+        DbmsSql dbmsSql = new DbmsSql(dbProperties, tableTypes, viewTypes);
         DbmsDriverConfiguration dbmsDriverConfiguration = createDriverConfiguration(dbProperties, dbmsInputConfiguration);
         DbmsConnectionConfiguration dbmsConnectionConfiguration = createConnectionConfiguration(dbProperties, dbmsInputConfiguration);
-        //return new DbmsConfiguration();
+        return new DbmsConfiguration(
+                dbmsInputConfiguration,
+                dbmsDriverConfiguration,
+                dbmsConnectionConfiguration,
+                maxDbThreads,
+                dbmsSql,
+                schemaMeta
+        );
     }
 
     private int computeMaxDbThreads(Properties properties, DbmsInputConfiguration dbmsInputConfiguration) {
@@ -85,11 +92,27 @@ public class DbmsConfigurationFactory {
         if (Objects.isNull(driverPath) || driverPath.isEmpty()) {
             driverPath = dbProperties.getProperty("driverPath", "");
         }
-        String driverClass = dbProperties.getProperty("driverClass");
+        String driverClass = dbProperties.getProperty("driver");
         return new DbmsDriverConfiguration(driverPath, driverClass);
     }
 
     private DbmsConnectionConfiguration createConnectionConfiguration(Properties dbProperties, DbmsInputConfiguration dbmsInputConfiguration) {
-
+        String connectionUrl = new ConnectionUrlBuilder()
+                .usingDatabaseProperties(dbProperties)
+                .usingArguments(dbmsInputConfiguration.getArguments())
+                .withArgument("db", dbmsInputConfiguration.getDatabaseName())
+                .withArgument("host", dbmsInputConfiguration.getHost())
+                .withArgument("port", dbmsInputConfiguration.getPort())
+                .withArgument("user", dbmsInputConfiguration.getUser())
+                .withArgument("password", dbmsInputConfiguration.getPassword())
+                .build();
+        Properties connectionProperties = new Properties(dbmsInputConfiguration.getConnectionProperties());
+        if (Objects.nonNull(dbmsInputConfiguration.getUser())) {
+            connectionProperties.setProperty("user", dbmsInputConfiguration.getUser());
+        }
+        if (Objects.nonNull(dbmsInputConfiguration.getPassword())) {
+            connectionProperties.setProperty("password", dbmsInputConfiguration.getPassword());
+        }
+        return new DbmsConnectionConfiguration(connectionUrl, connectionProperties);
     }
 }

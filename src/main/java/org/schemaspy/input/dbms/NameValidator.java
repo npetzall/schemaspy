@@ -18,7 +18,7 @@ public class NameValidator {
     private final Pattern exclude;
     private final Set<String> validTypes;
 
-    private final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * @param clazz table or view

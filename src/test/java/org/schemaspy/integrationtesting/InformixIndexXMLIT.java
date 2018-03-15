@@ -1,4 +1,4 @@
-package org.schemaspy.testcontainer;
+package org.schemaspy.integrationtesting;
 
 import com.github.npetzall.testcontainers.junit.jdbc.JdbcContainerRule;
 import org.junit.BeforeClass;

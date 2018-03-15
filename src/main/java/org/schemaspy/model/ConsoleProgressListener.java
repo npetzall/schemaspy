@@ -18,11 +18,9 @@
  */
 package org.schemaspy.model;
 
-import java.io.File;
-import java.util.Collection;
-
 import org.schemaspy.Config;
-import org.schemaspy.cli.CommandLineArguments;
+
+import java.util.Collection;
 
 /**
  * Implementation of {@link ProgressListener} that sends its output to the console.
@@ -30,7 +28,6 @@ import org.schemaspy.cli.CommandLineArguments;
  * @author John Currier
  */
 public class ConsoleProgressListener implements ProgressListener {
-	private final CommandLineArguments commandLineArguments;
 
 	private final boolean render;
 	private long startedAt;
@@ -40,9 +37,8 @@ public class ConsoleProgressListener implements ProgressListener {
 	private long startedGraphingDetailsAt;
 	private long finishedAt;
 
-    public ConsoleProgressListener(boolean render, CommandLineArguments commandLineArguments) {
+    public ConsoleProgressListener(boolean render) {
     	this.render = render;
-		this.commandLineArguments = commandLineArguments;
 		startedAt = System.currentTimeMillis();
 	}
 
@@ -150,13 +146,6 @@ public class ConsoleProgressListener implements ProgressListener {
 	public long finished(Collection<Table> tables, Config config) {
 		finishedAt = System.currentTimeMillis();
 		long duration = finishedAt - startedAt;
-
-		if (render) {
-	        System.err.flush();
-	        System.out.flush();
-            System.out.println("Wrote relationship details of " + tables.size() + " tables/views to directory '" + commandLineArguments.getOutputDirectory() + "' in " + duration / 1000 + " seconds.");
-            System.out.println("View the results by opening " + new File(commandLineArguments.getOutputDirectory(), "index.html"));
-		}
 
 		return duration;
 	}

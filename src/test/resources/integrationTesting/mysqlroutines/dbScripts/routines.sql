@@ -5,3 +5,11 @@ RETURN CONCAT('Hello, ',s,'!');
 CREATE FUNCTION yes_det (s CHAR(20))
 RETURNS CHAR(50) DETERMINISTIC
 RETURN CONCAT('Hello, ',s,'!');
+
+CREATE TABLE `ATABLE` (
+  id INTEGER AUTO_INCREMENT,
+  name VARCHAR(16) NOT NULL,
+  description VARCHAR(80) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE name_unique (name)
+) engine=InnoDB COMMENT 'A table';

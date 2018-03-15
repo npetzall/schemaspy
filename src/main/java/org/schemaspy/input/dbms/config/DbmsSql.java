@@ -5,9 +5,21 @@ import java.util.Properties;
 public class DbmsSql {
 
     private final Properties properties;
+    private final String[] tableTypes;
+    private final String[] viewTypes;
 
-    public DbmsSql(Properties properties) {
+    public DbmsSql(Properties properties, String[] tableTypes, String[] viewTypes) {
         this.properties = properties;
+        this.tableTypes = tableTypes;
+        this.viewTypes = viewTypes;
+    }
+
+    public String[] getTableTypes() {
+        return tableTypes;
+    }
+
+    public String[] getViewTypes() {
+        return viewTypes;
     }
 
     public String getSelectCatalogsSql() {

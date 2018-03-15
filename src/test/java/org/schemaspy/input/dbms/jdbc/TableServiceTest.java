@@ -1,7 +1,7 @@
 package org.schemaspy.input.dbms.jdbc;
 
 import org.junit.Test;
-import org.schemaspy.cli.CommandLineArguments;
+import org.schemaspy.input.dbms.config.DbmsConfiguration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,10 +16,10 @@ import static org.mockito.Mockito.when;
 
 public class TableServiceTest {
 
+    private DbmsConfiguration dbmsConfiguration = mock(DbmsConfiguration.class);
     private SqlService sqlService = mock(SqlService.class);
-    private CommandLineArguments commandLineArguments = mock(CommandLineArguments.class);
 
-    private TableService tableService = new TableService(sqlService,commandLineArguments);
+    private TableService tableService = new TableService(dbmsConfiguration, sqlService);
 
     private Supplier<Method> isIndexRowMethod = () -> {
         Method m = null;

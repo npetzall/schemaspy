@@ -1,54 +1,24 @@
-package org.schemaspy.testcontainer;
+package org.schemaspy.input.dbms.dbmsinputsource;
 
 import com.github.npetzall.testcontainers.junit.jdbc.JdbcContainerRule;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.schemaspy.Config;
-import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.input.dbms.jdbc.DatabaseService;
-import org.schemaspy.input.dbms.jdbc.SqlService;
+import org.schemaspy.input.dbms.DbmsInputSource;
+import org.schemaspy.input.dbms.testing.DbmsInputConfigurationFluent;
 import org.schemaspy.model.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.MySQLContainer;
 
 import javax.script.ScriptException;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import static com.github.npetzall.testcontainers.junit.jdbc.JdbcAssumptions.assumeDriverIsPresent;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
 public class MysqlSpacesNoDotsIT {
-
-    @Autowired
-    private SqlService sqlService;
-
-    @Autowired
-    private DatabaseService databaseService;
-
-    @Mock
-    private ProgressListener progressListener;
-
-    @MockBean
-    private CommandLineArguments arguments;
-
-    @MockBean
-    private CommandLineRunner commandLineRunner;
-
-    private static Database database;
 
     @ClassRule
     public static JdbcContainerRule<MySQLContainer> jdbcContainerRule =
@@ -58,6 +28,8 @@ public class MysqlSpacesNoDotsIT {
                     .withInitScript("integrationTesting/dbScripts/mysql_spaces_no_dots.sql")
                     .withInitUser("root", "test");
 
+    private static Database database;
+
     @Before
     public synchronized void createDatabaseRepresentation() throws SQLException, IOException, ScriptException, URISyntaxException {
         if (database == null) {
@@ -66,28 +38,19 @@ public class MysqlSpacesNoDotsIT {
     }
 
     private void doCreateDatabaseRepresentation() throws SQLException, IOException, URISyntaxException {
-        String[] args = {
-                "-t", "mysql",
-                "-db", "TEST 1",
-                "-s", "TEST 1",
-                "-cat", "%",
-                "-o", "target/integrationtesting/mysql_spaces_no_dots",
-                "-u", "test",
-                "-p", "test",
-                "-host", jdbcContainerRule.getContainer().getContainerIpAddress(),
-                "-port", jdbcContainerRule.getContainer().getMappedPort(3306).toString()
-        };
-        given(arguments.getOutputDirectory()).willReturn(new File("target/integrationtesting/mysql_spaces_no_dots"));
-        given(arguments.getDatabaseType()).willReturn("mysql");
-        given(arguments.getUser()).willReturn("test");
-        given(arguments.getSchema()).willReturn("TEST 1");
-        given(arguments.getCatalog()).willReturn("%");
-        given(arguments.getDatabaseName()).willReturn("TEST 1");
-        Config config = new Config(args);
-        DatabaseMetaData databaseMetaData = sqlService.connect(config);
-        Database database = new Database(config, databaseMetaData, arguments.getDatabaseName(), arguments.getCatalog(), arguments.getSchema(), null, progressListener);
-        databaseService.gatheringSchemaDetails(config, database, progressListener);
-        this.database = database;
+        DbmsInputConfigurationFluent dbmsInputConfigurationFluent = new DbmsInputConfigurationFluent()
+                .setDatabaseType("mysql")
+                .setDatabaseName("TEST 1")
+                .setSchema("TEST 1")
+                .setCatalog("%")
+                .setHost(jdbcContainerRule.getContainer().getContainerIpAddress())
+                .setPort(jdbcContainerRule.getContainer().getMappedPort(3306).toString())
+                .setUser(jdbcContainerRule.getContainer().getUsername())
+                .setPassword(jdbcContainerRule.getContainer().getPassword());
+
+        ProgressListener progressListener = mock(ProgressListener.class);
+        DbmsInputSource dbmsInputSource = new DbmsInputSource(dbmsInputConfigurationFluent, progressListener);
+        this.database = dbmsInputSource.createDatabaseModel();
     }
 
     @Test

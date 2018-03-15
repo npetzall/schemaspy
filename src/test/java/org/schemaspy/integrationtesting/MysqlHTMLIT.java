@@ -1,4 +1,4 @@
-package org.schemaspy.testcontainer;
+package org.schemaspy.integrationtesting;
 
 import com.github.npetzall.testcontainers.junit.jdbc.JdbcContainerRule;
 import org.assertj.core.api.SoftAssertions;
@@ -48,12 +48,13 @@ public class MysqlHTMLIT {
                 "-t", "mysql",
                 "-db", "test",
                 "-s", "test",
+                "-cat", "test",
                 "-host", container.getContainerIpAddress() + ":" + String.valueOf(container.getMappedPort(3306)),
                 "-port", String.valueOf(container.getMappedPort(3306)),
                 "-u", container.getUsername(),
                 "-p", container.getPassword(),
                 "-o", "target/mysqlhtml",
-                "-connprops", "useSSL\\=false"
+                "-connprop", "useSSL=false"
         };
         Main.main(args);
     }

@@ -45,7 +45,7 @@ public class CommandLineArgumentParser {
         jCommander.addObject(arguments);
 
         jCommander.parse(localArgs);
-
+        arguments.getDbmsCommandLineArguments().setArguments(jCommander.getUnknownOptions());
         if (shouldValidate()) {
             validate(arguments);
         }

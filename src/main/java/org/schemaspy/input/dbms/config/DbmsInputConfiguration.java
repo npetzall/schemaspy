@@ -1,30 +1,33 @@
 package org.schemaspy.input.dbms.config;
 
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 public interface DbmsInputConfiguration {
 
-    boolean isViewsEnabled();
+    String getDatabaseType();
+    String getHost();
+    String getPort();
+    String getUser();
+    String getPassword();
+    String getDriverPath();
+    Properties getConnectionProperties();
 
-    Pattern getTableInclusions();
-
-    Pattern getTableExclusions();
+    String getDatabaseName();
+    String getCatalog();
+    String getSchema();
+    String getSchemaMetaPath();
 
     int getMaxDbThreads();
 
+    boolean isViewsEnabled();
+    boolean isNumRowsEnabled();
+
+    Pattern getTableInclusions();
+    Pattern getTableExclusions();
+    Pattern getColumnExclusions();
     Pattern getIndirectColumnExclusions();
 
-    Pattern getColumnExclusions();
-
-    String getDatabaseName();
-
-    String getCatalog();
-
-    String getSchema();
-
-    String getSchemaMetaPath();
-
-    String getDatabaseType();
-
-    String getDriverPath();
+    Map<String,String> getArguments();
 }

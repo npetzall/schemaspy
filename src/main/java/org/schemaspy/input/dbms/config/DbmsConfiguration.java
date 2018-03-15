@@ -2,24 +2,43 @@ package org.schemaspy.input.dbms.config;
 
 import org.schemaspy.model.xml.SchemaMeta;
 
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 public class DbmsConfiguration {
 
     private final DbmsInputConfiguration dbmsInputConfiguration;
-    private final Properties properties;
+    private final DbmsDriverConfiguration dbmsDriverConfiguration;
+    private final DbmsConnectionConfiguration dbmsConnectionConfiguration;
     private final int maxDbThreads;
-    private final String[] tableTypes;
-    private final String[] viewTypes;
+    private final DbmsSql dbmsSql;
     private final SchemaMeta schemaMeta;
 
-    public DbmsConfiguration(DbmsInputConfiguration dbmsInputConfiguration, Properties properties) {
+    public DbmsConfiguration(
+            DbmsInputConfiguration dbmsInputConfiguration,
+            DbmsDriverConfiguration dbmsDriverConfiguration,
+            DbmsConnectionConfiguration dbmsConnectionConfiguration,
+            int maxDbThreads,
+            DbmsSql dbmsSql,
+            SchemaMeta schemaMeta
+    ) {
+        this.dbmsInputConfiguration = dbmsInputConfiguration;
+        this.dbmsDriverConfiguration = dbmsDriverConfiguration;
+        this.dbmsConnectionConfiguration = dbmsConnectionConfiguration;
+        this.maxDbThreads = maxDbThreads;
+        this.dbmsSql = dbmsSql;
+        this.schemaMeta = schemaMeta;
+    }
 
+    public DbmsDriverConfiguration getDbmsDriverConfiguration() {
+        return dbmsDriverConfiguration;
+    }
+
+    public DbmsConnectionConfiguration getDbmsConnectionConfiguration() {
+        return dbmsConnectionConfiguration;
     }
 
     public DbmsSql getDbmsSql() {
-        return new DbmsSql(properties);
+        return dbmsSql;
     }
 
     public SchemaMeta getSchemaMeta() {
@@ -42,14 +61,6 @@ public class DbmsConfiguration {
         return maxDbThreads;
     }
 
-    public String[] getTableTypes() {
-        return tableTypes;
-    }
-
-    public String[] getViewTypes() {
-        return viewTypes;
-    }
-
     public Pattern getIndirectColumnExclusions() {
         return dbmsInputConfiguration.getIndirectColumnExclusions();
     }
@@ -70,4 +81,11 @@ public class DbmsConfiguration {
         return dbmsInputConfiguration.getSchema();
     }
 
+    public boolean isNumRowsEnabled() {
+        return dbmsInputConfiguration.isNumRowsEnabled();
+    }
+
+    public String getUser() {
+        return dbmsInputConfiguration.getUser();
+    }
 }

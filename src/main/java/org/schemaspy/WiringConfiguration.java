@@ -1,10 +1,10 @@
 package org.schemaspy;
 
 import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.input.dbms.jdbc.DatabaseService;
-import org.schemaspy.input.dbms.jdbc.SqlService;
-import org.schemaspy.input.dbms.jdbc.TableService;
-import org.schemaspy.input.dbms.jdbc.ViewService;
+import org.schemaspy.input.InputSource;
+import org.schemaspy.input.dbms.DbmsInputSource;
+import org.schemaspy.model.ConsoleProgressListener;
+import org.schemaspy.model.ProgressListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,28 +12,18 @@ import org.springframework.context.annotation.Configuration;
 public class WiringConfiguration {
 
     @Bean
-    public SqlService sqlService() {
-        return new SqlService();
+    public ProgressListener progressListener(CommandLineArguments commandLineArguments) {
+        return new ConsoleProgressListener(!commandLineArguments.isSkipHtml());
     }
 
     @Bean
-    public TableService tableService(SqlService sqlService, CommandLineArguments commandLineArguments) {
-        return new TableService(sqlService, commandLineArguments);
+    public InputSource inputSource(CommandLineArguments commandLineArguments, ProgressListener progressListener) {
+        return new DbmsInputSource(commandLineArguments.getDbmsCommandLineArguments(), progressListener);
     }
 
     @Bean
-    public ViewService viewService(SqlService sqlService) {
-        return new ViewService(sqlService);
-    }
-
-    @Bean
-    public DatabaseService databaseService(TableService tableService, ViewService viewService, SqlService sqlService) {
-        return new DatabaseService(tableService, viewService, sqlService);
-    }
-
-    @Bean
-    public SchemaAnalyzer schemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments) {
-        return new SchemaAnalyzer(sqlService, databaseService, commandLineArguments);
+    public SchemaAnalyzer schemaAnalyzer(InputSource inputSource, CommandLineArguments commandLineArguments, ProgressListener progressListener) {
+        return new SchemaAnalyzer(inputSource, commandLineArguments, progressListener);
     }
 
 }

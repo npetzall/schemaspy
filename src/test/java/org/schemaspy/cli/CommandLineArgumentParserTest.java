@@ -54,7 +54,7 @@ public class CommandLineArgumentParserTest {
         CommandLineArguments arguments = parser.parse(args);
 
         assertThat(arguments.getOutputDirectory().getPath()).isEqualTo("aFolder");
-        assertThat(arguments.getUser()).isEqualTo("MyUser");
+        assertThat(arguments.getDbmsCommandLineArguments().getUser()).isEqualTo("MyUser");
     }
 
     @Test
@@ -68,7 +68,7 @@ public class CommandLineArgumentParserTest {
         CommandLineArguments commandLineArguments = parser.parse();
 
         assertThat(commandLineArguments.getOutputDirectory()).isNotNull();
-        assertThat(commandLineArguments.getUser()).isNotNull();
+        assertThat(commandLineArguments.getDbmsCommandLineArguments().getUser()).isNotNull();
     }
 
     @Test
@@ -82,7 +82,7 @@ public class CommandLineArgumentParserTest {
         CommandLineArguments arguments = parser.parse(args);
 
         assertThat(arguments.getOutputDirectory().getPath()).isEqualTo("aFolder");
-        assertThat(arguments.getUser()).isNull();
+        assertThat(arguments.getDbmsCommandLineArguments().getUser()).isNull();
     }
 
     @Test
@@ -96,7 +96,7 @@ public class CommandLineArgumentParserTest {
         CommandLineArguments commandLineArguments = parser.parse();
 
         assertThat(commandLineArguments.getOutputDirectory()).isNotNull();
-        assertThat(commandLineArguments.getUser()).isNull();
+        assertThat(commandLineArguments.getDbmsCommandLineArguments().getUser()).isNull();
     }
 
     @Test
@@ -131,6 +131,41 @@ public class CommandLineArgumentParserTest {
         CommandLineArgumentParser parser = new CommandLineArgumentParser(NO_DEFAULT_PROVIDER);
         CommandLineArguments arguments = parser.parse(args);
         assertThat(arguments.isDbHelpRequired()).isTrue();
+    }
+
+    @Test
+     public void skipHtmlIsFalseByDefault() {
+              String[] args = {
+                       "-o", "aFolder",
+                       "-sso"
+              };
+              CommandLineArgumentParser parser = new CommandLineArgumentParser(NO_DEFAULT_PROVIDER);
+              CommandLineArguments arguments = parser.parse(args);
+              assertThat(arguments.isSkipHtml()).isFalse();
+    }
+    @Test
+    public void skipHtmlCanBeEnabled() {
+        String[] args = {
+                "-o", "aFolder",
+                "-sso",
+                "-nohtml"
+        };
+        CommandLineArgumentParser parser = new CommandLineArgumentParser(NO_DEFAULT_PROVIDER);
+        CommandLineArguments arguments = parser.parse(args);
+        assertThat(arguments.isSkipHtml()).isTrue();
+    }
+
+    @Test
+    public void unknownOptionsAreAssignedToDbmsCommandLineArguments() {
+        String[] args = {
+                "-o", "aFolder",
+                "-sso",
+                "-notAnOptionKnownOption", "no"
+        };
+        CommandLineArgumentParser parser = new CommandLineArgumentParser(NO_DEFAULT_PROVIDER);
+        CommandLineArguments arguments = parser.parse(args);
+        String unknownOptionValue = arguments.getDbmsCommandLineArguments().getArguments().get("notAnOptionKnownOption");
+        assertThat(unknownOptionValue).isEqualTo("no");
     }
 
     //TODO Implement integration tests (?) for following scenarios, addressing the behavior of ApplicationStartListener.

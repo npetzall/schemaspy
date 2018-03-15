@@ -24,11 +24,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.input.dbms.jdbc.DatabaseService;
+import org.schemaspy.input.InputSource;
 import org.schemaspy.input.dbms.jdbc.DbDriverLoader;
-import org.schemaspy.input.dbms.jdbc.SqlService;
 import org.schemaspy.model.*;
-import org.schemaspy.model.xml.SchemaMeta;
 import org.schemaspy.output.OutputException;
 import org.schemaspy.output.OutputProducer;
 import org.schemaspy.output.xml.dom.XmlProducerUsingDOM;
@@ -59,18 +57,16 @@ import java.util.stream.Collectors;
 public class SchemaAnalyzer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final SqlService sqlService;
-
-    private final DatabaseService databaseService;
-
+    private final InputSource inputSource;
     private final CommandLineArguments commandLineArguments;
+    private final ProgressListener progressListener;
 
     private final List<OutputProducer> outputProducers = new ArrayList<>();
 
-    public SchemaAnalyzer(SqlService sqlService, DatabaseService databaseService, CommandLineArguments commandLineArguments) {
-        this.sqlService = Objects.requireNonNull(sqlService);
-        this.databaseService = Objects.requireNonNull(databaseService);
+    public SchemaAnalyzer(InputSource inputSource, CommandLineArguments commandLineArguments, ProgressListener progressListener) {
+        this.inputSource = Objects.requireNonNull(inputSource);
         this.commandLineArguments = Objects.requireNonNull(commandLineArguments);
+        this.progressListener = Objects.requireNonNull(progressListener);
         addOutputProducer(new XmlProducerUsingDOM());
     }
 
@@ -83,9 +79,6 @@ public class SchemaAnalyzer {
         // don't render console-based detail unless we're generating HTML (those probably don't have a user watching)
         // and not already logging fine details (to keep from obfuscating those)
 
-        boolean render = config.isHtmlGenerationEnabled();
-        ProgressListener progressListener = new ConsoleProgressListener(render, commandLineArguments);
-
         // if -all(evaluteAll) or -schemas given then analyzeMultipleSchemas
         List<String> schemas = config.getSchemas();
         if (schemas != null || config.isEvaluateAllEnabled()) {
@@ -93,7 +86,7 @@ public class SchemaAnalyzer {
         } else {
             File outputDirectory = commandLineArguments.getOutputDirectory();
             Objects.requireNonNull(outputDirectory);
-            String schema = commandLineArguments.getSchema();
+            String schema = commandLineArguments.getDbmsCommandLineArguments().getSchema();
             return analyze(schema, config, outputDirectory, progressListener);
         }
     }
@@ -166,41 +159,10 @@ public class SchemaAnalyzer {
     public Database analyze(String schema, Config config, File outputDir, ProgressListener progressListener) throws SQLException, IOException {
         try {
             LOGGER.info("Starting schema analysis");
-
-            FileUtils.forceMkdir(outputDir);
-
-            String dbName = config.getDb();
-
-            String catalog = commandLineArguments.getCatalog();
-
-            DatabaseMetaData meta = sqlService.connect(config);
-
-            LOGGER.debug("supportsSchemasInTableDefinitions: {}", meta.supportsSchemasInTableDefinitions());
-            LOGGER.debug("supportsCatalogsInTableDefinitions: {}", meta.supportsCatalogsInTableDefinitions());
-
-            // set default Catalog and Schema of the connection
-            if (schema == null)
-                schema = meta.getConnection().getSchema();
-            if (catalog == null)
-                catalog = meta.getConnection().getCatalog();
-
-            SchemaMeta schemaMeta = config.getMeta() == null ? null : new SchemaMeta(config.getMeta(), dbName, schema);
-            if (config.isHtmlGenerationEnabled()) {
-                FileUtils.forceMkdir(new File(outputDir, "tables"));
-                FileUtils.forceMkdir(new File(outputDir, "diagrams/summary"));
-
-                LOGGER.info("Connected to {} - {}", meta.getDatabaseProductName(), meta.getDatabaseProductVersion());
-
-                if (schemaMeta != null && schemaMeta.getFile() != null) {
-                    LOGGER.info("Using additional metadata from {}", schemaMeta.getFile());
-                }
-            }
-
             //
             // create our representation of the database
             //
-            Database db = new Database(config, meta, dbName, catalog, schema, schemaMeta, progressListener);
-            databaseService.gatheringSchemaDetails(config, db, progressListener);
+            Database db = inputSource.createDatabaseModel();
 
             long duration = progressListener.startedGraphingSummaries();
 
@@ -208,12 +170,15 @@ public class SchemaAnalyzer {
             tables.addAll(db.getViews());
 
             if (tables.isEmpty()) {
-                dumpNoTablesMessage(schema, config.getUser(), meta, config.getTableInclusions() != null);
                 if (!config.isOneOfMultipleSchemas()) // don't bail if we're doing the whole enchilada
                     throw new EmptySchemaException();
+                return db;
             }
 
+            FileUtils.forceMkdir(outputDir);
             if (config.isHtmlGenerationEnabled()) {
+                FileUtils.forceMkdir(new File(outputDir, "tables"));
+                FileUtils.forceMkdir(new File(outputDir, "diagrams/summary"));
                 generateHtmlDoc(config, progressListener, outputDir, db, duration, tables);
             }
 
@@ -437,56 +402,6 @@ public class SchemaAnalyzer {
             LOGGER.debug("Writing details of {}", table.getName());
 
             tableFormatter.write(db, table, outputDir, stats);
-        }
-    }
-
-    /**
-     * dumpNoDataMessage
-     *
-     * @param schema String
-     * @param user   String
-     * @param meta   DatabaseMetaData
-     */
-    private static void dumpNoTablesMessage(String schema, String user, DatabaseMetaData meta, boolean specifiedInclusions) throws SQLException {
-        LOGGER.warn("No tables or views were found in schema '{}'.", schema);
-        List<String> schemas;
-        try {
-            schemas = DbAnalyzer.getSchemas(meta);
-        } catch (SQLException | RuntimeException exc) {
-            LOGGER.error("The user you specified '{}' might not have rights to read the database metadata.", user, exc);
-            return;
-        }
-
-        if (Objects.isNull(schemas)) {
-            LOGGER.error("Failed to retrieve any schemas");
-            return;
-        } else if (schemas.contains(schema)) {
-            LOGGER.error(
-                    "The schema exists in the database, but the user you specified '{}'" +
-                    "might not have rights to read its contents.",
-                    user);
-            if (specifiedInclusions) {
-                LOGGER.error(
-                        "Another possibility is that the regular expression that you specified " +
-                        "for what to include (via -i) didn't match any tables.");
-            }
-        } else {
-            LOGGER.error(
-                    "The schema '{}' could not be read/found, schema is specified using the -s option." +
-                    "Make sure user '{}' has the correct privileges to read the schema." +
-                    "Also not that schema names are usually case sensitive.",
-                    schema, user);
-            LOGGER.info(
-                    "Available schemas(Some of these may be user or system schemas):" +
-                    System.lineSeparator() + "{}",
-                    schemas.stream().collect(Collectors.joining(System.lineSeparator())));
-            List<String> populatedSchemas = DbAnalyzer.getPopulatedSchemas(meta);
-            if (populatedSchemas.isEmpty()) {
-                LOGGER.error("Unable to determine if any of the schemas contain tables/views");
-            } else {
-                LOGGER.info("Schemas with tables/views visible to '{}':" + System.lineSeparator() + "{}",
-                        populatedSchemas.stream().collect(Collectors.joining(System.lineSeparator())));
-            }
         }
     }
 }
