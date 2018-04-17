@@ -392,7 +392,6 @@ public class SchemaAnalyzer {
         LOGGER.info("Writing/diagramming details");
 
         generateTables(progressListener, outputDir, db, tables, stats);
-        HtmlComponentPage.getInstance().write(db, tables, outputDir);
     }
 
     /**
