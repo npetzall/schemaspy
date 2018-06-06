@@ -19,11 +19,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.schemaspy.view;
+package org.schemaspy.output.html.mustache.pages;
 
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ProgressListener;
 import org.schemaspy.model.TableColumn;
+import org.schemaspy.output.html.mustache.MustacheWriter;
+import org.schemaspy.output.html.mustache.dto.MustacheTableDiagram;
 import org.schemaspy.util.DiagramUtil;
 import org.schemaspy.util.Dot;
 

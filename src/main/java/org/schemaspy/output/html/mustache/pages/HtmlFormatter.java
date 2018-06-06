@@ -19,23 +19,20 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.schemaspy.view;
+package org.schemaspy.output.html.mustache.pages;
 
-import com.github.mustachejava.util.HtmlEscaper;
 import org.schemaspy.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
-import java.net.URLEncoder;
 
 /**
  * @author John Currier
  * @author Rafal Kasa
  * @author Thomas Traude
  * @author Daniel Watt
+ * @author Nils Petzaell
  */
 public class HtmlFormatter {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -61,25 +58,4 @@ public class HtmlFormatter {
         return Config.getInstance().isLogoEnabled();
     }
 
-
-    /**
-     * HTML escape the specified string
-     *
-     * @param string
-     * @return
-     */
-    static String escapeHtml(String string) {
-        StringWriter writer = new StringWriter();
-        HtmlEscaper.escape(string, writer);
-        return writer.toString();
-    }
-
-    static String urlEncodeLink(String string) {
-        try {
-            return URLEncoder.encode(string, Config.DOT_CHARSET).replace("+","%20");
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.info("Error trying to urlEncode string [{}] with encoding [" + Config.DOT_CHARSET + "]", string);
-            return string;
-        }
-    }
 }

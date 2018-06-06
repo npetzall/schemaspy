@@ -27,10 +27,11 @@ import org.schemaspy.DbAnalyzer;
 import org.schemaspy.model.*;
 import org.schemaspy.output.html.HtmlProducer;
 import org.schemaspy.output.html.HtmlProducerException;
+import org.schemaspy.output.html.mustache.pages.*;
 import org.schemaspy.util.Dot;
 import org.schemaspy.util.LineWriter;
 import org.schemaspy.util.ResourceWriter;
-import org.schemaspy.view.*;
+import org.schemaspy.view.DotFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -200,7 +201,7 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
         }
     }
 
-    private void generateTables(ProgressListener progressListener, File outputDir, Database database, Collection<Table> tables, WriteStats stats) throws IOException {
+    private static void generateTables(ProgressListener progressListener, File outputDir, Database database, Collection<Table> tables, WriteStats stats) throws IOException {
         HtmlTablePage tableFormatter = HtmlTablePage.getInstance();
         for (Table table : tables) {
             progressListener.graphingDetailsProgressed(table);

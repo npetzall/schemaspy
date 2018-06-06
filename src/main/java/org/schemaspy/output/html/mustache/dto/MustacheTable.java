@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2016 Rafal Kasa
- * Copyright (C) 2017 Ismail Simsek
  *
  * This file is part of SchemaSpy.
  *
@@ -17,39 +16,46 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with SchemaSpy. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.schemaspy.view;
+package org.schemaspy.output.html.mustache.dto;
 
-import org.schemaspy.model.Schema;
-import org.schemaspy.util.Markdown;
+import org.schemaspy.model.Table;
 
 /**
- * Created by rkasa on 2016-12-17.
+ * Created by rkasa on 2016-04-01.
  *
  * @author Rafal Kasa
- * @author Ismail Simsek
  */
-public class MustacheSchema {
-    String name;
-    String comment;
+public class MustacheTable {
+    private Table table;
+    private String diagramName;
+    private String comments;
 
-    public MustacheSchema(Schema schema,String rootPath) {
-        this.name = schema.getName();
-        this.comment = Markdown.toHtml(schema.getComment(), rootPath); 
+    public MustacheTable(Table table, String imageFile) {
+        this.table = table;
+        diagramName = imageFile;
     }
 
-    public String getName() {
-        return name;
+    public String getComments() {
+        return comments;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
-	public String getComment() {
-		return comment;
-	}
+    public Table getTable() {
+        return table;
+    }
 
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
+    public void setTable(Table table) {
+        this.table = table;
+    }
+
+    public String getDiagramName() {
+        return diagramName;
+    }
+
+    public void setDiagramName(String diagramName) {
+        this.diagramName = diagramName;
+    }
 }

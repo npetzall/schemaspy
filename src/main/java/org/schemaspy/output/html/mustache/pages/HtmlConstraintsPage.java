@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2011 John Currier
+ * Copyright (C) 2004 - 2010 John Currier
+ * Copyright (C) 2016 Rafal Kasa
+ * Copyright (C) 2016 Ismail Simsek
  * Copyright (C) 2017 Daniel Watt
  *
  * This file is a part of the SchemaSpy project (http://schemaspy.org).
@@ -18,33 +20,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.schemaspy.view;
+package org.schemaspy.output.html.mustache.pages;
 
 import org.schemaspy.Config;
 import org.schemaspy.model.Database;
-import org.schemaspy.model.Routine;
+import org.schemaspy.model.ForeignKeyConstraint;
+import org.schemaspy.model.Table;
+import org.schemaspy.output.html.mustache.MustacheWriter;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.TreeSet;
+import java.util.List;
 
 /**
- * The page that lists all of the routines (stored procedures and functions)
- * in the schema.
+ * The page that lists all of the constraints in the schema
  *
  * @author John Currier
+ * @author Rafal Kasa
+ * @author Ismail Simsek
+ * @author Thomas Traude
  * @author Daniel Watt
  * @author Nils Petzaell
  */
-public class HtmlRoutinesPage extends HtmlFormatter {
-    private static HtmlRoutinesPage instance = new HtmlRoutinesPage();
+public class HtmlConstraintsPage extends HtmlFormatter {
+    private static HtmlConstraintsPage instance = new HtmlConstraintsPage();
 
     /**
      * Singleton: Don't allow instantiation
      */
-    private HtmlRoutinesPage() {
+    private HtmlConstraintsPage() {
     }
 
     /**
@@ -52,27 +58,17 @@ public class HtmlRoutinesPage extends HtmlFormatter {
      *
      * @return the singleton instance
      */
-    public static HtmlRoutinesPage getInstance() {
+    public static HtmlConstraintsPage getInstance() {
         return instance;
     }
 
-    public void write(Database db, File outputDir) throws IOException {
-        Collection<Routine> routines = new TreeSet<Routine>(db.getRoutines());
-
+    public void write(Database database, List<ForeignKeyConstraint> constraints, Collection<Table> tables, File outputDir) throws IOException {
         HashMap<String, Object> scopes = new HashMap<String, Object>();
-        scopes.put("routines", routines);
+        scopes.put("constraints", constraints);
+        scopes.put("tables", tables);
         scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
 
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
-        mw.write("routines.html", "routines.html", "routines.js");
-
-        for (Routine routine : routines) {
-            writeRoutineFile(db, routine, outputDir);
-        }
+        MustacheWriter mw = new MustacheWriter( outputDir, scopes, getPathToRoot(), database.getName(), false);
+        mw.write("constraint.html", "constraints.html", "constraint.js");
     }
-
-    private void writeRoutineFile(Database db, Routine routine, File outputDir) {
-        HtmlRoutinePage.getInstance().write(db,routine,outputDir);
-    }
-
 }

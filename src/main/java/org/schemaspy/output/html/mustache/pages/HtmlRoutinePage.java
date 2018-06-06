@@ -16,10 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with SchemaSpy. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.schemaspy.view;
+package org.schemaspy.output.html.mustache.pages;
 
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Routine;
+import org.schemaspy.output.html.mustache.MustacheWriter;
 
 import java.io.File;
 import java.util.HashMap;

@@ -26,6 +26,7 @@ import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
+import org.schemaspy.output.html.mustache.WriteStats;
 import org.schemaspy.util.Dot;
 import org.schemaspy.util.LineWriter;
 import org.schemaspy.view.DotNode.DotNodeConfig;

@@ -23,6 +23,7 @@ package org.schemaspy.view;
 
 import org.schemaspy.Config;
 import org.schemaspy.model.InvalidConfigurationException;
+import org.schemaspy.output.html.mustache.MustacheWriter;
 import org.schemaspy.util.LineWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

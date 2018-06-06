@@ -21,14 +21,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.schemaspy.view;
+package org.schemaspy.output.html.mustache.pages;
 
 import org.schemaspy.Config;
 import org.schemaspy.model.*;
+import org.schemaspy.output.html.mustache.MustacheWriter;
+import org.schemaspy.output.html.mustache.SqlAnalyzer;
+import org.schemaspy.output.html.mustache.WriteStats;
+import org.schemaspy.output.html.mustache.dto.MustacheTableColumn;
+import org.schemaspy.output.html.mustache.dto.MustacheTableDiagram;
+import org.schemaspy.output.html.mustache.dto.MustacheTableIndex;
 import org.schemaspy.util.DiagramUtil;
 import org.schemaspy.util.Dot;
 import org.schemaspy.util.LineWriter;
 import org.schemaspy.util.Markdown;
+import org.schemaspy.view.DotFormatter;
 
 import java.io.File;
 import java.io.IOException;

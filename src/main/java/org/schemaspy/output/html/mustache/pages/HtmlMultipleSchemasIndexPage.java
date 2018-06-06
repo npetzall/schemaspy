@@ -19,7 +19,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.schemaspy.view;
+package org.schemaspy.output.html.mustache.pages;
+
+import org.schemaspy.output.html.mustache.MustacheWriter;
+import org.schemaspy.output.html.mustache.dto.MustacheCatalog;
+import org.schemaspy.output.html.mustache.dto.MustacheSchema;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +60,7 @@ public class HtmlMultipleSchemasIndexPage extends HtmlFormatter {
     }
 
 
-    public void write(File outputDir, String dbName,MustacheCatalog catalog, List<MustacheSchema> schemas, DatabaseMetaData meta) throws IOException {
+    public void write(File outputDir, String dbName, MustacheCatalog catalog, List<MustacheSchema> schemas, DatabaseMetaData meta) throws IOException {
 
         String connectTime = new SimpleDateFormat("EEE MMM dd HH:mm z yyyy").format(new Date());
 

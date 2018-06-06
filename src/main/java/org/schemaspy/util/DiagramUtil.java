@@ -19,7 +19,7 @@
  */
 package org.schemaspy.util;
 
-import org.schemaspy.view.MustacheTableDiagram;
+import org.schemaspy.output.html.mustache.dto.MustacheTableDiagram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

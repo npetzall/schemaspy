@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.schemaspy.output.html.mustache.MustacheWriter;
 
 import java.io.File;
 import java.io.IOException;
