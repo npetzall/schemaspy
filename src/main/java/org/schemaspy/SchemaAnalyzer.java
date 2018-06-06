@@ -33,6 +33,8 @@ import org.schemaspy.model.*;
 import org.schemaspy.model.xml.SchemaMeta;
 import org.schemaspy.output.OutputException;
 import org.schemaspy.output.OutputProducer;
+import org.schemaspy.output.html.HtmlProducer;
+import org.schemaspy.output.html.mustache.HtmlProducerUsingMustache;
 import org.schemaspy.output.xml.dom.XmlProducerUsingDOM;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
@@ -211,8 +213,6 @@ public class SchemaAnalyzer {
             Database db = new Database(meta, dbName, catalog, schema, schemaMeta);
             databaseService.gatheringSchemaDetails(config, db, progressListener);
 
-            long duration = progressListener.startedGraphingSummaries();
-
             Collection<Table> tables = new ArrayList<>(db.getTables());
             tables.addAll(db.getViews());
 
@@ -220,10 +220,17 @@ public class SchemaAnalyzer {
                 dumpNoTablesMessage(schema, config.getUser(), meta, config.getTableInclusions() != null);
                 if (!config.isOneOfMultipleSchemas()) // don't bail if we're doing the whole enchilada
                     throw new EmptySchemaException();
+                return db;
             }
 
+            long duration = progressListener.startedGraphingSummaries();
+
+            LOGGER.info("Gathered schema details in {} seconds", duration / 1000);
+            LOGGER.info("Writing/graphing summary");
+
             if (config.isHtmlGenerationEnabled()) {
-                generateHtmlDoc(config, progressListener, outputDir, db, duration, tables);
+                HtmlProducer htmlOutputProducer = new HtmlProducerUsingMustache(progressListener, config);
+                htmlOutputProducer.generate(db, outputDir);
             }
 
             outputProducers.forEach(
@@ -289,115 +296,6 @@ public class SchemaAnalyzer {
         }
     }
 
-    private void generateHtmlDoc(Config config, ProgressListener progressListener, File outputDir, Database db, long duration, Collection<Table> tables) throws IOException {
-        LineWriter out;
-        LOGGER.info("Gathered schema details in {} seconds", duration / 1000);
-        LOGGER.info("Writing/graphing summary");
-
-        prepareLayoutFiles(outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        boolean showDetailedTables = tables.size() <= config.getMaxDetailedTables();
-        final boolean includeImpliedConstraints = config.isImpliedConstraintsEnabled();
-
-        // if evaluating a 'ruby on rails-based' database then connect the columns
-        // based on RoR conventions
-        // note that this is done before 'hasRealRelationships' gets evaluated so
-        // we get a relationships ER diagram
-        if (config.isRailsEnabled())
-            DbAnalyzer.getRailsConstraints(db.getTablesByName());
-
-        File summaryDir = new File(outputDir, "diagrams/summary");
-
-        // generate the compact form of the relationships .dot file
-        String dotBaseFilespec = "relationships";
-        out = new LineWriter(new File(summaryDir, dotBaseFilespec + ".real.compact.dot"), Config.DOT_CHARSET);
-        WriteStats stats = new WriteStats(tables);
-        DotFormatter.getInstance().writeRealRelationships(db, tables, true, showDetailedTables, stats, out, outputDir);
-        boolean hasRealRelationships = stats.getNumTablesWritten() > 0 || stats.getNumViewsWritten() > 0;
-        out.close();
-
-        if (hasRealRelationships) {
-            // real relationships exist so generate the 'big' form of the relationships .dot file
-            progressListener.graphingSummaryProgressed();
-            out = new LineWriter(new File(summaryDir, dotBaseFilespec + ".real.large.dot"), Config.DOT_CHARSET);
-            DotFormatter.getInstance().writeRealRelationships(db, tables, false, showDetailedTables, stats, out, outputDir);
-            out.close();
-        }
-
-        // getting implied constraints has a side-effect of associating the parent/child tables, so don't do it
-        // here unless they want that behavior
-        List<ImpliedForeignKeyConstraint> impliedConstraints = new ArrayList();
-        if (includeImpliedConstraints)
-            impliedConstraints.addAll(DbAnalyzer.getImpliedConstraints(tables));
-
-        List<Table> orphans = DbAnalyzer.getOrphans(tables);
-        config.setHasOrphans(!orphans.isEmpty() && Dot.getInstance().isValid());
-        config.setHasRoutines(!db.getRoutines().isEmpty());
-
-        progressListener.graphingSummaryProgressed();
-
-        File impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.compact.dot");
-        out = new LineWriter(impliedDotFile, Config.DOT_CHARSET);
-        boolean hasImplied = DotFormatter.getInstance().writeAllRelationships(db, tables, true, showDetailedTables, stats, out, outputDir);
-
-        Set<TableColumn> excludedColumns = stats.getExcludedColumns();
-        out.close();
-        if (hasImplied) {
-            impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.large.dot");
-            out = new LineWriter(impliedDotFile, Config.DOT_CHARSET);
-            DotFormatter.getInstance().writeAllRelationships(db, tables, false, showDetailedTables, stats, out, outputDir);
-            out.close();
-        } else {
-            Files.deleteIfExists(impliedDotFile.toPath());
-        }
-
-        HtmlRelationshipsPage.getInstance().write(db, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, excludedColumns,
-                progressListener, outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        File orphansDir = new File(outputDir, "diagrams/orphans");
-        FileUtils.forceMkdir(orphansDir);
-        HtmlOrphansPage.getInstance().write(db, orphans, orphansDir, outputDir);
-        out.close();
-
-        progressListener.graphingSummaryProgressed();
-
-        HtmlMainIndexPage.getInstance().write(db, tables, impliedConstraints, outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        List<ForeignKeyConstraint> constraints = DbAnalyzer.getForeignKeyConstraints(tables);
-        HtmlConstraintsPage constraintIndexFormatter = HtmlConstraintsPage.getInstance();
-        constraintIndexFormatter.write(db, constraints, tables, outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        HtmlAnomaliesPage.getInstance().write(db, tables, impliedConstraints, outputDir);
-
-        progressListener.graphingSummaryProgressed();
-
-        for (HtmlColumnsPage.ColumnInfo columnInfo : HtmlColumnsPage.getInstance().getColumnInfos().values()) {
-            HtmlColumnsPage.getInstance().write(db, tables, columnInfo, outputDir);
-        }
-
-        progressListener.graphingSummaryProgressed();
-
-        HtmlRoutinesPage.getInstance().write(db, outputDir);
-
-        // create detailed diagrams
-
-        duration = progressListener.startedGraphingDetails();
-
-        LOGGER.info("Completed summary in {} seconds", duration / 1000);
-        LOGGER.info("Writing/diagramming details");
-
-        generateTables(progressListener, outputDir, db, tables, stats);
-        HtmlComponentPage.getInstance().write(db, tables, outputDir);
-    }
-
     /**
      * This method is responsible to copy layout folder to destination directory and not copy template .html files
      *
@@ -437,16 +335,6 @@ public class SchemaAnalyzer {
 
         DbDriverLoader driverLoader = new DbDriverLoader();
         return driverLoader.getConnection(config, urlBuilder.build(), driverClass, driverPath);
-    }
-
-    private void generateTables(ProgressListener progressListener, File outputDir, Database db, Collection<Table> tables, WriteStats stats) throws IOException {
-        HtmlTablePage tableFormatter = HtmlTablePage.getInstance();
-        for (Table table : tables) {
-            progressListener.graphingDetailsProgressed(table);
-            LOGGER.debug("Writing details of {}", table.getName());
-
-            tableFormatter.write(db, table, outputDir, stats);
-        }
     }
 
     /**
