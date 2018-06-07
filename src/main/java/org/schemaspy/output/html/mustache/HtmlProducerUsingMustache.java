@@ -22,7 +22,6 @@ package org.schemaspy.output.html.mustache;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.schemaspy.Config;
 import org.schemaspy.DbAnalyzer;
 import org.schemaspy.model.*;
 import org.schemaspy.output.html.HtmlConfig;
@@ -41,6 +40,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -100,7 +100,7 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
             // generate the compact form of the relationships .dot file
             String dotBaseFilespec = "relationships";
             WriteStats stats = new WriteStats(tables);
-            try (LineWriter out = new LineWriter(new File(summaryDir, dotBaseFilespec + ".real.compact.dot"), Config.DOT_CHARSET)) {
+            try (LineWriter out = new LineWriter(new File(summaryDir, dotBaseFilespec + ".real.compact.dot"), StandardCharsets.UTF_8.name())) {
                 DotFormatter.getInstance().writeRealRelationships(database, tables, true, showDetailedTables, stats, out, outputDir);
             }
             boolean hasRealRelationships = stats.getNumTablesWritten() > 0 || stats.getNumViewsWritten() > 0;
@@ -108,7 +108,7 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
             if (hasRealRelationships) {
                 // real relationships exist so generate the 'big' form of the relationships .dot file
                 progressListener.graphingSummaryProgressed();
-                try (LineWriter out = new LineWriter(new File(summaryDir, dotBaseFilespec + ".real.large.dot"), Config.DOT_CHARSET)) {
+                try (LineWriter out = new LineWriter(new File(summaryDir, dotBaseFilespec + ".real.large.dot"), StandardCharsets.UTF_8.name())) {
                     DotFormatter.getInstance().writeRealRelationships(database, tables, false, showDetailedTables, stats, out, outputDir);
                 }
             }
@@ -127,13 +127,13 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
 
             File impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.compact.dot");
             boolean hasImplied;
-            try (LineWriter out = new LineWriter(impliedDotFile, Config.DOT_CHARSET)) {
+            try (LineWriter out = new LineWriter(impliedDotFile, StandardCharsets.UTF_8.name())) {
                 hasImplied = DotFormatter.getInstance().writeAllRelationships(database, tables, true, showDetailedTables, stats, out, outputDir);
             }
             Set<TableColumn> excludedColumns = stats.getExcludedColumns();
             if (hasImplied) {
                 impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.large.dot");
-                try (LineWriter out = new LineWriter(impliedDotFile, Config.DOT_CHARSET)) {
+                try (LineWriter out = new LineWriter(impliedDotFile, StandardCharsets.UTF_8.name())) {
                     DotFormatter.getInstance().writeAllRelationships(database, tables, false, showDetailedTables, stats, out, outputDir);
                 }
             } else {
