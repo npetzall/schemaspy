@@ -23,11 +23,11 @@
  */
 package org.schemaspy.output.html.mustache.pages;
 
-import org.schemaspy.Config;
 import org.schemaspy.DbAnalyzer;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
+import org.schemaspy.output.html.HtmlConfig;
 import org.schemaspy.output.html.mustache.MustacheWriter;
 import org.schemaspy.output.html.mustache.dto.MustacheCatalog;
 import org.schemaspy.output.html.mustache.dto.MustacheSchema;
@@ -48,36 +48,22 @@ import java.util.*;
  * @author Nils Petzaell
  */
 public class HtmlMainIndexPage extends HtmlFormatter {
-    private static HtmlMainIndexPage instance = new HtmlMainIndexPage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlMainIndexPage() {
-    }
+    private final HtmlConfig htmlConfig;
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlMainIndexPage getInstance() {
-        return instance;
+    public HtmlMainIndexPage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
     public void write(Database database, Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints, File outputDir) throws IOException {
-        Comparator<Table> sorter = new Comparator<Table>() {
-            public int compare(Table table1, Table table2) {
-                return table1.compareTo(table2);
-            }
-        };
+        Comparator<Table> sorter = Comparator.naturalOrder();
 
         Collection<Table> remotes = database.getRemoteTables();
         // sort tables and remotes by name
-        Collection<Table> tmp = new TreeSet<Table>(sorter);
+        Collection<Table> tmp = new TreeSet<>(sorter);
         tmp.addAll(tables);
         tables = tmp;
-        tmp = new TreeSet<Table>(sorter);
+        tmp = new TreeSet<>(sorter);
         tmp.addAll(remotes);
 
         String databaseName = getDatabaseName(database);
@@ -100,7 +86,7 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         long routinesAmount = database.getRoutines().size();
         long anomaliesAmount = getAllAnomaliesAmount(tables, impliedConstraints);
 
-        HashMap<String, Object> scopes = new HashMap<String, Object>();
+        HashMap<String, Object> scopes = new HashMap<>();
         scopes.put("tablesAmount", tablesAmount);
         scopes.put("viewsAmount", viewsAmount);
         scopes.put("columnsAmount", columnsAmount);
@@ -111,8 +97,8 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         scopes.put("tables", mustacheTables);
         scopes.put("database", database);
         scopes.put("databaseName", databaseName);
-        scopes.put("description", Config.getInstance().getDescription());
-        scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
+        scopes.put("description", htmlConfig.getDescription());
+        scopes.put("paginationEnabled", htmlConfig.isPaginationEnabled());
         scopes.put("schema", new MustacheSchema(database.getSchema(), ""));
         scopes.put("catalog", new MustacheCatalog(database.getCatalog(), ""));
         
@@ -120,18 +106,18 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         mw.write("main.html", "index.html", "main.js");
     }
 
-    private long getAllAnomaliesAmount(Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints) {
+    private static long getAllAnomaliesAmount(Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints) {
         long anomalies = 0;
-        anomalies += DbAnalyzer.getTablesWithoutIndexes(new HashSet<Table>(tables)).size();
+        anomalies += DbAnalyzer.getTablesWithoutIndexes(new HashSet<>(tables)).size();
         anomalies += impliedConstraints.stream().filter(c -> !c.getChildTable().isView()).count();
         anomalies += DbAnalyzer.getTablesWithOneColumn(tables).stream().filter(t -> !t.isView()).count();
         anomalies += DbAnalyzer.getTablesWithIncrementingColumnNames(tables).stream().filter(t -> !t.isView()).count();
-        anomalies += DbAnalyzer.getDefaultNullStringColumns(new HashSet<Table>(tables)).size();
+        anomalies += DbAnalyzer.getDefaultNullStringColumns(new HashSet<>(tables)).size();
 
         return anomalies;
     }
 
-    private String getDatabaseName(Database db) {
+    private static String getDatabaseName(Database db) {
         StringBuilder description = new StringBuilder();
 
         description.append(db.getName());

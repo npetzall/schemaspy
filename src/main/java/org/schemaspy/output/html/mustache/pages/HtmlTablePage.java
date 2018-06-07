@@ -23,8 +23,8 @@
  */
 package org.schemaspy.output.html.mustache.pages;
 
-import org.schemaspy.Config;
 import org.schemaspy.model.*;
+import org.schemaspy.output.html.HtmlConfig;
 import org.schemaspy.output.html.mustache.MustacheWriter;
 import org.schemaspy.output.html.mustache.SqlAnalyzer;
 import org.schemaspy.output.html.mustache.WriteStats;
@@ -36,9 +36,13 @@ import org.schemaspy.util.Dot;
 import org.schemaspy.util.LineWriter;
 import org.schemaspy.util.Markdown;
 import org.schemaspy.view.DotFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -53,21 +57,13 @@ import java.util.*;
  * @author Nils Petzaell
  */
 public class HtmlTablePage extends HtmlFormatter {
-    private static final HtmlTablePage instance = new HtmlTablePage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlTablePage() {
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlTablePage getInstance() {
-        return instance;
+    private final HtmlConfig htmlConfig;
+
+    public HtmlTablePage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
     public WriteStats write(Database db, Table table, File outputDir, WriteStats stats) throws IOException {
@@ -113,13 +109,13 @@ public class HtmlTablePage extends HtmlFormatter {
         scopes.put("diagramExists", DiagramUtil.diagramExists(diagrams));
         scopes.put("indexExists", indexExists(table, indexedColumns));
         scopes.put("definitionExists", definitionExists(table));
-        System.out.println("Table -> "+table.getName());
+        LOGGER.debug("Writing table page -> {}", table.getName());
         MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
         mw.write("tables/table.html", Markdown.pagePath(table.getName()), "table.js");
     }
 
 
-    private Set<Table> sqlReferences(Table table, Database db) {
+    private static Set<Table> sqlReferences(Table table, Database db) {
         Set<Table> references = null;
 
         if (table.isView() && table.getViewDefinition() != null) {
@@ -129,11 +125,11 @@ public class HtmlTablePage extends HtmlFormatter {
         return references;
     }
 
-    private String sqlCode(Table table) {
+    private static String sqlCode(Table table) {
         return table.getViewDefinition() != null ? table.getViewDefinition().trim() : "";
     }
 
-    private Object indexExists(Table table, Set<MustacheTableIndex> indexedColumns) {
+    private static Object indexExists(Table table, Set<MustacheTableIndex> indexedColumns) {
         Object exists = null;
         if (!table.isView() && !indexedColumns.isEmpty()) {
             exists = new Object();
@@ -141,7 +137,7 @@ public class HtmlTablePage extends HtmlFormatter {
         return exists;
     }
 
-    private Object definitionExists(Table table) {
+    private static Object definitionExists(Table table) {
         Object exists = null;
         if (table.isView() && table.getViewDefinition() != null) {
             exists = new Object();
@@ -165,7 +161,7 @@ public class HtmlTablePage extends HtmlFormatter {
      */
     private boolean generateDots(Table table, File diagramDir, WriteStats stats, File outputDir) throws IOException {
         Dot dot = Dot.getInstance();
-        String extension = dot == null ? Config.getInstance().getImageFormat() : dot.getFormat();
+        String extension = dot == null ? htmlConfig.getImageFormat() : dot.getFormat();
 
         File oneDegreeDotFile = new File(diagramDir, table.getName() + ".1degree.dot");
         File oneDegreeDiagramFile = new File(diagramDir, table.getName() + ".1degree." + extension);
@@ -192,12 +188,12 @@ public class HtmlTablePage extends HtmlFormatter {
             Set<ForeignKeyConstraint> impliedConstraints;
 
             DotFormatter formatter = DotFormatter.getInstance();
-            LineWriter dotOut = new LineWriter(oneDegreeDotFile, Config.DOT_CHARSET);
+            LineWriter dotOut = new LineWriter(oneDegreeDotFile, StandardCharsets.UTF_8.name());
             WriteStats oneStats = new WriteStats(stats);
             formatter.writeRealRelationships(table, false, oneStats, dotOut, outputDir);
             dotOut.close();
 
-            dotOut = new LineWriter(twoDegreesDotFile, Config.DOT_CHARSET);
+            dotOut = new LineWriter(twoDegreesDotFile, StandardCharsets.UTF_8.name());
             WriteStats twoStats = new WriteStats(stats);
             impliedConstraints = formatter.writeRealRelationships(table, true, twoStats, dotOut, outputDir);
             dotOut.close();
@@ -207,11 +203,11 @@ public class HtmlTablePage extends HtmlFormatter {
             }
 
             if (!impliedConstraints.isEmpty()) {
-                dotOut = new LineWriter(oneImpliedDotFile, Config.DOT_CHARSET);
+                dotOut = new LineWriter(oneImpliedDotFile, StandardCharsets.UTF_8.name());
                 formatter.writeAllRelationships(table, false, stats, dotOut, outputDir);
                 dotOut.close();
 
-                dotOut = new LineWriter(twoImpliedDotFile, Config.DOT_CHARSET);
+                dotOut = new LineWriter(twoImpliedDotFile, StandardCharsets.UTF_8.name());
                 formatter.writeAllRelationships(table, true, stats, dotOut, outputDir);
                 dotOut.close();
                 return true;
@@ -227,12 +223,8 @@ public class HtmlTablePage extends HtmlFormatter {
         File diagramsDir = new File(outputDir, "diagrams");
         generateDots(table, diagramsDir, stats, outputDir);
 
-        if (table.getMaxChildren() + table.getMaxParents() > 0) {
-            if (HtmlTableDiagrammer.getInstance().write(table, diagramsDir, diagrams)) {
-                //writeExcludedColumns(stats.getExcludedColumns(), table, html);
-            } else {
-                graphviz = null;
-            }
+        if (table.getMaxChildren() + table.getMaxParents() > 0 && !HtmlTableDiagrammer.getInstance().write(table, diagramsDir, diagrams)) {
+            graphviz = null;
         }
 
         return graphviz;

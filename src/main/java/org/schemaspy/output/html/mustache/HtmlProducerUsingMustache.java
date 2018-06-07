@@ -55,19 +55,26 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
     private final ProgressListener progressListener;
     private final HtmlConfig htmlConfig;
 
-    private HtmlRelationshipsPage htmlRelationshipsPage = HtmlRelationshipsPage.getInstance();
-    private HtmlOrphansPage htmlOrphansPage = HtmlOrphansPage.getInstance();
-    private HtmlMainIndexPage htmlMainIndexPage = HtmlMainIndexPage.getInstance();
-    private HtmlConstraintsPage htmlConstraintsPage = HtmlConstraintsPage.getInstance();
-    private HtmlAnomaliesPage htmlAnomaliesPage = HtmlAnomaliesPage.getInstance();
-    private HtmlColumnsPage htmlColumnsPage = HtmlColumnsPage.getInstance();
-    private HtmlRoutinesPage htmlRoutinesPage = HtmlRoutinesPage.getInstance();
-    private HtmlTablePage htmlTablePage = HtmlTablePage.getInstance();
-    private HtmlComponentPage htmlComponentPage = HtmlComponentPage.getInstance();
+    private HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage();
+    private HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage();
+    private HtmlMainIndexPage htmlMainIndexPage;
+    private HtmlConstraintsPage htmlConstraintsPage;
+    private HtmlAnomaliesPage htmlAnomaliesPage;
+    private HtmlColumnsPage htmlColumnsPage;
+    private HtmlRoutinesPage htmlRoutinesPage;
+    private HtmlRoutinePage htmlRoutinePage = new HtmlRoutinePage();
+    private HtmlTablePage htmlTablePage;
+    private HtmlComponentPage htmlComponentPage = new HtmlComponentPage();
 
     public HtmlProducerUsingMustache(HtmlConfig htmlConfig, ProgressListener progressListener) {
         this.htmlConfig = htmlConfig;
         this.progressListener = progressListener;
+        htmlMainIndexPage = new HtmlMainIndexPage(htmlConfig);
+        htmlConstraintsPage = new HtmlConstraintsPage(htmlConfig);
+        htmlAnomaliesPage = new HtmlAnomaliesPage(htmlConfig);
+        htmlColumnsPage = new HtmlColumnsPage(htmlConfig);
+        htmlRoutinesPage = new HtmlRoutinesPage(htmlConfig);
+        htmlTablePage = new HtmlTablePage(htmlConfig);
     }
 
     @Override
@@ -130,7 +137,6 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
             try (LineWriter out = new LineWriter(impliedDotFile, StandardCharsets.UTF_8.name())) {
                 hasImplied = DotFormatter.getInstance().writeAllRelationships(database, tables, true, showDetailedTables, stats, out, outputDir);
             }
-            Set<TableColumn> excludedColumns = stats.getExcludedColumns();
             if (hasImplied) {
                 impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.large.dot");
                 try (LineWriter out = new LineWriter(impliedDotFile, StandardCharsets.UTF_8.name())) {
@@ -140,7 +146,7 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
                 Files.deleteIfExists(impliedDotFile.toPath());
             }
 
-            htmlRelationshipsPage.write(database, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, excludedColumns,
+            htmlRelationshipsPage.write(database, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied,
                     progressListener, outputDir);
 
             progressListener.graphingSummaryProgressed();
@@ -164,13 +170,15 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
 
             progressListener.graphingSummaryProgressed();
 
-            for (HtmlColumnsPage.ColumnInfo columnInfo : htmlColumnsPage.getColumnInfos().values()) {
-                htmlColumnsPage.write(database, tables, columnInfo, outputDir);
-            }
+            htmlColumnsPage.write(database, tables, outputDir);
 
             progressListener.graphingSummaryProgressed();
 
             htmlRoutinesPage.write(database, outputDir);
+
+            for (Routine routine : database.getRoutines()) {
+                htmlRoutinePage.write(database, routine, outputDir);
+            }
 
             // create detailed diagrams
 

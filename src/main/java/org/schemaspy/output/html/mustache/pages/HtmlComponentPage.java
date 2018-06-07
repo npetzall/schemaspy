@@ -27,7 +27,6 @@ import org.schemaspy.output.html.mustache.MustacheWriter;
 import org.schemaspy.output.html.mustache.dto.MustacheTable;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,24 +40,8 @@ import java.util.List;
  * @author Ismail Simsek
  */
 public class HtmlComponentPage extends HtmlFormatter {
-    private static HtmlComponentPage instance = new HtmlComponentPage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlComponentPage() {
-    }
-
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlComponentPage getInstance() {
-        return instance;
-    }
-
-    public void write(Database database, Collection<Table> tables, File outputDir) throws IOException {
+    public void write(Database database, Collection<Table> tables, File outputDir) {
         List<MustacheTable> mustacheTables = new ArrayList<>();
 
         for(Table table: tables) {
@@ -71,7 +54,7 @@ public class HtmlComponentPage extends HtmlFormatter {
             }
         }
 
-        HashMap<String, Object> scopes = new HashMap<String, Object>();
+        HashMap<String, Object> scopes = new HashMap<>();
         scopes.put("tables", mustacheTables);
         scopes.put("database", database);
 

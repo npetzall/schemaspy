@@ -21,12 +21,6 @@
  */
 package org.schemaspy.output.html.mustache.pages;
 
-import org.schemaspy.Config;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-
 /**
  * @author John Currier
  * @author Rafal Kasa
@@ -35,11 +29,8 @@ import java.lang.invoke.MethodHandles;
  * @author Nils Petzaell
  */
 public class HtmlFormatter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    protected final boolean encodeComments = Config.getInstance().isEncodeCommentsEnabled();
-    private   final boolean isMetered = Config.getInstance().isMeterEnabled();
-    protected final boolean displayNumRows = Config.getInstance().isNumRowsEnabled();
+    private static final String ROOT = "";
 
     protected HtmlFormatter() {
     }
@@ -51,11 +42,7 @@ public class HtmlFormatter {
      * @return String
      */
     protected String getPathToRoot() {
-        return "";
-    }
-
-    protected boolean sourceForgeLogoEnabled() {
-        return Config.getInstance().isLogoEnabled();
+        return ROOT;
     }
 
 }

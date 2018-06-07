@@ -28,4 +28,13 @@ public interface HtmlConfig {
     void setHasOrphans(boolean b);
 
     void setHasRoutines(boolean b);
+
+    String getDescription();
+
+    boolean isPaginationEnabled();
+
+    boolean isNumRowsEnabled();
+
+    //TODO Remove, this is config overflow from diagram production.
+    String getImageFormat();
 }

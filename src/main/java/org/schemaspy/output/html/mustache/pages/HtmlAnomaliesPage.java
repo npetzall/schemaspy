@@ -26,10 +26,10 @@ import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
+import org.schemaspy.output.html.HtmlConfig;
 import org.schemaspy.output.html.mustache.MustacheWriter;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,32 +45,27 @@ import java.util.stream.Collectors;
  * @author Ismail Simsek
  */
 public class HtmlAnomaliesPage extends HtmlFormatter {
-    private static HtmlAnomaliesPage instance = new HtmlAnomaliesPage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlAnomaliesPage() {
+    private final HtmlConfig htmlConfig;
+
+    public HtmlAnomaliesPage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlAnomaliesPage getInstance() {
-        return instance;
-    }
-
-    public void write(Database database, Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints, File outputDir) throws IOException {
-        HashMap<String, Object> scopes = new HashMap<String, Object>();
+    public void write(
+            Database database,
+            Collection<Table> tables,
+            List<? extends ForeignKeyConstraint> impliedConstraints,
+            File outputDir
+    ) {
+        HashMap<String, Object> scopes = new HashMap<>();
         List<Table> unIndexedTables = DbAnalyzer.getTablesWithoutIndexes(new HashSet<Table>(tables));
         List<ForeignKeyConstraint> impliedConstraintColumns = impliedConstraints.stream().filter(c -> !c.getChildTable().isView()).collect(Collectors.toList());
         List<Table> oneColumnTables = DbAnalyzer.getTablesWithOneColumn(tables).stream().filter(t -> !t.isView()).collect(Collectors.toList());
         List<Table> incrementingColumnNames =  DbAnalyzer.getTablesWithIncrementingColumnNames(tables).stream().filter(t -> !t.isView()).collect(Collectors.toList());
         List<TableColumn> uniqueNullables = DbAnalyzer.getDefaultNullStringColumns(new HashSet<Table>(tables));
 
-        scopes.put("displayNumRows", (displayNumRows ? new Object() : null));
+        scopes.put("displayNumRows", htmlConfig.isNumRowsEnabled());
         scopes.put("impliedConstraints", impliedConstraintColumns);
         scopes.put("unIndexedTables", unIndexedTables);
         scopes.put("oneColumnTables", oneColumnTables);

@@ -20,13 +20,12 @@
  */
 package org.schemaspy.output.html.mustache.pages;
 
-import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Routine;
+import org.schemaspy.output.html.HtmlConfig;
 import org.schemaspy.output.html.mustache.MustacheWriter;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.TreeSet;
@@ -40,40 +39,23 @@ import java.util.TreeSet;
  * @author Nils Petzaell
  */
 public class HtmlRoutinesPage extends HtmlFormatter {
-    private static HtmlRoutinesPage instance = new HtmlRoutinesPage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlRoutinesPage() {
+    private final HtmlConfig htmlConfig;
+
+    public HtmlRoutinesPage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlRoutinesPage getInstance() {
-        return instance;
-    }
+    public void write(Database db, File outputDir) {
+        Collection<Routine> routines = new TreeSet<>(db.getRoutines());
 
-    public void write(Database db, File outputDir) throws IOException {
-        Collection<Routine> routines = new TreeSet<Routine>(db.getRoutines());
-
-        HashMap<String, Object> scopes = new HashMap<String, Object>();
+        HashMap<String, Object> scopes = new HashMap<>();
         scopes.put("routines", routines);
-        scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
+        scopes.put("paginationEnabled", htmlConfig.isPaginationEnabled());
 
         MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
         mw.write("routines.html", "routines.html", "routines.js");
 
-        for (Routine routine : routines) {
-            writeRoutineFile(db, routine, outputDir);
-        }
-    }
-
-    private void writeRoutineFile(Database db, Routine routine, File outputDir) {
-        HtmlRoutinePage.getInstance().write(db,routine,outputDir);
     }
 
 }
