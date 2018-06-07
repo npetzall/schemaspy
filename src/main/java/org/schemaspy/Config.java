@@ -29,6 +29,7 @@ import org.schemaspy.cli.CommandLineArgumentParser;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.db.config.PropertiesResolver;
 import org.schemaspy.model.InvalidConfigurationException;
+import org.schemaspy.output.html.HtmlConfig;
 import org.schemaspy.util.DbSpecificConfig;
 import org.schemaspy.util.Dot;
 import org.schemaspy.util.PasswordReader;
@@ -68,7 +69,7 @@ import java.util.stream.Stream;
  * @author Nils Petzaell
  * @author Daniel Watt
  */
-public final class Config {
+public final class Config implements HtmlConfig {
     private static Config instance;
     private final List<String> options;
     private Map<String, String> dbSpecificOptions;

@@ -230,7 +230,7 @@ public class SchemaAnalyzer {
             LOGGER.info("Writing/graphing summary");
 
             if (config.isHtmlGenerationEnabled()) {
-                HtmlProducer htmlOutputProducer = new HtmlProducerUsingMustache(progressListener, config);
+                HtmlProducer htmlOutputProducer = new HtmlProducerUsingMustache(config, progressListener);
                 htmlOutputProducer.generate(db, outputDir);
             }
 

@@ -25,6 +25,7 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 import org.schemaspy.Config;
 import org.schemaspy.DbAnalyzer;
 import org.schemaspy.model.*;
+import org.schemaspy.output.html.HtmlConfig;
 import org.schemaspy.output.html.HtmlProducer;
 import org.schemaspy.output.html.HtmlProducerException;
 import org.schemaspy.output.html.mustache.pages.*;
@@ -52,11 +53,21 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ProgressListener progressListener;
-    private final Config config;
+    private final HtmlConfig htmlConfig;
 
-    public HtmlProducerUsingMustache(ProgressListener progressListener, Config config) {
+    private HtmlRelationshipsPage htmlRelationshipsPage = HtmlRelationshipsPage.getInstance();
+    private HtmlOrphansPage htmlOrphansPage = HtmlOrphansPage.getInstance();
+    private HtmlMainIndexPage htmlMainIndexPage = HtmlMainIndexPage.getInstance();
+    private HtmlConstraintsPage htmlConstraintsPage = HtmlConstraintsPage.getInstance();
+    private HtmlAnomaliesPage htmlAnomaliesPage = HtmlAnomaliesPage.getInstance();
+    private HtmlColumnsPage htmlColumnsPage = HtmlColumnsPage.getInstance();
+    private HtmlRoutinesPage htmlRoutinesPage = HtmlRoutinesPage.getInstance();
+    private HtmlTablePage htmlTablePage = HtmlTablePage.getInstance();
+    private HtmlComponentPage htmlComponentPage = HtmlComponentPage.getInstance();
+
+    public HtmlProducerUsingMustache(HtmlConfig htmlConfig, ProgressListener progressListener) {
+        this.htmlConfig = htmlConfig;
         this.progressListener = progressListener;
-        this.config = config;
     }
 
     @Override
@@ -74,14 +85,14 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
 
         progressListener.graphingSummaryProgressed();
 
-        boolean showDetailedTables = tables.size() <= config.getMaxDetailedTables();
-        final boolean includeImpliedConstraints = config.isImpliedConstraintsEnabled();
+        boolean showDetailedTables = tables.size() <= htmlConfig.getMaxDetailedTables();
+        final boolean includeImpliedConstraints = htmlConfig.isImpliedConstraintsEnabled();
 
         // if evaluating a 'ruby on rails-based' database then connect the columns
         // based on RoR conventions
         // note that this is done before 'hasRealRelationships' gets evaluated so
         // we get a relationships ER diagram
-        if (config.isRailsEnabled())
+        if (htmlConfig.isRailsEnabled())
             DbAnalyzer.getRailsConstraints(database.getTablesByName());
 
         File summaryDir = new File(outputDir, "diagrams/summary");
@@ -109,8 +120,8 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
                 impliedConstraints.addAll(DbAnalyzer.getImpliedConstraints(tables));
 
             List<Table> orphans = DbAnalyzer.getOrphans(tables);
-            config.setHasOrphans(!orphans.isEmpty() && Dot.getInstance().isValid());
-            config.setHasRoutines(!database.getRoutines().isEmpty());
+            htmlConfig.setHasOrphans(!orphans.isEmpty() && Dot.getInstance().isValid());
+            htmlConfig.setHasRoutines(!database.getRoutines().isEmpty());
 
             progressListener.graphingSummaryProgressed();
 
@@ -129,38 +140,37 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
                 Files.deleteIfExists(impliedDotFile.toPath());
             }
 
-            HtmlRelationshipsPage.getInstance().write(database, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, excludedColumns,
+            htmlRelationshipsPage.write(database, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, excludedColumns,
                     progressListener, outputDir);
 
             progressListener.graphingSummaryProgressed();
 
             File orphansDir = new File(outputDir, "diagrams/orphans");
             FileUtils.forceMkdir(orphansDir);
-            HtmlOrphansPage.getInstance().write(database, orphans, orphansDir, outputDir);
+            htmlOrphansPage.write(database, orphans, orphansDir, outputDir);
 
             progressListener.graphingSummaryProgressed();
 
-            HtmlMainIndexPage.getInstance().write(database, tables, impliedConstraints, outputDir);
+            htmlMainIndexPage.write(database, tables, impliedConstraints, outputDir);
 
             progressListener.graphingSummaryProgressed();
 
             List<ForeignKeyConstraint> constraints = DbAnalyzer.getForeignKeyConstraints(tables);
-            HtmlConstraintsPage constraintIndexFormatter = HtmlConstraintsPage.getInstance();
-            constraintIndexFormatter.write(database, constraints, tables, outputDir);
+            htmlConstraintsPage.write(database, constraints, tables, outputDir);
 
             progressListener.graphingSummaryProgressed();
 
-            HtmlAnomaliesPage.getInstance().write(database, tables, impliedConstraints, outputDir);
+            htmlAnomaliesPage.write(database, tables, impliedConstraints, outputDir);
 
             progressListener.graphingSummaryProgressed();
 
-            for (HtmlColumnsPage.ColumnInfo columnInfo : HtmlColumnsPage.getInstance().getColumnInfos().values()) {
-                HtmlColumnsPage.getInstance().write(database, tables, columnInfo, outputDir);
+            for (HtmlColumnsPage.ColumnInfo columnInfo : htmlColumnsPage.getColumnInfos().values()) {
+                htmlColumnsPage.write(database, tables, columnInfo, outputDir);
             }
 
             progressListener.graphingSummaryProgressed();
 
-            HtmlRoutinesPage.getInstance().write(database, outputDir);
+            htmlRoutinesPage.write(database, outputDir);
 
             // create detailed diagrams
 
@@ -170,7 +180,7 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
             LOGGER.info("Writing/diagramming details");
 
             generateTables(progressListener, outputDir, database, tables, stats);
-            HtmlComponentPage.getInstance().write(database, tables, outputDir);
+            htmlComponentPage.write(database, tables, outputDir);
         } catch (IOException ioException) {
             throw new HtmlProducerException("Failed to write html output for '"+ database.getName()+ "'", ioException);
         }
@@ -201,13 +211,12 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
         }
     }
 
-    private static void generateTables(ProgressListener progressListener, File outputDir, Database database, Collection<Table> tables, WriteStats stats) throws IOException {
-        HtmlTablePage tableFormatter = HtmlTablePage.getInstance();
+    private void generateTables(ProgressListener progressListener, File outputDir, Database database, Collection<Table> tables, WriteStats stats) throws IOException {
         for (Table table : tables) {
             progressListener.graphingDetailsProgressed(table);
             LOGGER.debug("Writing details of {}", table.getName());
 
-            tableFormatter.write(database, table, outputDir, stats);
+            htmlTablePage.write(database, table, outputDir, stats);
         }
     }
 }
