@@ -24,8 +24,8 @@ import java.util.Map;
 public class PageData {
     private String templateName;
     private Map<String, Object> scope = new HashMap<>();
-    private String scriptName;
-    private int depth;
+    private String scriptName = "";
+    private int depth = 0;
 
     public String getTemplateName() {
         return templateName;

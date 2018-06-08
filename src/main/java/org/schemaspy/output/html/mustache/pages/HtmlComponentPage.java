@@ -22,15 +22,14 @@
 package org.schemaspy.output.html.mustache.pages;
 
 import org.schemaspy.model.Database;
-import org.schemaspy.model.Table;
-import org.schemaspy.output.html.mustache.MustacheWriter;
-import org.schemaspy.output.html.mustache.dto.MustacheTable;
+import org.schemaspy.output.html.mustache.MustacheCompiler;
+import org.schemaspy.output.html.mustache.PageData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandles;
 
 /**
  * The main index that contains all tables and views that were evaluated
@@ -39,27 +38,28 @@ import java.util.List;
  * @author Rafal Kasa
  * @author Ismail Simsek
  */
-public class HtmlComponentPage extends HtmlFormatter {
+public class HtmlComponentPage {
 
-    public void write(Database database, Collection<Table> tables, File outputDir) {
-        List<MustacheTable> mustacheTables = new ArrayList<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-        for(Table table: tables) {
-            String comment = table.getComments();
-            if (comment != null) {
-//                InputStream inputStream = IOUtils.toInputStream(comment, "UTF-8");
-//                YamlDecoder dec = new YamlDecoder(inputStream);
-//                TableComment tableComment = dec.readObjectOfType(TableComment.class);
-//                String comments = Markdown.toHtml(tableComment.getDoc(),"");
-            }
+    private final MustacheCompiler mustacheCompiler;
+
+    public HtmlComponentPage(MustacheCompiler mustacheCompiler) {
+        this.mustacheCompiler = mustacheCompiler;
+    }
+
+    public void write(Database database, Writer writer) {
+        PageData pageData = new PageData.Builder()
+                .templateName("components.html")
+                .scriptName("components.js")
+                .addToScope("database", database)
+                .getPageData();
+
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write component page", e);
         }
-
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("tables", mustacheTables);
-        scopes.put("database", database);
-
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, "", database.getName(), false);
-        mw.write("components.html", "components.html", "components.js");
     }
 
 

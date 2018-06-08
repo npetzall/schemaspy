@@ -22,16 +22,19 @@
 package org.schemaspy.output.html.mustache.pages;
 
 import org.schemaspy.DbAnalyzer;
-import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
 import org.schemaspy.output.html.HtmlConfig;
-import org.schemaspy.output.html.mustache.MustacheWriter;
+import org.schemaspy.output.html.mustache.MustacheCompiler;
+import org.schemaspy.output.html.mustache.PageData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,35 +47,45 @@ import java.util.stream.Collectors;
  * @author Rafal Kasa
  * @author Ismail Simsek
  */
-public class HtmlAnomaliesPage extends HtmlFormatter {
+public class HtmlAnomaliesPage {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final MustacheCompiler mustacheCompiler;
     private final HtmlConfig htmlConfig;
 
-    public HtmlAnomaliesPage(HtmlConfig htmlConfig) {
+    public HtmlAnomaliesPage(MustacheCompiler mustacheCompiler, HtmlConfig htmlConfig) {
+        this.mustacheCompiler = mustacheCompiler;
         this.htmlConfig = htmlConfig;
     }
 
     public void write(
-            Database database,
             Collection<Table> tables,
             List<? extends ForeignKeyConstraint> impliedConstraints,
-            File outputDir
+            Writer writer
     ) {
-        HashMap<String, Object> scopes = new HashMap<>();
         List<Table> unIndexedTables = DbAnalyzer.getTablesWithoutIndexes(new HashSet<Table>(tables));
         List<ForeignKeyConstraint> impliedConstraintColumns = impliedConstraints.stream().filter(c -> !c.getChildTable().isView()).collect(Collectors.toList());
         List<Table> oneColumnTables = DbAnalyzer.getTablesWithOneColumn(tables).stream().filter(t -> !t.isView()).collect(Collectors.toList());
         List<Table> incrementingColumnNames =  DbAnalyzer.getTablesWithIncrementingColumnNames(tables).stream().filter(t -> !t.isView()).collect(Collectors.toList());
         List<TableColumn> uniqueNullables = DbAnalyzer.getDefaultNullStringColumns(new HashSet<Table>(tables));
 
-        scopes.put("displayNumRows", htmlConfig.isNumRowsEnabled());
-        scopes.put("impliedConstraints", impliedConstraintColumns);
-        scopes.put("unIndexedTables", unIndexedTables);
-        scopes.put("oneColumnTables", oneColumnTables);
-        scopes.put("incrementingColumnNames", incrementingColumnNames);
-        scopes.put("uniqueNullables", uniqueNullables);
+        PageData pageData = new PageData.Builder()
+                .templateName("anomalies.html")
+                .scriptName("anomalies.js")
+                .addToScope("displayNumRows", htmlConfig.isNumRowsEnabled())
+                .addToScope("impliedConstraints", impliedConstraintColumns)
+                .addToScope("unIndexedTables", unIndexedTables)
+                .addToScope("oneColumnTables", oneColumnTables)
+                .addToScope("incrementingColumnNames", incrementingColumnNames)
+                .addToScope("uniqueNullables", uniqueNullables)
+                .depth(0)
+                .getPageData();
 
-        MustacheWriter mw = new MustacheWriter( outputDir, scopes, getPathToRoot(), database.getName(), false);
-        mw.write("anomalies.html", "anomalies.html", "anomalies.js");
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write anomalies page", e);
+        }
     }
 }

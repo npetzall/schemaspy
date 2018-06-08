@@ -41,7 +41,7 @@ import java.util.List;
  * @author Rafal Kasa
  * @author Ismail Simsek
  */
-public class HtmlMultipleSchemasIndexPage extends HtmlFormatter {
+public class HtmlMultipleSchemasIndexPage {
     private static HtmlMultipleSchemasIndexPage instance = new HtmlMultipleSchemasIndexPage();
 
     /**
@@ -74,6 +74,7 @@ public class HtmlMultipleSchemasIndexPage extends HtmlFormatter {
         scopes.put("schemasNumber", Integer.toString(schemas.size()));
 
         scopes.put("multipleSchemas", true);
+        scopes.put("isMultipleSchemas", true);
 
 
 

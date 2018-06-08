@@ -20,15 +20,17 @@
  */
 package org.schemaspy.output.html.mustache.pages;
 
-import org.schemaspy.model.Database;
 import org.schemaspy.model.Routine;
 import org.schemaspy.output.html.HtmlConfig;
-import org.schemaspy.output.html.mustache.MustacheWriter;
+import org.schemaspy.output.html.mustache.MustacheCompiler;
+import org.schemaspy.output.html.mustache.PageData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.TreeSet;
 
 /**
  * The page that lists all of the routines (stored procedures and functions)
@@ -38,24 +40,32 @@ import java.util.TreeSet;
  * @author Daniel Watt
  * @author Nils Petzaell
  */
-public class HtmlRoutinesPage extends HtmlFormatter {
+public class HtmlRoutinesPage {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final MustacheCompiler mustacheCompiler;
     private final HtmlConfig htmlConfig;
 
-    public HtmlRoutinesPage(HtmlConfig htmlConfig) {
+    public HtmlRoutinesPage(MustacheCompiler mustacheCompiler, HtmlConfig htmlConfig) {
+        this.mustacheCompiler = mustacheCompiler;
         this.htmlConfig = htmlConfig;
     }
 
-    public void write(Database db, File outputDir) {
-        Collection<Routine> routines = new TreeSet<>(db.getRoutines());
+    public void write(Collection<Routine> routines, Writer writer) {
 
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("routines", routines);
-        scopes.put("paginationEnabled", htmlConfig.isPaginationEnabled());
+        PageData pageData = new PageData.Builder()
+                .templateName("routines.html")
+                .scriptName("routines.js")
+                .addToScope("routines", routines)
+                .addToScope("paginationEnabled", htmlConfig.isPaginationEnabled())
+                .getPageData();
 
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
-        mw.write("routines.html", "routines.html", "routines.js");
-
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write routines page", e);
+        }
     }
 
 }

@@ -18,29 +18,43 @@
  */
 package org.schemaspy.output.html.mustache.pages;
 
-import org.schemaspy.model.Database;
 import org.schemaspy.model.Routine;
-import org.schemaspy.output.html.mustache.MustacheWriter;
+import org.schemaspy.output.html.mustache.MustacheCompiler;
+import org.schemaspy.output.html.mustache.PageData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.HashMap;
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandles;
 
 /**
  * @author Daniel Watt
  */
-public class HtmlRoutinePage extends HtmlFormatter {
+public class HtmlRoutinePage {
 
-    public void write(Database db, Routine routine, File outputDir) {
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("routine", routine);
-        scopes.put("parameters",routine.getParameters());
-        scopes.put("definitionExists",routine.getDefinition() != null);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
-        mw.write("routines/routine.html", "routines/" + routine.getName() + ".html", "routine.js");
+    private final MustacheCompiler mustacheCompiler;
+
+    public HtmlRoutinePage(MustacheCompiler mustacheCompiler) {
+        this.mustacheCompiler = mustacheCompiler;
     }
 
-    @Override protected String getPathToRoot() {
-        return "../";
+    public void write(Routine routine, Writer writer) {
+        PageData pageData = new PageData.Builder()
+                .templateName("routines/routine.html")
+                .scriptName("routine.js")
+                .addToScope("routine", routine)
+                .addToScope("parameters",routine.getParameters())
+                .addToScope("definitionExists",routine.getDefinition() != null)
+                .depth(1)
+                .getPageData();
+
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write routine page for '{}'", routine.getName(), e);
+        }
     }
 }

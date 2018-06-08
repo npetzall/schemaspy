@@ -23,9 +23,9 @@
  */
 package org.schemaspy.output.html.mustache.pages;
 
-import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
-import org.schemaspy.output.html.mustache.MustacheWriter;
+import org.schemaspy.output.html.mustache.MustacheCompiler;
+import org.schemaspy.output.html.mustache.PageData;
 import org.schemaspy.output.html.mustache.dto.MustacheTable;
 import org.schemaspy.util.Dot;
 import org.schemaspy.util.LineWriter;
@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -54,11 +55,17 @@ public class HtmlOrphansPage extends HtmlDiagramFormatter {
 
     private static final int KB_64 = 64 * 1024;
 
+    private final MustacheCompiler mustacheCompiler;
+
+    public HtmlOrphansPage(MustacheCompiler mustacheCompiler) {
+        this.mustacheCompiler = mustacheCompiler;
+    }
+
     public boolean write(
-            Database db,
             List<Table> orphanTables,
             File diagramDir,
-            File outputDir
+            File outputDir,
+            Writer writer
     ) throws IOException {
         Dot dot = getDot();
         if (dot == null)
@@ -109,13 +116,19 @@ public class HtmlOrphansPage extends HtmlDiagramFormatter {
             mustacheTables.add(new MustacheTable(table, imgFile.getName()));
         }
 
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("mustacheTables", mustacheTables);
-        scopes.put("maps", maps);
+        PageData pageData = new PageData.Builder()
+                .templateName("orphans.html")
+                .scriptName("")
+                .addToScope("mustacheTables", mustacheTables)
+                .addToScope("maps", maps)
+                .depth(0)
+                .getPageData();
 
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
-        mw.write("orphans.html", "orphans.html", "");
-
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write orphans page", e);
+        }
         return true;
     }
 }

@@ -54,33 +54,27 @@ public class MustacheCompiler {
         this.multipleSchemas = isMultipleSchemas;
     }
 
-    public void write(PageData pageData, Writer writer) {
+    public void write(PageData pageData, Writer writer) throws IOException {
         StringWriter result = new StringWriter();
 
         HashMap<String, Object> containerScope = new HashMap<>();
 
-        try {
+        Mustache mustachePage = mustacheFactory.compile(pageData.getTemplateName());
+        mustachePage.execute(result, pageData.getScope()).flush();
 
-            Mustache mustachePage = mustacheFactory.compile(pageData.getTemplateName());
-            mustachePage.execute(result, pageData.getScope()).flush();
+        containerScope.put("databaseName", databaseName);
+        containerScope.put("content", result);
+        containerScope.put("pageScript",pageData.getScriptName());
+        containerScope.put("rootPath", getRootPath(pageData.getDepth()));
+        containerScope.put("rootPathtoHome", getRootPathToHome(pageData.getDepth()));
+        containerScope.putAll(pageData.getScope());
 
-            containerScope.put("databaseName", databaseName);
-            containerScope.put("content", result);
-            containerScope.put("pageScript",pageData.getScriptName());
-            containerScope.put("rootPath", getRootPath(pageData.getDepth()));
-            containerScope.put("rootPathtoHome", getRootPathToHome(pageData.getDepth()));
-            containerScope.putAll(pageData.getScope());
-
-            Mustache mustacheContainer = mustacheFactory.compile("container.html");
-            mustacheContainer.execute(writer, containerScope).flush();
-        } catch (IOException e) {
-            //TODO: Wouldn't we want an exception thrown here?
-            e.printStackTrace();
-        }
+        Mustache mustacheContainer = mustacheFactory.compile("container.html");
+        mustacheContainer.execute(writer, containerScope).flush();
     }
 
 
-    private String getRootPath(int depth) {
+    public String getRootPath(int depth) {
         return IntStream.range(0, depth).mapToObj(i -> "../").collect(Collectors.joining("", "", ""));
     }
 

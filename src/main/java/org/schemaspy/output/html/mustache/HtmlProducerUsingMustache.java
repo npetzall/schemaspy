@@ -43,9 +43,9 @@ import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
-import static java.nio.file.Files.newBufferedWriter;
 import static java.nio.file.StandardOpenOption.*;
 
 /**
@@ -55,6 +55,7 @@ import static java.nio.file.StandardOpenOption.*;
 public class HtmlProducerUsingMustache implements HtmlProducer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final long SEC_IN_MS = 1000;
 
     private final ProgressListener progressListener;
     private final HtmlConfig htmlConfig;
@@ -82,15 +83,15 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
         MustacheCompiler mustacheCompiler = new MustacheCompiler(getDatabaseName(database), htmlConfig.getTemplateDirectory(), htmlConfig.isOneOfMultipleSchemas());
 
         HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage(mustacheCompiler);
-        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage();
-        HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(htmlConfig);
-        HtmlConstraintsPage htmlConstraintsPage = new HtmlConstraintsPage(htmlConfig);
-        HtmlAnomaliesPage htmlAnomaliesPage = new HtmlAnomaliesPage(htmlConfig);
-        HtmlColumnsPage htmlColumnsPage = new HtmlColumnsPage(htmlConfig);
-        HtmlRoutinesPage htmlRoutinesPage = new HtmlRoutinesPage(htmlConfig);
-        HtmlRoutinePage htmlRoutinePage = new HtmlRoutinePage();
-        HtmlTablePage htmlTablePage = new HtmlTablePage(htmlConfig);
-        HtmlComponentPage htmlComponentPage = new HtmlComponentPage();
+        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(mustacheCompiler);
+        HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(mustacheCompiler, htmlConfig);
+        HtmlConstraintsPage htmlConstraintsPage = new HtmlConstraintsPage(mustacheCompiler, htmlConfig);
+        HtmlAnomaliesPage htmlAnomaliesPage = new HtmlAnomaliesPage(mustacheCompiler, htmlConfig);
+        HtmlColumnsPage htmlColumnsPage = new HtmlColumnsPage(mustacheCompiler, htmlConfig);
+        HtmlRoutinesPage htmlRoutinesPage = new HtmlRoutinesPage(mustacheCompiler, htmlConfig);
+        HtmlRoutinePage htmlRoutinePage = new HtmlRoutinePage(mustacheCompiler);
+        HtmlTablePage htmlTablePage = new HtmlTablePage(mustacheCompiler, htmlConfig);
+        HtmlComponentPage htmlComponentPage = new HtmlComponentPage(mustacheCompiler);
 
         progressListener.graphingSummaryProgressed();
 
@@ -148,62 +149,78 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
                 Files.deleteIfExists(impliedDotFile.toPath());
             }
 
-            File relationshipsHtml = new File(outputDir,"relationships.html");
-            Writer relationshipsHtmlWriter = newBufferedWriter(relationshipsHtml.toPath(), StandardCharsets.UTF_8, CREATE, WRITE, TRUNCATE_EXISTING);
-            htmlRelationshipsPage.write(summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied,
-                    progressListener, relationshipsHtmlWriter);
+            try (Writer writer = createWriter(outputDir, "relationships")) {
+                htmlRelationshipsPage.write(summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied,
+                        progressListener, writer);
+            }
 
             progressListener.graphingSummaryProgressed();
 
             File orphansDir = new File(outputDir, "diagrams/orphans");
             FileUtils.forceMkdir(orphansDir);
-            htmlOrphansPage.write(database, orphans, orphansDir, outputDir);
+
+            try (Writer writer = createWriter(outputDir, "orphans")) {
+                htmlOrphansPage.write(orphans, orphansDir, outputDir,
+                        writer);
+            }
 
             progressListener.graphingSummaryProgressed();
 
-            htmlMainIndexPage.write(database, tables, impliedConstraints, outputDir);
-
+            try (Writer writer = createWriter(outputDir, "index")) {
+                htmlMainIndexPage.write(database, getDatabaseName(database), tables, impliedConstraints, writer);
+            }
             progressListener.graphingSummaryProgressed();
 
             List<ForeignKeyConstraint> constraints = DbAnalyzer.getForeignKeyConstraints(tables);
-            htmlConstraintsPage.write(database, constraints, tables, outputDir);
+            try (Writer writer = createWriter(outputDir, "constraints")) {
+                htmlConstraintsPage.write(constraints, tables, writer);
+            }
+
+            progressListener.graphingSummaryProgressed();
+            try (Writer writer = createWriter(outputDir, "anomalies")) {
+                htmlAnomaliesPage.write(tables, impliedConstraints, writer);
+            }
+            progressListener.graphingSummaryProgressed();
+
+            try (Writer writer = createWriter(outputDir, "columns")) {
+                htmlColumnsPage.write(tables, writer);
+            }
 
             progressListener.graphingSummaryProgressed();
 
-            htmlAnomaliesPage.write(database, tables, impliedConstraints, outputDir);
-
-            progressListener.graphingSummaryProgressed();
-
-            htmlColumnsPage.write(database, tables, outputDir);
-
-            progressListener.graphingSummaryProgressed();
-
-            htmlRoutinesPage.write(database, outputDir);
+            try (Writer writer = createWriter(outputDir, "routines")) {
+                htmlRoutinesPage.write(database.getRoutines(), writer);
+            }
 
             for (Routine routine : database.getRoutines()) {
-                htmlRoutinePage.write(database, routine, outputDir);
+                try (Writer writer = createWriter(outputDir, "routines/" + routine.getName())) {
+                    htmlRoutinePage.write(routine, writer);
+                }
             }
 
             // create detailed diagrams
 
             long duration = progressListener.startedGraphingDetails();
 
-            LOGGER.info("Completed summary in {} seconds", duration / 1000);
+            LOGGER.info("Completed summary in {} seconds", duration / SEC_IN_MS);
             LOGGER.info("Writing/diagramming details");
 
             for (Table table : tables) {
                 progressListener.graphingDetailsProgressed(table);
                 LOGGER.debug("Writing details of {}", table.getName());
-
-                htmlTablePage.write(database, table, outputDir, stats);
+                try (Writer writer = createWriter(outputDir, "tables/" + table.getName())) {
+                    htmlTablePage.write(database, table, outputDir, stats, writer);
+                }
             }
-            htmlComponentPage.write(database, tables, outputDir);
+            try (Writer writer = createWriter(outputDir, "components")) {
+                htmlComponentPage.write(database, writer);
+            }
         } catch (IOException ioException) {
             throw new HtmlProducerException("Failed to write html output for '"+ database.getName()+ "'", ioException);
         }
     }
 
-    //TODO: I think this should be schemaname.
+    //TODO: I think this should be schemaName.
     private static String getDatabaseName(Database database) {
         StringBuilder databaseName = new StringBuilder();
 
@@ -242,5 +259,10 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
         } catch (IOException ioException) {
             throw new HtmlProducerException("Failed to prepare output at '"+outputDir.getPath()+"'", ioException);
         }
+    }
+
+    private static Writer createWriter(File outputDir, String filename) throws IOException {
+        Path destination = outputDir.toPath().resolve(filename + ".html");
+        return Files.newBufferedWriter(destination, StandardCharsets.UTF_8, CREATE, TRUNCATE_EXISTING, WRITE);
     }
 }

@@ -28,14 +28,18 @@ import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.output.html.HtmlConfig;
-import org.schemaspy.output.html.mustache.MustacheWriter;
+import org.schemaspy.output.html.mustache.MustacheCompiler;
+import org.schemaspy.output.html.mustache.PageData;
 import org.schemaspy.output.html.mustache.dto.MustacheCatalog;
 import org.schemaspy.output.html.mustache.dto.MustacheSchema;
 import org.schemaspy.output.html.mustache.dto.MustacheTable;
 import org.schemaspy.util.Markdown;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 /**
@@ -47,15 +51,19 @@ import java.util.*;
  * @author Daniel Watt
  * @author Nils Petzaell
  */
-public class HtmlMainIndexPage extends HtmlFormatter {
+public class HtmlMainIndexPage {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final MustacheCompiler mustacheCompiler;
     private final HtmlConfig htmlConfig;
 
-    public HtmlMainIndexPage(HtmlConfig htmlConfig) {
+    public HtmlMainIndexPage(MustacheCompiler mustacheCompiler, HtmlConfig htmlConfig) {
+        this.mustacheCompiler = mustacheCompiler;
         this.htmlConfig = htmlConfig;
     }
 
-    public void write(Database database, Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints, File outputDir) throws IOException {
+    public void write(Database database, String databaseName, Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints, Writer writer) {
         Comparator<Table> sorter = Comparator.naturalOrder();
 
         Collection<Table> remotes = database.getRemoteTables();
@@ -65,8 +73,6 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         tables = tmp;
         tmp = new TreeSet<>(sorter);
         tmp.addAll(remotes);
-
-        String databaseName = getDatabaseName(database);
 
         List<MustacheTable> mustacheTables = new ArrayList<>();
 
@@ -86,24 +92,30 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         long routinesAmount = database.getRoutines().size();
         long anomaliesAmount = getAllAnomaliesAmount(tables, impliedConstraints);
 
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("tablesAmount", tablesAmount);
-        scopes.put("viewsAmount", viewsAmount);
-        scopes.put("columnsAmount", columnsAmount);
-        scopes.put("constraintsAmount", constraintsAmount);
-        scopes.put("routinesAmount", routinesAmount);
-        scopes.put("anomaliesAmount", anomaliesAmount);
+        PageData pageData = new PageData.Builder()
+                .templateName("main.html")
+                .scriptName("main.js")
+                .addToScope("tablesAmount", tablesAmount)
+                .addToScope("viewsAmount", viewsAmount)
+                .addToScope("columnsAmount", columnsAmount)
+                .addToScope("constraintsAmount", constraintsAmount)
+                .addToScope("routinesAmount", routinesAmount)
+                .addToScope("anomaliesAmount", anomaliesAmount)
+                .addToScope("tables", mustacheTables)
+                .addToScope("database", database)
+                .addToScope("databaseName", databaseName)
+                .addToScope("description", htmlConfig.getDescription())
+                .addToScope("paginationEnabled", htmlConfig.isPaginationEnabled())
+                .addToScope("schema", new MustacheSchema(database.getSchema(), ""))
+                .addToScope("catalog", new MustacheCatalog(database.getCatalog(), ""))
+                .depth(0)
+                .getPageData();
 
-        scopes.put("tables", mustacheTables);
-        scopes.put("database", database);
-        scopes.put("databaseName", databaseName);
-        scopes.put("description", htmlConfig.getDescription());
-        scopes.put("paginationEnabled", htmlConfig.isPaginationEnabled());
-        scopes.put("schema", new MustacheSchema(database.getSchema(), ""));
-        scopes.put("catalog", new MustacheCatalog(database.getCatalog(), ""));
-        
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, "", database.getName(), false);
-        mw.write("main.html", "index.html", "main.js");
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write main index page", e);
+        }
     }
 
     private static long getAllAnomaliesAmount(Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints) {
@@ -115,20 +127,5 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         anomalies += DbAnalyzer.getDefaultNullStringColumns(new HashSet<>(tables)).size();
 
         return anomalies;
-    }
-
-    private static String getDatabaseName(Database db) {
-        StringBuilder description = new StringBuilder();
-
-        description.append(db.getName());
-        if (db.getSchema() != null) {
-            description.append('.');
-            description.append(db.getSchema().getName());
-        } else if (db.getCatalog() != null) {
-            description.append('.');
-            description.append(db.getCatalog().getName());
-        }
-
-        return description.toString();
     }
 }
