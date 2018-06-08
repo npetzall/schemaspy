@@ -37,4 +37,8 @@ public interface HtmlConfig {
 
     //TODO Remove, this is config overflow from diagram production.
     String getImageFormat();
+
+    String getTemplateDirectory();
+
+    boolean isOneOfMultipleSchemas();
 }

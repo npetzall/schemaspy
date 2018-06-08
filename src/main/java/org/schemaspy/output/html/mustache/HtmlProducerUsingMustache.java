@@ -38,11 +38,15 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+
+import static java.nio.file.Files.newBufferedWriter;
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * @author John Currier
@@ -55,26 +59,11 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
     private final ProgressListener progressListener;
     private final HtmlConfig htmlConfig;
 
-    private HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage();
-    private HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage();
-    private HtmlMainIndexPage htmlMainIndexPage;
-    private HtmlConstraintsPage htmlConstraintsPage;
-    private HtmlAnomaliesPage htmlAnomaliesPage;
-    private HtmlColumnsPage htmlColumnsPage;
-    private HtmlRoutinesPage htmlRoutinesPage;
-    private HtmlRoutinePage htmlRoutinePage = new HtmlRoutinePage();
-    private HtmlTablePage htmlTablePage;
-    private HtmlComponentPage htmlComponentPage = new HtmlComponentPage();
+
 
     public HtmlProducerUsingMustache(HtmlConfig htmlConfig, ProgressListener progressListener) {
         this.htmlConfig = htmlConfig;
         this.progressListener = progressListener;
-        htmlMainIndexPage = new HtmlMainIndexPage(htmlConfig);
-        htmlConstraintsPage = new HtmlConstraintsPage(htmlConfig);
-        htmlAnomaliesPage = new HtmlAnomaliesPage(htmlConfig);
-        htmlColumnsPage = new HtmlColumnsPage(htmlConfig);
-        htmlRoutinesPage = new HtmlRoutinesPage(htmlConfig);
-        htmlTablePage = new HtmlTablePage(htmlConfig);
     }
 
     @Override
@@ -89,6 +78,19 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
         }
 
         prepareLayoutFiles(outputDir);
+
+        MustacheCompiler mustacheCompiler = new MustacheCompiler(getDatabaseName(database), htmlConfig.getTemplateDirectory(), htmlConfig.isOneOfMultipleSchemas());
+
+        HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage(mustacheCompiler);
+        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage();
+        HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(htmlConfig);
+        HtmlConstraintsPage htmlConstraintsPage = new HtmlConstraintsPage(htmlConfig);
+        HtmlAnomaliesPage htmlAnomaliesPage = new HtmlAnomaliesPage(htmlConfig);
+        HtmlColumnsPage htmlColumnsPage = new HtmlColumnsPage(htmlConfig);
+        HtmlRoutinesPage htmlRoutinesPage = new HtmlRoutinesPage(htmlConfig);
+        HtmlRoutinePage htmlRoutinePage = new HtmlRoutinePage();
+        HtmlTablePage htmlTablePage = new HtmlTablePage(htmlConfig);
+        HtmlComponentPage htmlComponentPage = new HtmlComponentPage();
 
         progressListener.graphingSummaryProgressed();
 
@@ -146,8 +148,10 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
                 Files.deleteIfExists(impliedDotFile.toPath());
             }
 
-            htmlRelationshipsPage.write(database, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied,
-                    progressListener, outputDir);
+            File relationshipsHtml = new File(outputDir,"relationships.html");
+            Writer relationshipsHtmlWriter = newBufferedWriter(relationshipsHtml.toPath(), StandardCharsets.UTF_8, CREATE, WRITE, TRUNCATE_EXISTING);
+            htmlRelationshipsPage.write(summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied,
+                    progressListener, relationshipsHtmlWriter);
 
             progressListener.graphingSummaryProgressed();
 
@@ -187,11 +191,32 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
             LOGGER.info("Completed summary in {} seconds", duration / 1000);
             LOGGER.info("Writing/diagramming details");
 
-            generateTables(progressListener, outputDir, database, tables, stats);
+            for (Table table : tables) {
+                progressListener.graphingDetailsProgressed(table);
+                LOGGER.debug("Writing details of {}", table.getName());
+
+                htmlTablePage.write(database, table, outputDir, stats);
+            }
             htmlComponentPage.write(database, tables, outputDir);
         } catch (IOException ioException) {
             throw new HtmlProducerException("Failed to write html output for '"+ database.getName()+ "'", ioException);
         }
+    }
+
+    //TODO: I think this should be schemaname.
+    private static String getDatabaseName(Database database) {
+        StringBuilder databaseName = new StringBuilder();
+
+        databaseName.append(database.getName());
+        if (database.getSchema() != null) {
+            databaseName.append('.');
+            databaseName.append(database.getSchema().getName());
+        } else if (database.getCatalog() != null) {
+            databaseName.append('.');
+            databaseName.append(database.getCatalog().getName());
+        }
+
+        return databaseName.toString();
     }
 
     /**
@@ -216,15 +241,6 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
             ResourceWriter.copyResources(url, outputDir, filter);
         } catch (IOException ioException) {
             throw new HtmlProducerException("Failed to prepare output at '"+outputDir.getPath()+"'", ioException);
-        }
-    }
-
-    private void generateTables(ProgressListener progressListener, File outputDir, Database database, Collection<Table> tables, WriteStats stats) throws IOException {
-        for (Table table : tables) {
-            progressListener.graphingDetailsProgressed(table);
-            LOGGER.debug("Writing details of {}", table.getName());
-
-            htmlTablePage.write(database, table, outputDir, stats);
         }
     }
 }
