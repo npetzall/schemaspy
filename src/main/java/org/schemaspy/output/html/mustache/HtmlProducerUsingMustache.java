@@ -91,7 +91,6 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
         HtmlRoutinesPage htmlRoutinesPage = new HtmlRoutinesPage(mustacheCompiler, htmlConfig);
         HtmlRoutinePage htmlRoutinePage = new HtmlRoutinePage(mustacheCompiler);
         HtmlTablePage htmlTablePage = new HtmlTablePage(mustacheCompiler, htmlConfig);
-        HtmlComponentPage htmlComponentPage = new HtmlComponentPage(mustacheCompiler);
 
         progressListener.graphingSummaryProgressed();
 
@@ -211,9 +210,6 @@ public class HtmlProducerUsingMustache implements HtmlProducer {
                 try (Writer writer = createWriter(outputDir, "tables/" + table.getName())) {
                     htmlTablePage.write(database, table, outputDir, stats, writer);
                 }
-            }
-            try (Writer writer = createWriter(outputDir, "components")) {
-                htmlComponentPage.write(database, writer);
             }
         } catch (IOException ioException) {
             throw new HtmlProducerException("Failed to write html output for '"+ database.getName()+ "'", ioException);
