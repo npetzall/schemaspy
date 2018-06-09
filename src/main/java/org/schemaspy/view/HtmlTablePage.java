@@ -47,9 +47,11 @@ import java.util.*;
  */
 public class HtmlTablePage extends HtmlFormatter {
 
+    private final SqlAnalyzer sqlAnalyzer;
     private final HtmlConfig htmlConfig;
 
-    public HtmlTablePage(HtmlConfig htmlConfig) {
+    public HtmlTablePage(SqlAnalyzer sqlAnalyzer, HtmlConfig htmlConfig) {
+        this.sqlAnalyzer = sqlAnalyzer;
         this.htmlConfig = htmlConfig;
     }
 
@@ -82,7 +84,7 @@ public class HtmlTablePage extends HtmlFormatter {
 
         scopes.put("diagrams", diagrams);
         scopes.put("sqlCode", sqlCode(table));
-        scopes.put("references", sqlReferences(table, db));
+        scopes.put("references", sqlReferences(table));
 
         scopes.put("diagramExists", DiagramUtil.diagramExists(diagrams));
         scopes.put("indexExists", indexExists(table, indexedColumns));
@@ -93,12 +95,11 @@ public class HtmlTablePage extends HtmlFormatter {
     }
 
 
-    private static Set<Table> sqlReferences(Table table, Database db) {
+    private Set<Table> sqlReferences(Table table) {
         Set<Table> references = null;
 
         if (table.isView() && table.getViewDefinition() != null) {
-            SqlAnalyzer formatter = new SqlAnalyzer();
-            references = formatter.getReferencedTables(table.getViewDefinition(), db);
+            references = sqlAnalyzer.getReferencedTables(table.getViewDefinition());
         }
         return references;
     }
