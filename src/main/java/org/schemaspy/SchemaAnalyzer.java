@@ -341,7 +341,6 @@ public class SchemaAnalyzer {
         out = new LineWriter(impliedDotFile, Config.DOT_CHARSET);
         boolean hasImplied = DotFormatter.getInstance().writeAllRelationships(db, tables, true, showDetailedTables, stats, out, outputDir);
 
-        Set<TableColumn> excludedColumns = stats.getExcludedColumns();
         out.close();
         if (hasImplied) {
             impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.large.dot");
@@ -352,36 +351,47 @@ public class SchemaAnalyzer {
             Files.deleteIfExists(impliedDotFile.toPath());
         }
 
-        HtmlRelationshipsPage.getInstance().write(db, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, progressListener, outputDir);
+        HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage();
+        htmlRelationshipsPage.write(db, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, progressListener, outputDir);
 
         progressListener.graphingSummaryProgressed();
 
         File orphansDir = new File(outputDir, "diagrams/orphans");
         FileUtils.forceMkdir(orphansDir);
-        HtmlOrphansPage.getInstance().write(db, orphans, orphansDir, outputDir);
+        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage();
+        htmlOrphansPage.write(db, orphans, orphansDir, outputDir);
         out.close();
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlMainIndexPage.getInstance().write(db, tables, impliedConstraints, outputDir);
+        HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(config);
+        htmlMainIndexPage.write(db, tables, impliedConstraints, outputDir);
 
         progressListener.graphingSummaryProgressed();
 
         List<ForeignKeyConstraint> constraints = DbAnalyzer.getForeignKeyConstraints(tables);
-        HtmlConstraintsPage constraintIndexFormatter = HtmlConstraintsPage.getInstance();
-        constraintIndexFormatter.write(db, constraints, tables, outputDir);
+        HtmlConstraintsPage htmlConstraintsPage = new  HtmlConstraintsPage(config);
+        htmlConstraintsPage.write(db, constraints, tables, outputDir);
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlAnomaliesPage.getInstance().write(db, tables, impliedConstraints, outputDir);
+        HtmlAnomaliesPage htmlAnomaliesPage = new HtmlAnomaliesPage(config);
+        htmlAnomaliesPage.write(db, tables, impliedConstraints, outputDir);
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlColumnsPage.getInstance().write(db, tables, outputDir);
+        HtmlColumnsPage htmlColumnsPage = new HtmlColumnsPage(config);
+        htmlColumnsPage.write(db, tables, outputDir);
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlRoutinesPage.getInstance().write(db, outputDir);
+        HtmlRoutinesPage htmlRoutinesPage = new HtmlRoutinesPage(config);
+        htmlRoutinesPage.write(db, outputDir);
+
+        HtmlRoutinePage htmlRoutinePage = new HtmlRoutinePage();
+        for(Routine routine : db.getRoutines()) {
+            htmlRoutinePage.write(db, routine, outputDir);
+        }
 
         // create detailed diagrams
 
@@ -390,7 +400,12 @@ public class SchemaAnalyzer {
         LOGGER.info("Completed summary in {} seconds", duration / 1000);
         LOGGER.info("Writing/diagramming details");
 
-        generateTables(progressListener, outputDir, db, tables, stats);
+        HtmlTablePage htmlTablePage = new HtmlTablePage(config);
+        for (Table table : tables) {
+            progressListener.graphingDetailsProgressed(table);
+            LOGGER.debug("Writing details of {}", table.getName());
+            htmlTablePage.write(db, table, outputDir, stats);
+        }
     }
 
     /**
@@ -417,16 +432,6 @@ public class SchemaAnalyzer {
     private Connection getConnection(Config config) throws IOException {
         DbDriverLoader driverLoader = new DbDriverLoader();
         return driverLoader.getConnection(config);
-    }
-
-    private void generateTables(ProgressListener progressListener, File outputDir, Database db, Collection<Table> tables, WriteStats stats) throws IOException {
-        HtmlTablePage tableFormatter = HtmlTablePage.getInstance();
-        for (Table table : tables) {
-            progressListener.graphingDetailsProgressed(table);
-            LOGGER.debug("Writing details of {}", table.getName());
-
-            tableFormatter.write(db, table, outputDir, stats);
-        }
     }
 
     /**

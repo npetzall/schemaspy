@@ -46,23 +46,6 @@ public class HtmlRelationshipsPage extends HtmlDiagramFormatter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final HtmlRelationshipsPage instance = new HtmlRelationshipsPage();
-
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlRelationshipsPage() {
-    }
-
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlRelationshipsPage getInstance() {
-        return instance;
-    }
-
     public boolean write(
             Database db,
             File diagramDir,

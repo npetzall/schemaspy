@@ -20,7 +20,6 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Routine;
 
@@ -38,21 +37,11 @@ import java.util.TreeSet;
  * @author Nils Petzaell
  */
 public class HtmlRoutinesPage extends HtmlFormatter {
-    private static HtmlRoutinesPage instance = new HtmlRoutinesPage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlRoutinesPage() {
-    }
+    private final HtmlConfig htmlConfig;
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlRoutinesPage getInstance() {
-        return instance;
+    public HtmlRoutinesPage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
     public void write(
@@ -63,18 +52,10 @@ public class HtmlRoutinesPage extends HtmlFormatter {
 
         HashMap<String, Object> scopes = new HashMap<>();
         scopes.put("routines", routines);
-        scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
+        scopes.put("paginationEnabled", htmlConfig.isPaginationEnabled());
 
         MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
         mw.write("routines.html", "routines.html", "routines.js");
-
-        for (Routine routine : routines) {
-            writeRoutineFile(db, routine, outputDir);
-        }
-    }
-
-    private static void writeRoutineFile(Database db, Routine routine, File outputDir) {
-        HtmlRoutinePage.getInstance().write(db,routine,outputDir);
     }
 
 }

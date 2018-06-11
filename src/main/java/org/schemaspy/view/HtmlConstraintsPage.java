@@ -22,7 +22,6 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
@@ -44,21 +43,11 @@ import java.util.stream.Collectors;
  * @author Nils Petzaell
  */
 public class HtmlConstraintsPage extends HtmlFormatter {
-    private static HtmlConstraintsPage instance = new HtmlConstraintsPage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlConstraintsPage() {
-    }
+    private final HtmlConfig htmlConfig;
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlConstraintsPage getInstance() {
-        return instance;
+    public HtmlConstraintsPage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
     public void write(
@@ -70,7 +59,7 @@ public class HtmlConstraintsPage extends HtmlFormatter {
         HashMap<String, Object> scopes = new HashMap<>();
         scopes.put("constraints", constraints);
         scopes.put("checkConstraints", collectCheckConstraints(tables));
-        scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
+        scopes.put("paginationEnabled", htmlConfig.isPaginationEnabled());
 
         MustacheWriter mw = new MustacheWriter( outputDir, scopes, getPathToRoot(), database.getName(), false);
         mw.write("constraint.html", "constraints.html", "constraint.js");

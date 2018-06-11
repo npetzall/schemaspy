@@ -23,7 +23,6 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.Dot;
@@ -34,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -48,23 +48,6 @@ import java.util.*;
 public class HtmlOrphansPage extends HtmlDiagramFormatter {
     private static final int KB_64 = 64 * 1024;
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    private static HtmlOrphansPage instance = new HtmlOrphansPage();
-
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlOrphansPage() {
-    }
-
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlOrphansPage getInstance() {
-        return instance;
-    }
 
     public boolean write(
             Database db,
@@ -105,7 +88,7 @@ public class HtmlOrphansPage extends HtmlDiagramFormatter {
 
             File dotFile = new File(diagramDir, dotBaseFilespec + ".1degree.dot");
 
-            try (LineWriter dotOut = new LineWriter(dotFile, Config.DOT_CHARSET)) {
+            try (LineWriter dotOut = new LineWriter(dotFile, StandardCharsets.UTF_8.name())) {
                 DotFormatter.getInstance().writeOrphan(table, dotOut, outputDir);
             } catch (IOException e) {
                 throw new IOException(e);

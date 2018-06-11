@@ -23,7 +23,6 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.Config;
 import org.schemaspy.DbAnalyzer;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
@@ -43,21 +42,11 @@ import java.util.*;
  * @author Nils Petzaell
  */
 public class HtmlMainIndexPage extends HtmlFormatter {
-    private static HtmlMainIndexPage instance = new HtmlMainIndexPage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlMainIndexPage() {
-    }
+    private final HtmlConfig htmlConfig;
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlMainIndexPage getInstance() {
-        return instance;
+    public HtmlMainIndexPage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
     public void write(
@@ -107,8 +96,8 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         scopes.put("tables", mustacheTables);
         scopes.put("database", database);
         scopes.put("databaseName", databaseName);
-        scopes.put("description", Config.getInstance().getDescription());
-        scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
+        scopes.put("description", htmlConfig.getDescription());
+        scopes.put("paginationEnabled", htmlConfig.isPaginationEnabled());
         scopes.put("schema", new MustacheSchema(database.getSchema(), ""));
         scopes.put("catalog", new MustacheCatalog(database.getCatalog(), ""));
         

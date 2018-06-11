@@ -43,21 +43,11 @@ import java.util.stream.Collectors;
  * @author Ismail Simsek
  */
 public class HtmlAnomaliesPage extends HtmlFormatter {
-    private static HtmlAnomaliesPage instance = new HtmlAnomaliesPage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlAnomaliesPage() {
-    }
+    private final HtmlConfig htmlConfig;
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlAnomaliesPage getInstance() {
-        return instance;
+    public HtmlAnomaliesPage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
     public void write(
@@ -73,7 +63,7 @@ public class HtmlAnomaliesPage extends HtmlFormatter {
         List<Table> incrementingColumnNames =  DbAnalyzer.getTablesWithIncrementingColumnNames(tables).stream().filter(t -> !t.isView()).collect(Collectors.toList());
         List<TableColumn> uniqueNullables = DbAnalyzer.getDefaultNullStringColumns(new HashSet<Table>(tables));
 
-        scopes.put("displayNumRows", (displayNumRows ? new Object() : null));
+        scopes.put("displayNumRows", (htmlConfig.isNumRowsEnabled() ? new Object() : null));
         scopes.put("impliedConstraints", impliedConstraintColumns);
         scopes.put("unIndexedTables", unIndexedTables);
         scopes.put("oneColumnTables", oneColumnTables);

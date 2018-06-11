@@ -23,7 +23,6 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.Config;
 import org.schemaspy.model.*;
 import org.schemaspy.util.DiagramUtil;
 import org.schemaspy.util.Dot;
@@ -32,6 +31,7 @@ import org.schemaspy.util.Markdown;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -46,21 +46,11 @@ import java.util.*;
  * @author Nils Petzaell
  */
 public class HtmlTablePage extends HtmlFormatter {
-    private static final HtmlTablePage instance = new HtmlTablePage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlTablePage() {
-    }
+    private final HtmlConfig htmlConfig;
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlTablePage getInstance() {
-        return instance;
+    public HtmlTablePage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
     public WriteStats write(
@@ -161,9 +151,9 @@ public class HtmlTablePage extends HtmlFormatter {
      * degrees of separation.
      * @throws IOException
      */
-    private static boolean generateDots(Table table, File diagramDir, WriteStats stats, File outputDir) throws IOException {
+    private boolean generateDots(Table table, File diagramDir, WriteStats stats, File outputDir) throws IOException {
         Dot dot = Dot.getInstance();
-        String extension = dot == null ? Config.getInstance().getImageFormat() : dot.getFormat();
+        String extension = dot == null ? htmlConfig.getImageFormat() : dot.getFormat();
 
         File oneDegreeDotFile = new File(diagramDir, table.getName() + ".1degree.dot");
         File oneDegreeDiagramFile = new File(diagramDir, table.getName() + ".1degree." + extension);
@@ -190,12 +180,12 @@ public class HtmlTablePage extends HtmlFormatter {
             Set<ForeignKeyConstraint> impliedConstraints;
 
             DotFormatter formatter = DotFormatter.getInstance();
-            LineWriter dotOut = new LineWriter(oneDegreeDotFile, Config.DOT_CHARSET);
+            LineWriter dotOut = new LineWriter(oneDegreeDotFile, StandardCharsets.UTF_8.name());
             WriteStats oneStats = new WriteStats(stats);
             formatter.writeRealRelationships(table, false, oneStats, dotOut, outputDir);
             dotOut.close();
 
-            dotOut = new LineWriter(twoDegreesDotFile, Config.DOT_CHARSET);
+            dotOut = new LineWriter(twoDegreesDotFile, StandardCharsets.UTF_8.name());
             WriteStats twoStats = new WriteStats(stats);
             impliedConstraints = formatter.writeRealRelationships(table, true, twoStats, dotOut, outputDir);
             dotOut.close();
@@ -205,11 +195,11 @@ public class HtmlTablePage extends HtmlFormatter {
             }
 
             if (!impliedConstraints.isEmpty()) {
-                dotOut = new LineWriter(oneImpliedDotFile, Config.DOT_CHARSET);
+                dotOut = new LineWriter(oneImpliedDotFile, StandardCharsets.UTF_8.name());
                 formatter.writeAllRelationships(table, false, stats, dotOut, outputDir);
                 dotOut.close();
 
-                dotOut = new LineWriter(twoImpliedDotFile, Config.DOT_CHARSET);
+                dotOut = new LineWriter(twoImpliedDotFile, StandardCharsets.UTF_8.name());
                 formatter.writeAllRelationships(table, true, stats, dotOut, outputDir);
                 dotOut.close();
                 return true;
@@ -219,7 +209,7 @@ public class HtmlTablePage extends HtmlFormatter {
         return false;
     }
 
-    private static Object generateDiagrams(Table table, WriteStats stats, File outputDir, List<MustacheTableDiagram> diagrams) throws IOException {
+    private Object generateDiagrams(Table table, WriteStats stats, File outputDir, List<MustacheTableDiagram> diagrams) throws IOException {
         Object graphviz = new Object();
 
         File diagramsDir = new File(outputDir, "diagrams");

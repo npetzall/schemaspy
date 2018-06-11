@@ -22,7 +22,6 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
@@ -44,21 +43,11 @@ import java.util.stream.Collectors;
  * @author Nils Petzaell
  */
 public class HtmlColumnsPage extends HtmlFormatter {
-    private static HtmlColumnsPage instance = new HtmlColumnsPage();
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlColumnsPage() {
-    }
+    private final HtmlConfig htmlConfig;
 
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlColumnsPage getInstance() {
-        return instance;
+    public HtmlColumnsPage(HtmlConfig htmlConfig) {
+        this.htmlConfig = htmlConfig;
     }
 
     public void write(
@@ -78,7 +67,7 @@ public class HtmlColumnsPage extends HtmlFormatter {
 
         HashMap<String, Object> scopes = new HashMap<>();
         scopes.put("columns", tableColumns);
-        scopes.put("paginationEnabled",Config.getInstance().isPaginationEnabled());
+        scopes.put("paginationEnabled",htmlConfig.isPaginationEnabled());
 
         MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), database.getName(), false);
         mw.write("column.html", "columns.html", "column.js");

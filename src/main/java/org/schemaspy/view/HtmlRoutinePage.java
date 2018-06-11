@@ -28,11 +28,6 @@ import java.util.HashMap;
  * @author Daniel Watt
  */
 public class HtmlRoutinePage extends HtmlFormatter {
-    private static HtmlRoutinePage instance = new HtmlRoutinePage();
-
-    public static HtmlRoutinePage getInstance() {
-        return instance;
-    }
 
     public void write(
             Database db,
