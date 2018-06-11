@@ -32,6 +32,7 @@ import org.schemaspy.model.InvalidConfigurationException;
 import org.schemaspy.util.DbSpecificConfig;
 import org.schemaspy.util.Dot;
 import org.schemaspy.util.PasswordReader;
+import org.schemaspy.view.HtmlConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +68,7 @@ import java.util.stream.Stream;
  * @author Nils Petzaell
  * @author Daniel Watt
  */
-public final class Config {
+public final class Config implements HtmlConfig {
     private static Config instance;
     private final List<String> options;
     private Map<String, String> dbSpecificOptions;
