@@ -53,20 +53,7 @@ public class HtmlTablePage extends HtmlFormatter {
         this.htmlConfig = htmlConfig;
     }
 
-    public WriteStats write(
-            Database db,
-            Table table,
-            File outputDir,
-            WriteStats stats
-    ) throws IOException {
-
-        writeMainTable(db, table, outputDir, stats);
-
-        return stats;
-    }
-
-    public void writeMainTable(Database db, Table table, File outputDir, WriteStats stats) throws IOException {
-        Set<TableColumn> primaries = new HashSet<>(table.getPrimaryColumns());
+    public void write(Database db, Table table, File outputDir, WriteStats stats) throws IOException {
         Set<TableColumn> indexes = new HashSet<>();
         Set<MustacheTableColumn> tableColumns = new LinkedHashSet<>();
         Set<MustacheTableIndex> indexedColumns = new LinkedHashSet<>();
@@ -84,7 +71,6 @@ public class HtmlTablePage extends HtmlFormatter {
         HashMap<String, Object> scopes = new HashMap<>();
         scopes.put("table", table);
         scopes.put("comments", Markdown.toHtml(table.getComments(), getPathToRoot()));
-        scopes.put("primaries", primaries);
         scopes.put("columns", tableColumns);
         scopes.put("indexes", indexedColumns);
 

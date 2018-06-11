@@ -55,16 +55,6 @@ public class HtmlMainIndexPage extends HtmlFormatter {
             List<? extends ForeignKeyConstraint> impliedConstraints,
             File outputDir
     ) {
-        Comparator<Table> sorter = (table1, table2) -> table1.compareTo(table2);
-
-        Collection<Table> remotes = database.getRemoteTables();
-        // sort tables and remotes by name
-        Collection<Table> tmp = new TreeSet<>(sorter);
-        tmp.addAll(tables);
-        tables = tmp;
-        tmp = new TreeSet<>(sorter);
-        tmp.addAll(remotes);
-
         String databaseName = getDatabaseName(database);
 
         List<MustacheTable> mustacheTables = new ArrayList<>();
