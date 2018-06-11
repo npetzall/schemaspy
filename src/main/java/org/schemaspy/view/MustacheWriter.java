@@ -109,7 +109,7 @@ public class MustacheWriter {
         }
     }
 
-    private Reader getReader(String fileName) throws IOException {
+    private Reader getReader(String fileName) {
         String parent = templateDirectory;
         return getReader(parent, fileName);
     }
@@ -131,7 +131,7 @@ public class MustacheWriter {
      * @throws IOException
      */
 
-    public static Reader getReader(String parent, String fileName) throws IOException {
+    public static Reader getReader(String parent, String fileName) {
         try {
             InputStream inputStream = resourceFinder.find(parent, fileName);
             return new InputStreamReader(inputStream, StandardCharsets.UTF_8);

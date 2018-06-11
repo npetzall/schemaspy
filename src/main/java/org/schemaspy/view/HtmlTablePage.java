@@ -63,7 +63,12 @@ public class HtmlTablePage extends HtmlFormatter {
         return instance;
     }
 
-    public WriteStats write(Database db, Table table, File outputDir, WriteStats stats) throws IOException {
+    public WriteStats write(
+            Database db,
+            Table table,
+            File outputDir,
+            WriteStats stats
+    ) throws IOException {
 
         writeMainTable(db, table, outputDir, stats);
 
@@ -106,13 +111,13 @@ public class HtmlTablePage extends HtmlFormatter {
         scopes.put("diagramExists", DiagramUtil.diagramExists(diagrams));
         scopes.put("indexExists", indexExists(table, indexedColumns));
         scopes.put("definitionExists", definitionExists(table));
-        System.out.println("Table -> "+table.getName());
+
         MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
         mw.write("tables/table.html", Markdown.pagePath(table.getName()), "table.js");
     }
 
 
-    private Set<Table> sqlReferences(Table table, Database db) {
+    private static Set<Table> sqlReferences(Table table, Database db) {
         Set<Table> references = null;
 
         if (table.isView() && table.getViewDefinition() != null) {
@@ -122,11 +127,11 @@ public class HtmlTablePage extends HtmlFormatter {
         return references;
     }
 
-    private String sqlCode(Table table) {
+    private static String sqlCode(Table table) {
         return table.getViewDefinition() != null ? table.getViewDefinition().trim() : "";
     }
 
-    private Object indexExists(Table table, Set<MustacheTableIndex> indexedColumns) {
+    private static Object indexExists(Table table, Set<MustacheTableIndex> indexedColumns) {
         Object exists = null;
         if (!table.isView() && !indexedColumns.isEmpty()) {
             exists = new Object();
@@ -134,7 +139,7 @@ public class HtmlTablePage extends HtmlFormatter {
         return exists;
     }
 
-    private Object definitionExists(Table table) {
+    private static Object definitionExists(Table table) {
         Object exists = null;
         if (table.isView() && table.getViewDefinition() != null) {
             exists = new Object();
@@ -156,7 +161,7 @@ public class HtmlTablePage extends HtmlFormatter {
      * degrees of separation.
      * @throws IOException
      */
-    private boolean generateDots(Table table, File diagramDir, WriteStats stats, File outputDir) throws IOException {
+    private static boolean generateDots(Table table, File diagramDir, WriteStats stats, File outputDir) throws IOException {
         Dot dot = Dot.getInstance();
         String extension = dot == null ? Config.getInstance().getImageFormat() : dot.getFormat();
 
@@ -214,18 +219,14 @@ public class HtmlTablePage extends HtmlFormatter {
         return false;
     }
 
-    private Object generateDiagrams(Table table, WriteStats stats, File outputDir, List<MustacheTableDiagram> diagrams) throws IOException {
+    private static Object generateDiagrams(Table table, WriteStats stats, File outputDir, List<MustacheTableDiagram> diagrams) throws IOException {
         Object graphviz = new Object();
 
         File diagramsDir = new File(outputDir, "diagrams");
         generateDots(table, diagramsDir, stats, outputDir);
 
-        if (table.getMaxChildren() + table.getMaxParents() > 0) {
-            if (HtmlTableDiagrammer.getInstance().write(table, diagramsDir, diagrams)) {
-                //writeExcludedColumns(stats.getExcludedColumns(), table, html);
-            } else {
-                graphviz = null;
-            }
+        if (table.getMaxChildren() + table.getMaxParents() > 0 && !HtmlTableDiagrammer.getInstance().write(table, diagramsDir, diagrams)) {
+            graphviz = null;
         }
 
         return graphviz;

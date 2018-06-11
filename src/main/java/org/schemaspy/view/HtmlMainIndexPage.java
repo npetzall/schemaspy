@@ -31,7 +31,6 @@ import org.schemaspy.model.Table;
 import org.schemaspy.util.Markdown;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -61,19 +60,20 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         return instance;
     }
 
-    public void write(Database database, Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints, File outputDir) throws IOException {
-        Comparator<Table> sorter = new Comparator<Table>() {
-            public int compare(Table table1, Table table2) {
-                return table1.compareTo(table2);
-            }
-        };
+    public void write(
+            Database database,
+            Collection<Table> tables,
+            List<? extends ForeignKeyConstraint> impliedConstraints,
+            File outputDir
+    ) {
+        Comparator<Table> sorter = (table1, table2) -> table1.compareTo(table2);
 
         Collection<Table> remotes = database.getRemoteTables();
         // sort tables and remotes by name
-        Collection<Table> tmp = new TreeSet<Table>(sorter);
+        Collection<Table> tmp = new TreeSet<>(sorter);
         tmp.addAll(tables);
         tables = tmp;
-        tmp = new TreeSet<Table>(sorter);
+        tmp = new TreeSet<>(sorter);
         tmp.addAll(remotes);
 
         String databaseName = getDatabaseName(database);
@@ -96,7 +96,7 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         long routinesAmount = database.getRoutines().size();
         long anomaliesAmount = getAllAnomaliesAmount(tables, impliedConstraints);
 
-        HashMap<String, Object> scopes = new HashMap<String, Object>();
+        HashMap<String, Object> scopes = new HashMap<>();
         scopes.put("tablesAmount", tablesAmount);
         scopes.put("viewsAmount", viewsAmount);
         scopes.put("columnsAmount", columnsAmount);
@@ -116,7 +116,7 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         mw.write("main.html", "index.html", "main.js");
     }
 
-    private long getAllAnomaliesAmount(Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints) {
+    private static long getAllAnomaliesAmount(Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints) {
         long anomalies = 0;
         anomalies += DbAnalyzer.getTablesWithoutIndexes(new HashSet<Table>(tables)).size();
         anomalies += impliedConstraints.stream().filter(c -> !c.getChildTable().isView()).count();
@@ -127,7 +127,7 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         return anomalies;
     }
 
-    private String getDatabaseName(Database db) {
+    private static String getDatabaseName(Database db) {
         StringBuilder description = new StringBuilder();
 
         description.append(db.getName());

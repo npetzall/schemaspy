@@ -352,8 +352,7 @@ public class SchemaAnalyzer {
             Files.deleteIfExists(impliedDotFile.toPath());
         }
 
-        HtmlRelationshipsPage.getInstance().write(db, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, excludedColumns,
-                progressListener, outputDir);
+        HtmlRelationshipsPage.getInstance().write(db, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, progressListener, outputDir);
 
         progressListener.graphingSummaryProgressed();
 

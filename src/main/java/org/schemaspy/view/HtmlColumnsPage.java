@@ -61,7 +61,11 @@ public class HtmlColumnsPage extends HtmlFormatter {
         return instance;
     }
 
-    public void write(Database database, Collection<Table> tables, File outputDir) {
+    public void write(
+            Database database,
+            Collection<Table> tables,
+            File outputDir
+    ) {
         Set<TableColumn> indexedColumns = tables.stream()
                 .flatMap(table -> table.getIndexes().stream())
                 .flatMap(tableIndex -> tableIndex.getColumns().stream())
@@ -72,7 +76,7 @@ public class HtmlColumnsPage extends HtmlFormatter {
                 .map(tableColumn -> new MustacheTableColumn(tableColumn, indexedColumns, getPathToRoot()))
                 .collect(Collectors.toSet());
 
-        HashMap<String, Object> scopes = new HashMap<String, Object>();
+        HashMap<String, Object> scopes = new HashMap<>();
         scopes.put("columns", tableColumns);
         scopes.put("paginationEnabled",Config.getInstance().isPaginationEnabled());
 
