@@ -44,7 +44,7 @@ public class HtmlRoutinePage extends HtmlFormatter {
             Writer writer
     ) {
         PageData pageData = new PageData.Builder()
-                .templateName("routines/routine.html")
+                .templateName("routine.html")
                 .scriptName("routine.js")
                 .addToScope("routine", routine)
                 .addToScope("parameters",routine.getParameters())

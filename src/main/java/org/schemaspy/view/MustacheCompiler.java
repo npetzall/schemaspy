@@ -27,7 +27,6 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -45,32 +44,26 @@ import java.util.stream.IntStream;
 public class MustacheCompiler {
 
     private final String databaseName;
+    private final HtmlConfig htmlConfig;
     private final MustacheFactory mustacheFactory;
-    private final boolean multipleSchemas;
 
-    public MustacheCompiler(String databaseName, String templateDirectory, boolean isMultipleSchemas) {
+    public MustacheCompiler(String databaseName, HtmlConfig htmlConfig) {
         this.databaseName = databaseName;
-        this.mustacheFactory = new DefaultMustacheFactory(templateDirectory);
-        this.multipleSchemas = isMultipleSchemas;
+        this.htmlConfig = htmlConfig;
+        this.mustacheFactory = new DefaultMustacheFactory(htmlConfig.getTemplateDirectory());
     }
 
     public void write(PageData pageData, Writer writer) throws IOException {
-        StringWriter result = new StringWriter();
+        HashMap<String, Object> scope = new HashMap<>();
+        scope.put("databaseName", databaseName);
+        scope.put("pageScript",pageData.getScriptName());
+        scope.put("rootPath", getRootPath(pageData.getDepth()));
+        scope.put("rootPathtoHome", getRootPathToHome(pageData.getDepth()));
+        scope.put("paginationEnabled",htmlConfig.isPaginationEnabled());
+        scope.putAll(pageData.getScope());
 
-        HashMap<String, Object> containerScope = new HashMap<>();
-
-        Mustache mustachePage = mustacheFactory.compile(pageData.getTemplateName());
-        mustachePage.execute(result, pageData.getScope()).flush();
-
-        containerScope.put("databaseName", databaseName);
-        containerScope.put("content", result);
-        containerScope.put("pageScript",pageData.getScriptName());
-        containerScope.put("rootPath", getRootPath(pageData.getDepth()));
-        containerScope.put("rootPathtoHome", getRootPathToHome(pageData.getDepth()));
-        containerScope.putAll(pageData.getScope());
-
-        Mustache mustacheContainer = mustacheFactory.compile("container.html");
-        mustacheContainer.execute(writer, containerScope).flush();
+        Mustache mustacheContainer = mustacheFactory.compile(pageData.getTemplateName());
+        mustacheContainer.execute(writer, scope).flush();
     }
 
 
@@ -80,7 +73,7 @@ public class MustacheCompiler {
 
     private String getRootPathToHome(int depth) {
         String path = getRootPath(depth);
-        if (multipleSchemas) {
+        if (htmlConfig.isOneOfMultipleSchemas()) {
             path += "../";
         }
         return path;

@@ -167,7 +167,7 @@ public class SchemaAnalyzer {
             }
 
             prepareLayoutFiles(outputDir);
-            MustacheCompiler mustacheCompiler = new MustacheCompiler(dbName, config.getTemplateDirectory(), true);
+            MustacheCompiler mustacheCompiler = new MustacheCompiler(dbName, config);
             HtmlMultipleSchemasIndexPage htmlMultipleSchemasIndexPage = new HtmlMultipleSchemasIndexPage(mustacheCompiler);
             try (Writer writer = createWriter(outputDir,"index.html")) {
                 htmlMultipleSchemasIndexPage.write(dbName, mustacheCatalog, mustacheSchemas, meta, writer);
@@ -365,7 +365,7 @@ public class SchemaAnalyzer {
         } else {
             Files.deleteIfExists(impliedDotFile.toPath());
         }
-        MustacheCompiler mustacheCompiler = new MustacheCompiler(getDatabaseName(db), config.getTemplateDirectory(), config.isOneOfMultipleSchemas());
+        MustacheCompiler mustacheCompiler = new MustacheCompiler(getDatabaseName(db), config);
 
         HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage(mustacheCompiler);
         try (Writer writer = createWriter(outputDir, "relationships.html")) {

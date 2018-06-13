@@ -91,7 +91,7 @@ public class HtmlTablePage {
         String graphvizVersion = Dot.getInstance().getSupportedVersions().substring(4);
 
         PageData pageData = new PageData.Builder()
-                .templateName("tables/table.html")
+                .templateName("table.html")
                 .scriptName("table.js")
                 .addToScope("table", table)
                 .addToScope("comments", Markdown.toHtml(table.getComments(), mustacheCompiler.getRootPath(1)))

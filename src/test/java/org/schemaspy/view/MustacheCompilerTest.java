@@ -19,20 +19,41 @@
 package org.schemaspy.view;
 
 import org.assertj.core.api.SoftAssertions;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.regex.Pattern;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class MustacheCompilerTest {
 
-    private MustacheCompiler mustacheCompilerSingle = new MustacheCompiler("testingSingle", "mustache", false);
-    private MustacheCompiler mustacheCompilerMulti = new MustacheCompiler("testingMulti", "mustache", true);
 
-    private PageData pageData = new PageData.Builder()
+
+    private static MustacheCompiler mustacheCompilerSingle;
+    private static MustacheCompiler mustacheCompilerMulti;
+
+    private static PageData pageData = new PageData.Builder()
             .templateName("databaseName.html")
+            .addToScope("customData", "just-testing")
             .getPageData();
+
+    @BeforeClass
+    public static void setup() {
+        HtmlConfig singleConfig = mock(HtmlConfig.class);
+        when(singleConfig.getTemplateDirectory()).thenReturn("mustache");
+        when(singleConfig.isOneOfMultipleSchemas()).thenReturn(false);
+        mustacheCompilerSingle = new MustacheCompiler("testingSingle", singleConfig);
+
+        HtmlConfig multiConfig = mock(HtmlConfig.class);
+        when(multiConfig.getTemplateDirectory()).thenReturn("mustache");
+        when(multiConfig.isOneOfMultipleSchemas()).thenReturn(true);
+        mustacheCompilerMulti = new MustacheCompiler("testingMulti", multiConfig);
+    }
+
 
     @Test
     public void setsDatabaseName() throws IOException {
@@ -78,6 +99,19 @@ public class MustacheCompilerTest {
         softAssertions.assertThat(stringWriterMulti.toString()).matches(string ->
                 Pattern.compile("^rootPathToHome=\\.\\./$", Pattern.MULTILINE).matcher(string).find()
         );
+        softAssertions.assertAll();
+    }
+
+    @Test
+    public void inheritance() throws IOException {
+        StringWriter stringWriterSingle = new StringWriter();
+        StringWriter stringWriterMulti = new StringWriter();
+        mustacheCompilerSingle.write(pageData, stringWriterSingle);
+        mustacheCompilerMulti.write(pageData, stringWriterMulti);
+
+        SoftAssertions softAssertions = new SoftAssertions();
+        softAssertions.assertThat(stringWriterSingle.toString()).contains("content=just-testing");
+        softAssertions.assertThat(stringWriterMulti.toString()).contains("content=just-testing");
         softAssertions.assertAll();
     }
 }
