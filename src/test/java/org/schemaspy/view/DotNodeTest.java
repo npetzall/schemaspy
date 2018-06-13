@@ -23,11 +23,8 @@ import org.schemaspy.model.Database;
 import org.schemaspy.model.LogicalTable;
 import org.schemaspy.model.Table;
 
-import java.io.File;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Nils Petzaell
@@ -37,10 +34,8 @@ public class DotNodeTest {
     @Test
     public void escapeHtml() {
         Database database = mock(Database.class);
-        File outputDir = mock(File.class);
-        when(outputDir.toString()).thenReturn("output");
         Table table = new LogicalTable(database, "catalog", "schema", "<table>", "comment");
-        DotNode dotNode = new DotNode(table,"", outputDir);
+        DotNode dotNode = new DotNode(table,"", "output");
         System.out.println(dotNode.toString());
         assertThat(dotNode.toString()).contains("tooltip=\"&lt;table&gt;");
     }
@@ -48,10 +43,8 @@ public class DotNodeTest {
     @Test
     public void urlEncodeLink() {
         Database database = mock(Database.class);
-        File outputDir = mock(File.class);
-        when(outputDir.toString()).thenReturn("output");
         Table table = new LogicalTable(database, "catalog", "schema", "a table", "comment");
-        DotNode dotNode = new DotNode(table,"", outputDir);
+        DotNode dotNode = new DotNode(table,"", "output");
         assertThat(dotNode.toString()).contains("URL=\"a%20table.html\"");
     }
 }
