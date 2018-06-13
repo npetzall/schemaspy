@@ -392,7 +392,7 @@ public class SchemaAnalyzer {
         progressListener.graphingSummaryProgressed();
 
         List<ForeignKeyConstraint> constraints = DbAnalyzer.getForeignKeyConstraints(tables);
-        HtmlConstraintsPage htmlConstraintsPage = new  HtmlConstraintsPage(mustacheCompiler, config);
+        HtmlConstraintsPage htmlConstraintsPage = new  HtmlConstraintsPage(mustacheCompiler);
         try (Writer writer = createWriter(outputDir,"constraints.html")) {
             htmlConstraintsPage.write(constraints, tables, writer);
         }
@@ -406,14 +406,14 @@ public class SchemaAnalyzer {
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlColumnsPage htmlColumnsPage = new HtmlColumnsPage(mustacheCompiler, config);
+        HtmlColumnsPage htmlColumnsPage = new HtmlColumnsPage(mustacheCompiler);
         try (Writer writer = createWriter(outputDir,"columns.html")) {
             htmlColumnsPage.write(tables, writer);
         }
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlRoutinesPage htmlRoutinesPage = new HtmlRoutinesPage(mustacheCompiler, config);
+        HtmlRoutinesPage htmlRoutinesPage = new HtmlRoutinesPage(mustacheCompiler);
         try (Writer writer = createWriter(outputDir, "routines.html")) {
             htmlRoutinesPage.write(db.getRoutines(), writer);
         }

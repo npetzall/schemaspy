@@ -42,11 +42,9 @@ public class HtmlRoutinesPage extends HtmlFormatter {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final MustacheCompiler mustacheCompiler;
-    private final HtmlConfig htmlConfig;
 
-    public HtmlRoutinesPage(MustacheCompiler mustacheCompiler, HtmlConfig htmlConfig) {
+    public HtmlRoutinesPage(MustacheCompiler mustacheCompiler) {
         this.mustacheCompiler = mustacheCompiler;
-        this.htmlConfig = htmlConfig;
     }
 
     public void write(
@@ -57,7 +55,6 @@ public class HtmlRoutinesPage extends HtmlFormatter {
                 .templateName("routines.html")
                 .scriptName("routines.js")
                 .addToScope("routines", routines)
-                .addToScope("paginationEnabled", htmlConfig.isPaginationEnabled())
                 .getPageData();
 
         try {

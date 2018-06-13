@@ -66,8 +66,6 @@ public class HtmlMainIndexPage {
             List<? extends ForeignKeyConstraint> impliedConstraints,
             Writer writer
     ) {
-        String databaseName = getDatabaseName(database);
-
         List<MustacheTable> mustacheTables = new ArrayList<>();
 
         long columnsAmount = 0;
@@ -97,9 +95,7 @@ public class HtmlMainIndexPage {
                 .addToScope("anomaliesAmount", anomaliesAmount)
                 .addToScope("tables", mustacheTables)
                 .addToScope("database", database)
-                .addToScope("databaseName", databaseName)
                 .addToScope("description", htmlConfig.getDescription())
-                .addToScope("paginationEnabled", htmlConfig.isPaginationEnabled())
                 .addToScope("schema", new MustacheSchema(database.getSchema(), ""))
                 .addToScope("catalog", new MustacheCatalog(database.getCatalog(), ""))
                 .getPageData();
@@ -120,20 +116,5 @@ public class HtmlMainIndexPage {
         anomalies += DbAnalyzer.getDefaultNullStringColumns(new HashSet<Table>(tables)).size();
 
         return anomalies;
-    }
-
-    private static String getDatabaseName(Database db) {
-        StringBuilder description = new StringBuilder();
-
-        description.append(db.getName());
-        if (db.getSchema() != null) {
-            description.append('.');
-            description.append(db.getSchema().getName());
-        } else if (db.getCatalog() != null) {
-            description.append('.');
-            description.append(db.getCatalog().getName());
-        }
-
-        return description.toString();
     }
 }

@@ -49,11 +49,9 @@ public class HtmlConstraintsPage extends HtmlFormatter {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final MustacheCompiler mustacheCompiler;
-    private final HtmlConfig htmlConfig;
 
-    public HtmlConstraintsPage(MustacheCompiler mustacheCompiler, HtmlConfig htmlConfig) {
+    public HtmlConstraintsPage(MustacheCompiler mustacheCompiler) {
         this.mustacheCompiler = mustacheCompiler;
-        this.htmlConfig = htmlConfig;
     }
 
     public void write(
@@ -66,7 +64,6 @@ public class HtmlConstraintsPage extends HtmlFormatter {
                 .scriptName("constraint.js")
                 .addToScope("constraints", constraints)
                 .addToScope("checkConstraints", collectCheckConstraints(tables))
-                .addToScope("paginationEnabled", htmlConfig.isPaginationEnabled())
                 .getPageData();
 
         try {

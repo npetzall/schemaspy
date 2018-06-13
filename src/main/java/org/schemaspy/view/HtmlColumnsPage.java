@@ -49,11 +49,9 @@ public class HtmlColumnsPage extends HtmlFormatter {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final MustacheCompiler mustacheCompiler;
-    private final HtmlConfig htmlConfig;
 
-    public HtmlColumnsPage(MustacheCompiler mustacheCompiler, HtmlConfig htmlConfig) {
+    public HtmlColumnsPage(MustacheCompiler mustacheCompiler) {
         this.mustacheCompiler = mustacheCompiler;
-        this.htmlConfig = htmlConfig;
     }
 
     public void write(
@@ -74,7 +72,6 @@ public class HtmlColumnsPage extends HtmlFormatter {
                 .templateName("column.html")
                 .scriptName("column.js")
                 .addToScope("columns", tableColumns)
-                .addToScope("paginationEnabled",htmlConfig.isPaginationEnabled())
                 .getPageData();
 
         try {
