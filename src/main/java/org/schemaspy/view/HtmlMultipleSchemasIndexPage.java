@@ -24,13 +24,13 @@ package org.schemaspy.view;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -39,51 +39,44 @@ import java.util.List;
  * @author John Currier
  * @author Rafal Kasa
  * @author Ismail Simsek
+ * @author Nils Petzaell
  */
 public class HtmlMultipleSchemasIndexPage extends HtmlFormatter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static HtmlMultipleSchemasIndexPage instance = new HtmlMultipleSchemasIndexPage();
+    private final MustacheCompiler mustacheCompiler;
 
-    /**
-     * Singleton: Don't allow instantiation
-     */
-    private HtmlMultipleSchemasIndexPage() {
+    public HtmlMultipleSchemasIndexPage(MustacheCompiler mustacheCompiler) {
+        this.mustacheCompiler = mustacheCompiler;
     }
-
-    /**
-     * Singleton accessor
-     *
-     * @return the singleton instance
-     */
-    public static HtmlMultipleSchemasIndexPage getInstance() {
-        return instance;
-    }
-
 
     public void write(
-            File outputDir,
             String dbName,
             MustacheCatalog catalog,
             List<MustacheSchema> schemas,
-            DatabaseMetaData meta
+            DatabaseMetaData meta,
+            Writer writer
     ) {
         String connectTime = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("EEE MMM dd HH:mm z yyyy"));
 
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("databaseName", dbName);
-        scopes.put("connectTime", connectTime);
+        PageData pageData = new PageData.Builder()
+                .templateName("multi.html")
+                .addToScope("databaseName", dbName)
+                .addToScope("connectTime", connectTime)
+                .addToScope("databaseProduct", getDatabaseProduct(meta))
+                .addToScope("schemas", schemas)
+                .addToScope("catalog", catalog)
+                .addToScope("schemasNumber", Integer.toString(schemas.size()))
+                .addToScope("multipleSchemas", true)
+                .addToScope("isMultipleSchemas", true)
+                .getPageData();
 
-        scopes.put("databaseProduct", getDatabaseProduct(meta));
-        scopes.put("schemas", schemas);
-        scopes.put("catalog", catalog);
-        scopes.put("schemasNumber", Integer.toString(schemas.size()));
-
-        scopes.put("multipleSchemas", true);
-
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, "", dbName, true);
-        mw.write("multi.html", "index.html", "");
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write index page of multischemas", e);
+        }
     }
 
     /**

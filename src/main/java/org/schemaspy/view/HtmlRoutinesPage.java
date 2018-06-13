@@ -20,13 +20,14 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.model.Database;
 import org.schemaspy.model.Routine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.TreeSet;
 
 /**
  * The page that lists all of the routines (stored procedures and functions)
@@ -38,24 +39,32 @@ import java.util.TreeSet;
  */
 public class HtmlRoutinesPage extends HtmlFormatter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final MustacheCompiler mustacheCompiler;
     private final HtmlConfig htmlConfig;
 
-    public HtmlRoutinesPage(HtmlConfig htmlConfig) {
+    public HtmlRoutinesPage(MustacheCompiler mustacheCompiler, HtmlConfig htmlConfig) {
+        this.mustacheCompiler = mustacheCompiler;
         this.htmlConfig = htmlConfig;
     }
 
     public void write(
-            Database db,
-            File outputDir
+            Collection<Routine> routines,
+            Writer writer
     ) {
-        Collection<Routine> routines = new TreeSet<>(db.getRoutines());
+        PageData pageData = new PageData.Builder()
+                .templateName("routines.html")
+                .scriptName("routines.js")
+                .addToScope("routines", routines)
+                .addToScope("paginationEnabled", htmlConfig.isPaginationEnabled())
+                .getPageData();
 
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("routines", routines);
-        scopes.put("paginationEnabled", htmlConfig.isPaginationEnabled());
-
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
-        mw.write("routines.html", "routines.html", "routines.js");
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to writer routines page", e);
+        }
     }
 
 }

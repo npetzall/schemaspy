@@ -262,7 +262,7 @@ public final class Config implements HtmlConfig {
         if (templateDirectory == null) {
             templateDirectory = pullParam("-template");
             if (templateDirectory == null) {
-                templateDirectory = "/layout";
+                templateDirectory = "layout";
             }
         }
         return templateDirectory;

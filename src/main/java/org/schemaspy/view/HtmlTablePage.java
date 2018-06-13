@@ -23,14 +23,21 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.model.*;
+import org.schemaspy.model.ForeignKeyConstraint;
+import org.schemaspy.model.Table;
+import org.schemaspy.model.TableColumn;
+import org.schemaspy.model.TableIndex;
 import org.schemaspy.util.DiagramUtil;
 import org.schemaspy.util.Dot;
 import org.schemaspy.util.LineWriter;
 import org.schemaspy.util.Markdown;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
@@ -45,17 +52,26 @@ import java.util.*;
  * @author Daniel Watt
  * @author Nils Petzaell
  */
-public class HtmlTablePage extends HtmlFormatter {
+public class HtmlTablePage {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final MustacheCompiler mustacheCompiler;
     private final SqlAnalyzer sqlAnalyzer;
     private final HtmlConfig htmlConfig;
 
-    public HtmlTablePage(SqlAnalyzer sqlAnalyzer, HtmlConfig htmlConfig) {
+    public HtmlTablePage(MustacheCompiler mustacheCompiler, SqlAnalyzer sqlAnalyzer, HtmlConfig htmlConfig) {
+        this.mustacheCompiler = mustacheCompiler;
         this.sqlAnalyzer = sqlAnalyzer;
         this.htmlConfig = htmlConfig;
     }
 
-    public void write(Database db, Table table, File outputDir, WriteStats stats) throws IOException {
+    public void write(
+            Table table,
+            File outputDir,
+            WriteStats stats,
+            Writer writer
+    ) throws IOException {
         Set<TableColumn> indexes = new HashSet<>();
         Set<MustacheTableColumn> tableColumns = new LinkedHashSet<>();
         Set<MustacheTableIndex> indexedColumns = new LinkedHashSet<>();
@@ -67,31 +83,36 @@ public class HtmlTablePage extends HtmlFormatter {
         }
 
         for (TableColumn column : table.getColumns()) {
-            tableColumns.add(new MustacheTableColumn(column, indexes, getPathToRoot()));
+            tableColumns.add(new MustacheTableColumn(column, indexes, mustacheCompiler.getRootPath(1)));
         }
-
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("table", table);
-        scopes.put("comments", Markdown.toHtml(table.getComments(), getPathToRoot()));
-        scopes.put("columns", tableColumns);
-        scopes.put("indexes", indexedColumns);
 
         List<MustacheTableDiagram> diagrams = new ArrayList<>();
         Object graphvizExists = generateDiagrams(table, stats, outputDir, diagrams);
         String graphvizVersion = Dot.getInstance().getSupportedVersions().substring(4);
-        scopes.put("graphvizExists", graphvizExists);
-        scopes.put("graphvizVersion", graphvizVersion);
 
-        scopes.put("diagrams", diagrams);
-        scopes.put("sqlCode", sqlCode(table));
-        scopes.put("references", sqlReferences(table));
+        PageData pageData = new PageData.Builder()
+                .templateName("tables/table.html")
+                .scriptName("table.js")
+                .addToScope("table", table)
+                .addToScope("comments", Markdown.toHtml(table.getComments(), mustacheCompiler.getRootPath(1)))
+                .addToScope("columns", tableColumns)
+                .addToScope("indexes", indexedColumns)
+                .addToScope("graphvizExists", graphvizExists)
+                .addToScope("graphvizVersion", graphvizVersion)
+                .addToScope("diagrams", diagrams)
+                .addToScope("sqlCode", sqlCode(table))
+                .addToScope("references", sqlReferences(table))
+                .addToScope("diagramExists", DiagramUtil.diagramExists(diagrams))
+                .addToScope("indexExists", indexExists(table, indexedColumns))
+                .addToScope("definitionExists", definitionExists(table))
+                .depth(1)
+                .getPageData();
 
-        scopes.put("diagramExists", DiagramUtil.diagramExists(diagrams));
-        scopes.put("indexExists", indexExists(table, indexedColumns));
-        scopes.put("definitionExists", definitionExists(table));
-
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
-        mw.write("tables/table.html", Markdown.pagePath(table.getName()), "table.js");
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write table page for '{}'", table.getName(), e);
+        }
     }
 
 
@@ -207,10 +228,5 @@ public class HtmlTablePage extends HtmlFormatter {
         }
 
         return graphviz;
-    }
-
-    @Override
-    protected String getPathToRoot() {
-        return "../";
     }
 }

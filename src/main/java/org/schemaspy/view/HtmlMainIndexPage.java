@@ -28,9 +28,16 @@ import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.Markdown;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.*;
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * The main index that contains all tables and views that were evaluated
@@ -41,11 +48,15 @@ import java.util.*;
  * @author Daniel Watt
  * @author Nils Petzaell
  */
-public class HtmlMainIndexPage extends HtmlFormatter {
+public class HtmlMainIndexPage {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final MustacheCompiler mustacheCompiler;
     private final HtmlConfig htmlConfig;
 
-    public HtmlMainIndexPage(HtmlConfig htmlConfig) {
+    public HtmlMainIndexPage(MustacheCompiler mustacheCompiler, HtmlConfig htmlConfig) {
+        this.mustacheCompiler = mustacheCompiler;
         this.htmlConfig = htmlConfig;
     }
 
@@ -53,7 +64,7 @@ public class HtmlMainIndexPage extends HtmlFormatter {
             Database database,
             Collection<Table> tables,
             List<? extends ForeignKeyConstraint> impliedConstraints,
-            File outputDir
+            Writer writer
     ) {
         String databaseName = getDatabaseName(database);
 
@@ -75,24 +86,29 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         long routinesAmount = database.getRoutines().size();
         long anomaliesAmount = getAllAnomaliesAmount(tables, impliedConstraints);
 
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("tablesAmount", tablesAmount);
-        scopes.put("viewsAmount", viewsAmount);
-        scopes.put("columnsAmount", columnsAmount);
-        scopes.put("constraintsAmount", constraintsAmount);
-        scopes.put("routinesAmount", routinesAmount);
-        scopes.put("anomaliesAmount", anomaliesAmount);
+        PageData pageData = new PageData.Builder()
+                .templateName("main.html")
+                .scriptName("main.js")
+                .addToScope("tablesAmount", tablesAmount)
+                .addToScope("viewsAmount", viewsAmount)
+                .addToScope("columnsAmount", columnsAmount)
+                .addToScope("constraintsAmount", constraintsAmount)
+                .addToScope("routinesAmount", routinesAmount)
+                .addToScope("anomaliesAmount", anomaliesAmount)
+                .addToScope("tables", mustacheTables)
+                .addToScope("database", database)
+                .addToScope("databaseName", databaseName)
+                .addToScope("description", htmlConfig.getDescription())
+                .addToScope("paginationEnabled", htmlConfig.isPaginationEnabled())
+                .addToScope("schema", new MustacheSchema(database.getSchema(), ""))
+                .addToScope("catalog", new MustacheCatalog(database.getCatalog(), ""))
+                .getPageData();
 
-        scopes.put("tables", mustacheTables);
-        scopes.put("database", database);
-        scopes.put("databaseName", databaseName);
-        scopes.put("description", htmlConfig.getDescription());
-        scopes.put("paginationEnabled", htmlConfig.isPaginationEnabled());
-        scopes.put("schema", new MustacheSchema(database.getSchema(), ""));
-        scopes.put("catalog", new MustacheCatalog(database.getCatalog(), ""));
-        
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, "", database.getName(), false);
-        mw.write("main.html", "index.html", "main.js");
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write index page", e);
+        }
     }
 
     private static long getAllAnomaliesAmount(Collection<Table> tables, List<? extends ForeignKeyConstraint> impliedConstraints) {

@@ -21,7 +21,6 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.model.Database;
 import org.schemaspy.model.ProgressListener;
 import org.schemaspy.util.DiagramUtil;
 import org.schemaspy.util.Dot;
@@ -30,9 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -46,14 +45,19 @@ public class HtmlRelationshipsPage extends HtmlDiagramFormatter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    private final MustacheCompiler mustacheCompiler;
+
+    public HtmlRelationshipsPage(MustacheCompiler mustacheCompiler) {
+        this.mustacheCompiler = mustacheCompiler;
+    }
+
     public boolean write(
-            Database db,
             File diagramDir,
             String dotBaseFilespec,
             boolean hasRealRelationships,
             boolean hasImpliedRelationships,
     		ProgressListener listener,
-            File outputDir
+            Writer writer
     ) {
         try {
             Dot dot = getDot();
@@ -86,16 +90,19 @@ public class HtmlRelationshipsPage extends HtmlDiagramFormatter {
 
             String graphvizVersion = Dot.getInstance().getSupportedVersions().substring(4);
             Object graphvizExists = dot;
-            HashMap<String, Object> scopes = new HashMap<>();
-            scopes.put("graphvizExists", graphvizExists);
-            scopes.put("graphvizVersion", graphvizVersion);
-            scopes.put("diagramExists", DiagramUtil.diagramExists(diagrams));
-            scopes.put("hasOnlyImpliedRelationships", hasOnlyImpliedRelationships(hasRealRelationships, hasImpliedRelationships));
-            scopes.put("anyRelationships", anyRelationships(hasRealRelationships, hasImpliedRelationships));
-            scopes.put("diagrams", diagrams);
 
-            MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
-            mw.write("relationships.html", "relationships.html", "relationships.js");
+            PageData pageData = new PageData.Builder()
+                    .templateName("relationships.html")
+                    .scriptName("relationships.js")
+                    .addToScope("graphvizExists", graphvizExists)
+                    .addToScope("graphvizVersion", graphvizVersion)
+                    .addToScope("diagramExists", DiagramUtil.diagramExists(diagrams))
+                    .addToScope("hasOnlyImpliedRelationships", hasOnlyImpliedRelationships(hasRealRelationships, hasImpliedRelationships))
+                    .addToScope("anyRelationships", anyRelationships(hasRealRelationships, hasImpliedRelationships))
+                    .addToScope("diagrams", diagrams)
+                    .getPageData();
+
+            mustacheCompiler.write(pageData, writer);
             return true;
         } catch (IOException ioExc) {
             LOGGER.error("Failed to generate output for relationship page", ioExc);

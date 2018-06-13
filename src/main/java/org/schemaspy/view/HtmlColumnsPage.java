@@ -22,13 +22,15 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,16 +46,19 @@ import java.util.stream.Collectors;
  */
 public class HtmlColumnsPage extends HtmlFormatter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final MustacheCompiler mustacheCompiler;
     private final HtmlConfig htmlConfig;
 
-    public HtmlColumnsPage(HtmlConfig htmlConfig) {
+    public HtmlColumnsPage(MustacheCompiler mustacheCompiler, HtmlConfig htmlConfig) {
+        this.mustacheCompiler = mustacheCompiler;
         this.htmlConfig = htmlConfig;
     }
 
     public void write(
-            Database database,
             Collection<Table> tables,
-            File outputDir
+            Writer writer
     ) {
         Set<TableColumn> indexedColumns = tables.stream()
                 .flatMap(table -> table.getIndexes().stream())
@@ -65,11 +70,17 @@ public class HtmlColumnsPage extends HtmlFormatter {
                 .map(tableColumn -> new MustacheTableColumn(tableColumn, indexedColumns, getPathToRoot()))
                 .collect(Collectors.toSet());
 
-        HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("columns", tableColumns);
-        scopes.put("paginationEnabled",htmlConfig.isPaginationEnabled());
+        PageData pageData = new PageData.Builder()
+                .templateName("column.html")
+                .scriptName("column.js")
+                .addToScope("columns", tableColumns)
+                .addToScope("paginationEnabled",htmlConfig.isPaginationEnabled())
+                .getPageData();
 
-        MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), database.getName(), false);
-        mw.write("column.html", "columns.html", "column.js");
+        try {
+            mustacheCompiler.write(pageData, writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to writer columns page", e);
+        }
     }
 }

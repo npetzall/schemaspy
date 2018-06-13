@@ -38,6 +38,7 @@ import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
 import org.schemaspy.util.Dot;
 import org.schemaspy.util.LineWriter;
+import org.schemaspy.util.Markdown;
 import org.schemaspy.util.ResourceWriter;
 import org.schemaspy.view.*;
 import org.slf4j.Logger;
@@ -46,14 +47,18 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * @author John Currier
@@ -162,13 +167,22 @@ public class SchemaAnalyzer {
             }
 
             prepareLayoutFiles(outputDir);
-            HtmlMultipleSchemasIndexPage.getInstance().write(outputDir, dbName, mustacheCatalog, mustacheSchemas, meta);
+            MustacheCompiler mustacheCompiler = new MustacheCompiler(dbName, config.getTemplateDirectory(), true);
+            HtmlMultipleSchemasIndexPage htmlMultipleSchemasIndexPage = new HtmlMultipleSchemasIndexPage(mustacheCompiler);
+            try (Writer writer = createWriter(outputDir,"index.html")) {
+                htmlMultipleSchemasIndexPage.write(dbName, mustacheCatalog, mustacheSchemas, meta, writer);
+            }
 
             return db;
         } catch (Config.MissingRequiredParameterException missingParam) {
             config.dumpUsage(missingParam.getMessage(), missingParam.isDbTypeSpecific());
             return null;
         }
+    }
+
+    private Connection getConnection(Config config) throws IOException {
+        DbDriverLoader driverLoader = new DbDriverLoader();
+        return driverLoader.getConnection(config);
     }
 
     public Database analyze(String schema, Config config, File outputDir, ProgressListener progressListener) throws SQLException, IOException {
@@ -351,47 +365,64 @@ public class SchemaAnalyzer {
         } else {
             Files.deleteIfExists(impliedDotFile.toPath());
         }
+        MustacheCompiler mustacheCompiler = new MustacheCompiler(getDatabaseName(db), config.getTemplateDirectory(), config.isOneOfMultipleSchemas());
 
-        HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage();
-        htmlRelationshipsPage.write(db, summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, progressListener, outputDir);
+        HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage(mustacheCompiler);
+        try (Writer writer = createWriter(outputDir, "relationships.html")) {
+            htmlRelationshipsPage.write(summaryDir, dotBaseFilespec, hasRealRelationships, hasImplied, progressListener, writer);
+        }
 
         progressListener.graphingSummaryProgressed();
 
         File orphansDir = new File(outputDir, "diagrams/orphans");
         FileUtils.forceMkdir(orphansDir);
-        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage();
-        htmlOrphansPage.write(db, orphans, orphansDir, outputDir);
+        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(mustacheCompiler);
+        try (Writer writer = createWriter(outputDir, "orphans.html")) {
+            htmlOrphansPage.write(orphans, orphansDir, outputDir, writer);
+        }
         out.close();
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(config);
-        htmlMainIndexPage.write(db, tables, impliedConstraints, outputDir);
+        HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(mustacheCompiler, config);
+        try (Writer writer = createWriter(outputDir, "index.html")) {
+            htmlMainIndexPage.write(db, tables, impliedConstraints, writer);
+        }
 
         progressListener.graphingSummaryProgressed();
 
         List<ForeignKeyConstraint> constraints = DbAnalyzer.getForeignKeyConstraints(tables);
-        HtmlConstraintsPage htmlConstraintsPage = new  HtmlConstraintsPage(config);
-        htmlConstraintsPage.write(db, constraints, tables, outputDir);
+        HtmlConstraintsPage htmlConstraintsPage = new  HtmlConstraintsPage(mustacheCompiler, config);
+        try (Writer writer = createWriter(outputDir,"constraints.html")) {
+            htmlConstraintsPage.write(constraints, tables, writer);
+        }
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlAnomaliesPage htmlAnomaliesPage = new HtmlAnomaliesPage(config);
-        htmlAnomaliesPage.write(db, tables, impliedConstraints, outputDir);
+        HtmlAnomaliesPage htmlAnomaliesPage = new HtmlAnomaliesPage(mustacheCompiler, config);
+        try (Writer writer = createWriter(outputDir, "anomalies.html")) {
+            htmlAnomaliesPage.write(tables, impliedConstraints, writer);
+        }
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlColumnsPage htmlColumnsPage = new HtmlColumnsPage(config);
-        htmlColumnsPage.write(db, tables, outputDir);
+        HtmlColumnsPage htmlColumnsPage = new HtmlColumnsPage(mustacheCompiler, config);
+        try (Writer writer = createWriter(outputDir,"columns.html")) {
+            htmlColumnsPage.write(tables, writer);
+        }
 
         progressListener.graphingSummaryProgressed();
 
-        HtmlRoutinesPage htmlRoutinesPage = new HtmlRoutinesPage(config);
-        htmlRoutinesPage.write(db, outputDir);
+        HtmlRoutinesPage htmlRoutinesPage = new HtmlRoutinesPage(mustacheCompiler, config);
+        try (Writer writer = createWriter(outputDir, "routines.html")) {
+            htmlRoutinesPage.write(db.getRoutines(), writer);
+        }
 
-        HtmlRoutinePage htmlRoutinePage = new HtmlRoutinePage();
+        HtmlRoutinePage htmlRoutinePage = new HtmlRoutinePage(mustacheCompiler);
         for(Routine routine : db.getRoutines()) {
-            htmlRoutinePage.write(db, routine, outputDir);
+            try (Writer writer = createWriter(outputDir, "routines/" + routine.getName() + ".html")) {
+                htmlRoutinePage.write(routine, writer);
+            }
         }
 
         // create detailed diagrams
@@ -402,11 +433,13 @@ public class SchemaAnalyzer {
         LOGGER.info("Writing/diagramming details");
 
         SqlAnalyzer sqlAnalyzer = new SqlAnalyzer(db.getDbmsMeta().getAllKeywords(),db.getTables(),db.getViews());
-        HtmlTablePage htmlTablePage = new HtmlTablePage(sqlAnalyzer, config);
+        HtmlTablePage htmlTablePage = new HtmlTablePage(mustacheCompiler, sqlAnalyzer, config);
         for (Table table : tables) {
             progressListener.graphingDetailsProgressed(table);
             LOGGER.debug("Writing details of {}", table.getName());
-            htmlTablePage.write(db, table, outputDir, stats);
+            try (Writer writer = createWriter(outputDir, Markdown.pagePath(table.getName()))) {
+                htmlTablePage.write(table, outputDir, stats, writer);
+            }
         }
     }
 
@@ -431,9 +464,23 @@ public class SchemaAnalyzer {
         ResourceWriter.copyResources(url, outputDir, filter);
     }
 
-    private Connection getConnection(Config config) throws IOException {
-        DbDriverLoader driverLoader = new DbDriverLoader();
-        return driverLoader.getConnection(config);
+    private static String getDatabaseName(Database db) {
+        StringBuilder description = new StringBuilder();
+
+        description.append(db.getName());
+        if (db.getSchema() != null) {
+            description.append('.');
+            description.append(db.getSchema().getName());
+        } else if (db.getCatalog() != null) {
+            description.append('.');
+            description.append(db.getCatalog().getName());
+        }
+
+        return description.toString();
+    }
+
+    private Writer createWriter(File outputDir, String fileName) throws IOException {
+        return Files.newBufferedWriter(outputDir.toPath().resolve(fileName), StandardCharsets.UTF_8, CREATE, WRITE, TRUNCATE_EXISTING);
     }
 
     /**
