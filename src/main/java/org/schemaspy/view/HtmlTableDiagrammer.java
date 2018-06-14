@@ -23,6 +23,7 @@ package org.schemaspy.view;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.DiagramUtil;
 import org.schemaspy.util.Dot;
+import org.schemaspy.util.FilenameSanitizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,14 +52,16 @@ public class HtmlTableDiagrammer extends HtmlDiagramFormatter {
             Dot dot = getDot();
             if (dot == null) return false;
 
-            File oneDegreeDotFile = new File(diagramDir, table.getName() + ".1degree.dot");
-            File oneDegreeDiagramFile = new File(diagramDir, table.getName() + ".1degree." + dot.getFormat());
-            File twoDegreesDotFile = new File(diagramDir, table.getName() + ".2degrees.dot");
-            File twoDegreesDiagramFile = new File(diagramDir, table.getName() + ".2degrees." + dot.getFormat());
-            File oneImpliedDotFile = new File(diagramDir, table.getName() + ".implied1degrees.dot");
-            File oneImpliedDiagramFile = new File(diagramDir, table.getName() + ".implied1degrees." + dot.getFormat());
-            File twoImpliedDotFile = new File(diagramDir, table.getName() + ".implied2degrees.dot");
-            File twoImpliedDiagramFile = new File(diagramDir, table.getName() + ".implied2degrees." + dot.getFormat());
+            String filenameBase = FilenameSanitizer.sanitize(table.getName());
+
+            File oneDegreeDotFile = new File(diagramDir, filenameBase + ".1degree.dot");
+            File oneDegreeDiagramFile = new File(diagramDir, filenameBase + ".1degree." + dot.getFormat());
+            File twoDegreesDotFile = new File(diagramDir, filenameBase + ".2degrees.dot");
+            File twoDegreesDiagramFile = new File(diagramDir, filenameBase + ".2degrees." + dot.getFormat());
+            File oneImpliedDotFile = new File(diagramDir, filenameBase + ".implied1degrees.dot");
+            File oneImpliedDiagramFile = new File(diagramDir, filenameBase + ".implied1degrees." + dot.getFormat());
+            File twoImpliedDotFile = new File(diagramDir, filenameBase + ".implied2degrees.dot");
+            File twoImpliedDiagramFile = new File(diagramDir, filenameBase + ".implied2degrees." + dot.getFormat());
 
 
             DiagramUtil.generateDiagram("One", dot, oneDegreeDotFile, oneDegreeDiagramFile, diagrams, true, false);

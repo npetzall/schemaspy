@@ -25,15 +25,13 @@ package org.schemaspy.view;
 
 import org.schemaspy.Config;
 import org.schemaspy.model.*;
-import org.schemaspy.util.DiagramUtil;
-import org.schemaspy.util.Dot;
-import org.schemaspy.util.LineWriter;
-import org.schemaspy.util.Markdown;
+import org.schemaspy.util.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * The page that contains the details of a specific table or view
@@ -106,6 +104,7 @@ public class HtmlTablePage extends HtmlFormatter {
         scopes.put("diagramExists", DiagramUtil.diagramExists(diagrams));
         scopes.put("indexExists", indexExists(table, indexedColumns));
         scopes.put("definitionExists", definitionExists(table));
+        scopes.put("sanitizeName", (Function<String,String>) s -> FilenameSanitizer.sanitize(s));
         System.out.println("Table -> "+table.getName());
         MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
         mw.write("tables/table.html", Markdown.pagePath(table.getName()), "table.js");
@@ -160,14 +159,16 @@ public class HtmlTablePage extends HtmlFormatter {
         Dot dot = Dot.getInstance();
         String extension = dot == null ? Config.getInstance().getImageFormat() : dot.getFormat();
 
-        File oneDegreeDotFile = new File(diagramDir, table.getName() + ".1degree.dot");
-        File oneDegreeDiagramFile = new File(diagramDir, table.getName() + ".1degree." + extension);
-        File twoDegreesDotFile = new File(diagramDir, table.getName() + ".2degrees.dot");
-        File twoDegreesDiagramFile = new File(diagramDir, table.getName() + ".2degrees." + extension);
-        File oneImpliedDotFile = new File(diagramDir, table.getName() + ".implied1degrees.dot");
-        File oneImpliedDiagramFile = new File(diagramDir, table.getName() + ".implied1degrees." + extension);
-        File twoImpliedDotFile = new File(diagramDir, table.getName() + ".implied2degrees.dot");
-        File twoImpliedDiagramFile = new File(diagramDir, table.getName() + ".implied2degrees." + extension);
+        String filenameBase = FilenameSanitizer.sanitize(table.getName());
+
+        File oneDegreeDotFile = new File(diagramDir, filenameBase + ".1degree.dot");
+        File oneDegreeDiagramFile = new File(diagramDir, filenameBase + ".1degree." + extension);
+        File twoDegreesDotFile = new File(diagramDir, filenameBase + ".2degrees.dot");
+        File twoDegreesDiagramFile = new File(diagramDir, filenameBase + ".2degrees." + extension);
+        File oneImpliedDotFile = new File(diagramDir, filenameBase + ".implied1degrees.dot");
+        File oneImpliedDiagramFile = new File(diagramDir, filenameBase + ".implied1degrees." + extension);
+        File twoImpliedDotFile = new File(diagramDir, filenameBase + ".implied2degrees.dot");
+        File twoImpliedDiagramFile = new File(diagramDir, filenameBase + ".implied2degrees." + extension);
 
         // delete before we start because we'll use the existence of these files to determine
         // if they should be turned into pngs & presented

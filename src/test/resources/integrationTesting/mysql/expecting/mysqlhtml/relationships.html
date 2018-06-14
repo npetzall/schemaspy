@@ -91,34 +91,46 @@
             <!-- Tabs within a box -->
 			<h5>By default only columns that are primary keys, foreign keys or indexes are shown.</h5>
             <ul class="nav nav-tabs pull-left ui-sortable-handle">
-			  			              <li class="active"><a href="#compactimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">Compact Implied</a></li>			  			 
+			  			              <li class="active"><a href="#compactDegreeImg-chart" data-toggle="tab" aria-expanded="true">Compact</a></li>
+			  			              <li class=""><a href="#largeDegreeImg-chart" data-toggle="tab" aria-expanded="true">Large</a></li>
+			  			              <li class=""><a href="#compactimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">Compact Implied</a></li>
 			  			              <li class=""><a href="#largeimpliedDegreeImg-chart" data-toggle="tab" aria-expanded="true">Large Implied</a></li>			  			 
             </ul>
             <div class="tab-content no-padding">            
-				<div class="chart tab-pane active" id="compactimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
-							<div class="alert alert-warning alert-dismissible">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h4><i class="icon fa fa-info-circle"></i> Implied Relationships</h4>
-								<p>No 'real' Foreign Key relationships were detected in the schema.<br>
-								Displayed relationships are implied by a column's name/type/size matching another table's primary key.</p>
-							</div> 
+				<div class="chart tab-pane active" id="compactDegreeImg-chart" style="position: relative; overflow-x:auto;">
+																					<map id="compactRelationshipsDiagram" name="compactRelationshipsDiagram">
+<area shape="rect" id="node1" href="tables/group.html" title="group" alt="" coords="5,5,156,152">
+<area shape="rect" id="node2" href="tables/resources.html" title="resources" alt="" coords="5,169,156,316">
+<area shape="rect" id="node3" href="tables/resources_for_groups.html" title="resources/for/groups" alt="" coords="200,44,437,220">
+</map>
+
+					<a name='diagram'><img id='compactDegreeImg' src='diagrams/summary/relationships.real.compact.png' usemap='#compactRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
+				</div>
+				<div class="chart tab-pane " id="largeDegreeImg-chart" style="position: relative; overflow-x:auto;">
+																					<map id="largeRelationshipsDiagram" name="largeRelationshipsDiagram">
+<area shape="rect" id="node1" href="tables/group.html" title="group" alt="" coords="5,5,156,157">
+<area shape="rect" id="node2" href="tables/resources.html" title="resources" alt="" coords="5,175,156,327">
+<area shape="rect" id="node3" href="tables/resources_for_groups.html" title="resources/for/groups" alt="" coords="200,47,437,228">
+</map>
+
+					<a name='diagram'><img id='largeDegreeImg' src='diagrams/summary/relationships.real.large.png' usemap='#largeRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>
+				</div>
+				<div class="chart tab-pane " id="compactimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
 																											<map id="compactImpliedRelationshipsDiagram" name="compactImpliedRelationshipsDiagram">
-<area shape="rect" id="node1" href="tables/group.html" title="group" alt="" coords="5,35,156,181">
-<area shape="rect" id="node2" href="tables/user.html" title="user" alt="" coords="200,5,319,181">
+<area shape="rect" id="node1" href="tables/group.html" title="group" alt="" coords="5,64,156,211">
+<area shape="rect" id="node2" href="tables/resources.html" title="resources" alt="" coords="5,257,156,404">
+<area shape="rect" id="node3" href="tables/resources_for_groups.html" title="resources/for/groups" alt="" coords="200,199,437,375">
+<area shape="rect" id="node4" href="tables/user.html" title="user" alt="" coords="259,5,378,181">
 </map>
 
 					<a name='diagram'><img id='compactimpliedDegreeImg' src='diagrams/summary/relationships.implied.compact.png' usemap='#compactImpliedRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>							
 				</div>
 				<div class="chart tab-pane " id="largeimpliedDegreeImg-chart" style="position: relative; overflow-x:auto;">
-							<div class="alert alert-warning alert-dismissible">
-								<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-								<h4><i class="icon fa fa-info-circle"></i> Implied Relationships</h4>
-								<p>No 'real' Foreign Key relationships were detected in the schema.<br>
-								Displayed relationships are implied by a column's name/type/size matching another table's primary key.</p>
-							</div> 
 																											<map id="largeImpliedRelationshipsDiagram" name="largeImpliedRelationshipsDiagram">
-<area shape="rect" id="node1" href="tables/group.html" title="group" alt="" coords="5,35,156,187">
-<area shape="rect" id="node2" href="tables/user.html" title="user" alt="" coords="200,5,319,187">
+<area shape="rect" id="node1" href="tables/group.html" title="group" alt="" coords="5,64,156,216">
+<area shape="rect" id="node2" href="tables/resources.html" title="resources" alt="" coords="5,263,156,415">
+<area shape="rect" id="node3" href="tables/resources_for_groups.html" title="resources/for/groups" alt="" coords="200,204,437,385">
+<area shape="rect" id="node4" href="tables/user.html" title="user" alt="" coords="259,5,378,187">
 </map>
 
 					<a name='diagram'><img id='largeimpliedDegreeImg' src='diagrams/summary/relationships.implied.large.png' usemap='#largeImpliedRelationshipsDiagram' class='diagram' border='0' alt='' align='left'></a>							

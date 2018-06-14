@@ -28,11 +28,13 @@ import org.schemaspy.DbAnalyzer;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
+import org.schemaspy.util.FilenameSanitizer;
 import org.schemaspy.util.Markdown;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * The main index that contains all tables and views that were evaluated
@@ -111,6 +113,7 @@ public class HtmlMainIndexPage extends HtmlFormatter {
         scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
         scopes.put("schema", new MustacheSchema(database.getSchema(), ""));
         scopes.put("catalog", new MustacheCatalog(database.getCatalog(), ""));
+        scopes.put("sanitizeName", (Function<String,String>) s -> FilenameSanitizer.sanitize(s));
         
         MustacheWriter mw = new MustacheWriter(outputDir, scopes, "", database.getName(), false);
         mw.write("main.html", "index.html", "main.js");

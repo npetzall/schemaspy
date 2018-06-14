@@ -68,12 +68,24 @@ public class HtmlOutputValidator {
                     } else if (trimmed.startsWith("// SchemaSpy rev")) {
                         return 0;
                     }
-                    return a.compareTo(e);
+                    return trimEnd(a).compareTo(trimEnd(e));
                 }).as("%s isn't as expected", actual.toString()).containsAll(expectedLines);
             } else {
                 softAssertions.fail("Missing expectation for %s", actualPath.relativize(actual).toString());
             }
         }
         softAssertions.assertAll();
+    }
+
+    private static String trimEnd(String target) {
+        if (target.isEmpty()) {
+            return "";
+        }
+        int len = target.length();
+        char[] val = target.toCharArray();
+        while ((0 < len) && (val[len - 1] <= ' ')) {
+            len--;
+        }
+        return target.substring(0, len);
     }
 }

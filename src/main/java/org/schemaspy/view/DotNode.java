@@ -26,6 +26,7 @@ import org.schemaspy.Config;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
 import org.schemaspy.model.TableIndex;
+import org.schemaspy.util.FilenameSanitizer;
 
 import java.awt.*;
 import java.awt.font.FontRenderContext;
@@ -212,7 +213,7 @@ public class DotNode {
 
         buf.append("    </TABLE>>" + lineSeparator);
         if (!table.isRemote() || Config.getInstance().isOneOfMultipleSchemas())
-            buf.append("    URL=\"" + path + HtmlFormatter.urlEncodeLink(tableName) + ".html\"" + lineSeparator);
+            buf.append("    URL=\"" + path + HtmlFormatter.urlEncodeLink(FilenameSanitizer.sanitize(tableName)) + ".html\"" + lineSeparator);
         buf.append("    tooltip=\"" + HtmlFormatter.escapeHtml(fqTableName) + "\"" + lineSeparator);
         buf.append("  ];");
 

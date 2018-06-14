@@ -29,8 +29,8 @@
 					<tbody>
 					{{#impliedConstraints}}				
 					<tr>
-					 <td><a href='tables/{{childTable.name}}.html'>{{childTable.name}}</a>.{{childColumns}}</td>
-					 <td><a href='tables/{{parentTable.name}}.html'>{{parentTable.name}}</a>.{{parentColumns}}</td>
+					 <td><a href='tables/{{#sanitizeName}}{{childTable.name}}{{/sanitizeName}}.html'>{{childTable.name}}</a>.{{childColumns}}</td>
+					 <td><a href='tables/{{#sanitizeName}}{{parentTable.name}}{{/sanitizeName}}.html'>{{parentTable.name}}</a>.{{parentColumns}}</td>
 					</tr>				
 					{{/impliedConstraints}}				
 					{{^impliedConstraints}}
@@ -64,7 +64,7 @@
 					<tbody>
 					{{#unIndexedTables}}				
 					<tr>
-					 <td><a href='tables/{{name}}.html'>{{name}}</a></td>
+					 <td><a href='tables/{{#sanitizeName}}{{name}}{{/sanitizeName}}.html'>{{name}}</a></td>
 					 {{#displayNumRows}}
 					 <td>{{numRows}}</td>
 					 {{/displayNumRows}}
@@ -99,8 +99,8 @@
 					<tbody>
 					{{#oneColumnTables}}				
 					<tr>
-					 <td><a href='tables/{{name}}.html'>{{name}}</a></td>
-					 <td>{{columns.get}}</td>					 
+					 <td><a href='tables/{{#sanitizeName}}{{name}}{{/sanitizeName}}.html'>{{name}}</a></td>
+					 <td>{{columns.get}}</td>
 					</tr>				
 					{{/oneColumnTables}}				
 					{{^oneColumnTables}}
@@ -131,7 +131,7 @@
 					<tbody>
 					{{#incrementingColumnNames}}				
 					<tr>
-					 <td><a href='tables/{{name}}.html'>{{name}}</a></td>
+					 <td><a href='tables/{{#sanitizeName}}{{name}}{{/sanitizeName}}.html'>{{name}}</a></td>
 					</tr>				
 					{{/incrementingColumnNames}}				
 					{{^incrementingColumnNames}}
@@ -162,7 +162,7 @@
 					<tbody>
 					{{#uniqueNullables}}				
 					<tr>
-					 <td><a href='tables/{{table.name}}.html'>{{table.name}}</a>.{{name}}</td>
+					 <td><a href='tables/{{#sanitizeName}}{{table.name}}{{/sanitizeName}}.html'>{{table.name}}</a>.{{name}}</td>
 					</tr>				
 					{{/uniqueNullables}}				
 					{{^uniqueNullables}}
