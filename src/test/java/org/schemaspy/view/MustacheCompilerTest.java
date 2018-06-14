@@ -26,12 +26,11 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.regex.Pattern;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class MustacheCompilerTest {
-
-
 
     private static MustacheCompiler mustacheCompilerSingle;
     private static MustacheCompiler mustacheCompilerMulti;
@@ -113,5 +112,27 @@ public class MustacheCompilerTest {
         softAssertions.assertThat(stringWriterSingle.toString()).contains("content=just-testing");
         softAssertions.assertThat(stringWriterMulti.toString()).contains("content=just-testing");
         softAssertions.assertAll();
+    }
+
+    @Test
+    public void nullFlag() throws IOException {
+        StringWriter stringWriter = new StringWriter();
+        PageData pageData = new PageData.Builder()
+                .templateName("flag.html")
+                .addToScope("flag",null)
+                .getPageData();
+        mustacheCompilerSingle.write(pageData, stringWriter);
+        assertThat(stringWriter.toString()).contains("false");
+    }
+
+    @Test
+    public void notNullFlag() throws IOException {
+        StringWriter stringWriter = new StringWriter();
+        PageData pageData = new PageData.Builder()
+                .templateName("flag.html")
+                .addToScope("flag","notNull")
+                .getPageData();
+        mustacheCompilerSingle.write(pageData, stringWriter);
+        assertThat(stringWriter.toString()).contains("true=notNull");
     }
 }

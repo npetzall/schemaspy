@@ -46,9 +46,10 @@ public class HtmlRoutinePage extends HtmlFormatter {
         PageData pageData = new PageData.Builder()
                 .templateName("routine.html")
                 .scriptName("routine.js")
-                .addToScope("routine", routine)
+                .addToScope("name", routine.getName())
+                .addToScope("comments", routine.getComment())
                 .addToScope("parameters",routine.getParameters())
-                .addToScope("definitionExists",routine.getDefinition() != null)
+                .addToScope("definition", routine.getDefinition())
                 .depth(1)
                 .getPageData();
 
