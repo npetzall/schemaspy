@@ -81,7 +81,7 @@ public class SqlService {
         dbmsMeta = dbmsService.fetchDbmsMeta(databaseMetaData);
         String overrideIdentifierQuoteString = config.getDbProperties().getProperty("identifierQuoteString");
         if (overrideIdentifierQuoteString != null) {
-            dbmsMeta = new DbmsMeta.Builder(dbmsMeta).identifierQuoteString(overrideIdentifierQuoteString).getDbmsMeta();
+            dbmsMeta = new DbmsMeta.Builder().from(dbmsMeta).identifierQuoteString(overrideIdentifierQuoteString).getDbmsMeta();
         }
         invalidIdentifierPattern = createInvalidIdentifierPattern(databaseMetaData);
         allKeywords = dbmsMeta.getAllKeywords();

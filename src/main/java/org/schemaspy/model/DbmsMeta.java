@@ -18,7 +18,6 @@
  */
 package org.schemaspy.model;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,11 +29,11 @@ public class DbmsMeta {
     private String productName;
     private String productVersion;
     private String identifierQuoteString;
-    private Set<String> sqlKeywords = Collections.emptySet();
-    private Set<String> systemFunctions = Collections.emptySet();
-    private Set<String> numericFunctions = Collections.emptySet();
-    private Set<String> stringFunctions = Collections.emptySet();
-    private Set<String> timeDateFunctions = Collections.emptySet();
+    private Set<String> sqlKeywords = new HashSet<>();
+    private Set<String> systemFunctions = new HashSet<>();
+    private Set<String> numericFunctions = new HashSet<>();
+    private Set<String> stringFunctions = new HashSet<>();
+    private Set<String> timeDateFunctions = new HashSet<>();
 
     private DbmsMeta() {}
 
@@ -81,14 +80,18 @@ public class DbmsMeta {
     }
 
     public static class Builder {
-        private DbmsMeta dbmsMeta;
+        private DbmsMeta dbmsMeta = new DbmsMeta();
 
-        public Builder() {
-            dbmsMeta = new DbmsMeta();
-        }
-
-        public Builder(DbmsMeta dbmsMeta) {
-            this.dbmsMeta = dbmsMeta;
+        public Builder from(DbmsMeta dbmsMeta) {
+            this.dbmsMeta.productName = dbmsMeta.getProductName();
+            this.dbmsMeta.productVersion = dbmsMeta.getProductVersion();
+            this.dbmsMeta.identifierQuoteString = dbmsMeta.getIdentifierQuoteString();
+            this.dbmsMeta.sqlKeywords.addAll(dbmsMeta.getSQLKeywords());
+            this.dbmsMeta.systemFunctions.addAll(dbmsMeta.getSystemFunctions());
+            this.dbmsMeta.numericFunctions.addAll(dbmsMeta.getNumericFunctions());
+            this.dbmsMeta.stringFunctions.addAll(dbmsMeta.getStringFunctions());
+            this.dbmsMeta.timeDateFunctions.addAll(dbmsMeta.getTimeDateFunctions());
+            return this;
         }
 
         public Builder productName(String productName) {
@@ -107,27 +110,27 @@ public class DbmsMeta {
         }
 
         public Builder sqlKeywords(Set<String> sqlKeywords) {
-            dbmsMeta.sqlKeywords = sqlKeywords;
+            dbmsMeta.sqlKeywords.addAll(sqlKeywords);
             return this;
         }
 
         public Builder systemFunctions(Set<String> systemFunctions) {
-            dbmsMeta.systemFunctions = systemFunctions;
+            dbmsMeta.systemFunctions.addAll(systemFunctions);
             return this;
         }
 
         public Builder numericFunctions(Set<String> numericFunctions) {
-            dbmsMeta.numericFunctions = numericFunctions;
+            dbmsMeta.numericFunctions.addAll(numericFunctions);
             return this;
         }
 
         public Builder stringFunctions(Set<String> stringFunctions) {
-            dbmsMeta.stringFunctions = stringFunctions;
+            dbmsMeta.stringFunctions.addAll(stringFunctions);
             return this;
         }
 
         public Builder timeDateFunctions(Set<String> timeDateFunctions) {
-            dbmsMeta.timeDateFunctions = timeDateFunctions;
+            dbmsMeta.timeDateFunctions.addAll(timeDateFunctions);
             return this;
         }
 
