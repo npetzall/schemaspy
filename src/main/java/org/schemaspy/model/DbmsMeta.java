@@ -18,6 +18,7 @@
  */
 package org.schemaspy.model;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,11 +30,11 @@ public class DbmsMeta {
     private String productName;
     private String productVersion;
     private String identifierQuoteString;
-    private Set<String> sqlKeywords;
-    private Set<String> systemFunctions;
-    private Set<String> numericFunctions;
-    private Set<String> stringFunctions;
-    private Set<String> timeDateFunctions;
+    private Set<String> sqlKeywords = Collections.emptySet();
+    private Set<String> systemFunctions = Collections.emptySet();
+    private Set<String> numericFunctions = Collections.emptySet();
+    private Set<String> stringFunctions = Collections.emptySet();
+    private Set<String> timeDateFunctions = Collections.emptySet();
 
     private DbmsMeta() {}
 
@@ -80,7 +81,15 @@ public class DbmsMeta {
     }
 
     public static class Builder {
-        private DbmsMeta dbmsMeta = new DbmsMeta();
+        private DbmsMeta dbmsMeta;
+
+        public Builder() {
+            dbmsMeta = new DbmsMeta();
+        }
+
+        public Builder(DbmsMeta dbmsMeta) {
+            this.dbmsMeta = dbmsMeta;
+        }
 
         public Builder productName(String productName) {
             dbmsMeta.productName = productName;

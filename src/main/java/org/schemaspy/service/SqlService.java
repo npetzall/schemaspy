@@ -55,7 +55,8 @@ public class SqlService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private DbmsService dbmsService = new DbmsService();
+    private final DbDriverLoader driverLoader;
+    private final DbmsService dbmsService;
 
     private Connection connection;
     private DatabaseMetaData databaseMetaData;
@@ -63,12 +64,25 @@ public class SqlService {
     private Pattern invalidIdentifierPattern;
     private Set<String> allKeywords;
 
+    public SqlService() {
+        driverLoader = new DbDriverLoader();
+        dbmsService = new DbmsService();
+    }
+
+    public SqlService(DbDriverLoader driverLoader, DbmsService dbmsService) {
+        this.driverLoader = driverLoader;
+        this.dbmsService = dbmsService;
+    }
+
     public DatabaseMetaData connect(Config config) throws IOException, SQLException {
-        DbDriverLoader driverLoader = new DbDriverLoader();
         connection = driverLoader.getConnection(config);
 
         databaseMetaData = connection.getMetaData();
         dbmsMeta = dbmsService.fetchDbmsMeta(databaseMetaData);
+        String overrideIdentifierQuoteString = config.getDbProperties().getProperty("identifierQuoteString");
+        if (overrideIdentifierQuoteString != null) {
+            dbmsMeta = new DbmsMeta.Builder(dbmsMeta).identifierQuoteString(overrideIdentifierQuoteString).getDbmsMeta();
+        }
         invalidIdentifierPattern = createInvalidIdentifierPattern(databaseMetaData);
         allKeywords = dbmsMeta.getAllKeywords();
 
