@@ -26,12 +26,14 @@ import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
+import org.schemaspy.util.FilenameSanitizer;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -67,6 +69,7 @@ public class HtmlConstraintsPage extends HtmlFormatter {
         scopes.put("constraints", constraints);
         scopes.put("checkConstraints", collectCheckConstraints(tables));
         scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
+        scopes.put("sanitizeName", (Function<String,String>) s -> FilenameSanitizer.sanitize(s));
 
         MustacheWriter mw = new MustacheWriter( outputDir, scopes, getPathToRoot(), database.getName(), false);
         mw.write("constraint.html", "constraints.html", "constraint.js");

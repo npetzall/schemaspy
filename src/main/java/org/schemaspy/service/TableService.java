@@ -29,6 +29,7 @@ import org.schemaspy.model.*;
 import org.schemaspy.model.xml.ForeignKeyMeta;
 import org.schemaspy.model.xml.TableColumnMeta;
 import org.schemaspy.model.xml.TableMeta;
+import org.schemaspy.util.FilenameSanitizer;
 import org.schemaspy.util.Markdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -681,7 +682,7 @@ public class TableService {
     }
 
     private void markDownRegistryPage(Table table) {
-        String tablePath = "tables/" + table.getName() + ".html";
+        String tablePath = "tables/" + FilenameSanitizer.sanitize(table.getName()) + ".html";
         Markdown.registryPage(table.getName(), tablePath);
     }
 }

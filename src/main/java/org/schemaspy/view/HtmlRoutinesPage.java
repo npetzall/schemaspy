@@ -23,12 +23,14 @@ package org.schemaspy.view;
 import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Routine;
+import org.schemaspy.util.FilenameSanitizer;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 /**
  * The page that lists all of the routines (stored procedures and functions)
@@ -62,6 +64,7 @@ public class HtmlRoutinesPage extends HtmlFormatter {
         HashMap<String, Object> scopes = new HashMap<String, Object>();
         scopes.put("routines", routines);
         scopes.put("paginationEnabled", Config.getInstance().isPaginationEnabled());
+        scopes.put("sanitizeName", (Function<String,String>) s -> FilenameSanitizer.sanitize(s));
 
         MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
         mw.write("routines.html", "routines.html", "routines.js");

@@ -27,6 +27,7 @@ import org.schemaspy.Config;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.Dot;
+import org.schemaspy.util.FilenameSanitizer;
 import org.schemaspy.util.LineWriter;
 
 import java.io.File;
@@ -97,7 +98,7 @@ public class HtmlOrphansPage extends HtmlDiagramFormatter {
             List<MustacheTable> mustacheTables = new ArrayList<>();
             for (Table table : orphanTables) {
                 element++;
-                String dotBaseFilespec = table.getName();
+                String dotBaseFilespec = FilenameSanitizer.sanitize(table.getName());
 
                 File dotFile = new File(diagramDir, dotBaseFilespec + ".1degree.dot");
                 File imgFile = new File(diagramDir, dotBaseFilespec + ".1degree." + dot.getFormat());

@@ -3,6 +3,7 @@
    <tables>
       <table catalog="htmlit" name="group" numRows="0" remarks="Groups" type="TABLE">
          <column autoUpdated="true" digits="0" id="0" name="groupId" nullable="false" remarks="" size="10" type="INT">
+            <child catalog="htmlit" column="groupId" foreignKey="resources/for/groups_ibfk_1" implied="false" onDeleteCascade="false" table="resources/for/groups"/>
             <child catalog="htmlit" column="groupId" foreignKey="Implied Constraint" implied="true" onDeleteCascade="false" table="user"/>
          </column>
          <column autoUpdated="false" digits="0" id="1" name="name" nullable="false" remarks="" size="16" type="VARCHAR"/>
@@ -13,6 +14,51 @@
          </index>
          <index name="name_unique" unique="true">
             <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table catalog="htmlit" name="or/phan" numRows="0" remarks="" type="TABLE">
+         <column autoUpdated="true" digits="0" id="0" name="or/phanid" nullable="false" remarks="" size="10" type="INT"/>
+         <primaryKey column="or/phanid" sequenceNumberInPK="1"/>
+         <index name="PRIMARY" unique="true">
+            <column ascending="true" name="or/phanid"/>
+         </index>
+      </table>
+      <table catalog="htmlit" name="r/f/g/names" numRows="0" remarks="" type="VIEW" viewSql="select `g`.`name` AS `GroupName`,`r`.`name` AS `ResourceName` from ((`htmlit`.`resources/for/groups` `rfg` left join `htmlit`.`resources` `r` on((`rfg`.`resourceId` = `r`.`resourceId`))) left join `htmlit`.`group` `g` on((`rfg`.`groupId` = `g`.`groupId`)))">
+         <column autoUpdated="false" digits="0" id="0" name="GroupName" nullable="true" remarks="" size="16" type="VARCHAR"/>
+         <column autoUpdated="false" digits="0" id="1" name="ResourceName" nullable="true" remarks="" size="40" type="VARCHAR"/>
+      </table>
+      <table catalog="htmlit" name="resources" numRows="0" remarks="" type="TABLE">
+         <column autoUpdated="false" digits="0" id="0" name="resourceId" nullable="false" remarks="" size="10" type="INT">
+            <child catalog="htmlit" column="resourceId" foreignKey="resources/for/groups_ibfk_2" implied="false" onDeleteCascade="false" table="resources/for/groups"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="1" name="name" nullable="false" remarks="" size="40" type="VARCHAR"/>
+         <column autoUpdated="false" digits="0" id="2" name="description" nullable="false" remarks="" size="80" type="VARCHAR"/>
+         <primaryKey column="resourceId" sequenceNumberInPK="1"/>
+         <index name="PRIMARY" unique="true">
+            <column ascending="true" name="resourceId"/>
+         </index>
+         <index name="name_unique" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table catalog="htmlit" name="resources/for/groups" numRows="0" remarks="" type="TABLE">
+         <column autoUpdated="true" digits="0" id="0" name="r/f/gid" nullable="false" remarks="" size="10" type="INT"/>
+         <column autoUpdated="false" digits="0" id="1" name="groupId" nullable="false" remarks="" size="10" type="INT">
+            <parent catalog="htmlit" column="groupId" foreignKey="resources/for/groups_ibfk_1" implied="false" onDeleteCascade="false" table="group"/>
+         </column>
+         <column autoUpdated="false" digits="0" id="2" name="resourceId" nullable="false" remarks="" size="10" type="INT">
+            <parent catalog="htmlit" column="resourceId" foreignKey="resources/for/groups_ibfk_2" implied="false" onDeleteCascade="false" table="resources"/>
+         </column>
+         <column autoUpdated="false" defaultValue="n" digits="0" id="3" name="access" nullable="true" remarks="" size="2" type="enum('n', 'r', 'rw')"/>
+         <primaryKey column="r/f/gid" sequenceNumberInPK="1"/>
+         <index name="PRIMARY" unique="true">
+            <column ascending="true" name="r/f/gid"/>
+         </index>
+         <index name="groups_gid_fk" unique="false">
+            <column ascending="true" name="groupId"/>
+         </index>
+         <index name="resource_rid_fk" unique="false">
+            <column ascending="true" name="resourceId"/>
          </index>
       </table>
       <table catalog="htmlit" name="user" numRows="0" remarks="Users of the system" type="TABLE">

@@ -29,7 +29,7 @@
 				<tbody>
 				{{#routines}}
 				<tr>
-					<td><a href="routines/{{name}}.html">{{name}}</a></td>
+					<td><a href="routines/{{#sanitizeName}}{{name}}{{/sanitizeName}}.html">{{name}}</a></td>
 				 <td>{{type}}</td>
 				 <td>{{definitionLanguage}}</td>
 				 <td>{{deterministic}}</td>

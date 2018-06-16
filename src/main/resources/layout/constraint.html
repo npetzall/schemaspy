@@ -33,7 +33,7 @@
 				  {{#childColumns}}
 				   <tr>
 					<td>
-						<a href='tables/{{table.name}}.html'>{{table.name}}</a><span>.{{name}}</span>
+						<a href='tables/{{#sanitizeName}}{{table.name}}{{/sanitizeName}}.html'>{{table.name}}</a><span>.{{name}}</span>
 					</td>
 				   </tr>
 				   {{/childColumns}}
@@ -44,7 +44,7 @@
 				  {{#parentColumns}}
 				   <tr>
 					<td>
-						<a href='tables/{{table.name}}.html'>{{table.name}}</a><span>.{{name}}</span>
+						<a href='tables/{{#sanitizeName}}{{table.name}}{{/sanitizeName}}.html'>{{table.name}}</a><span>.{{name}}</span>
 					</td>
 				   </tr>
 				   {{/parentColumns}}
@@ -79,7 +79,7 @@
 				<tbody>
 					{{#checkConstraints}}
 					<tr>
-				  		<td><a href='tables/{{tableName}}.html'>{{tableName}}</a></td>
+				  		<td><a href='tables/{{#sanitizeName}}{{tableName}}{{/sanitizeName}}.html'>{{tableName}}</a></td>
 				  		<td>{{name}}</td>
 				  		<td>{{definition}}</td>
 					</tr>

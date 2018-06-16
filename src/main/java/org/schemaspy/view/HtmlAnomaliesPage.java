@@ -26,6 +26,7 @@ import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
+import org.schemaspy.util.FilenameSanitizer;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -75,6 +77,7 @@ public class HtmlAnomaliesPage extends HtmlFormatter {
         scopes.put("oneColumnTables", oneColumnTables);
         scopes.put("incrementingColumnNames", incrementingColumnNames);
         scopes.put("uniqueNullables", uniqueNullables);
+        scopes.put("sanitizeName", (Function<String,String>) s -> FilenameSanitizer.sanitize(s));
 
         MustacheWriter mw = new MustacheWriter( outputDir, scopes, getPathToRoot(), database.getName(), false);
         mw.write("anomalies.html", "anomalies.html", "anomalies.js");

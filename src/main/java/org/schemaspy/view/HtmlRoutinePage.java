@@ -20,6 +20,7 @@ package org.schemaspy.view;
 
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Routine;
+import org.schemaspy.util.FilenameSanitizer;
 
 import java.io.File;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class HtmlRoutinePage extends HtmlFormatter {
         scopes.put("definitionExists",routine.getDefinition() != null);
 
         MustacheWriter mw = new MustacheWriter(outputDir, scopes, getPathToRoot(), db.getName(), false);
-        mw.write("routines/routine.html", "routines/" + routine.getName() + ".html", "routine.js");
+        mw.write("routines/routine.html", "routines/" + FilenameSanitizer.sanitize(routine.getName()) + ".html", "routine.js");
     }
 
     @Override protected String getPathToRoot() {
