@@ -18,11 +18,34 @@
  */
 package org.schemaspy.util;
 
+import java.util.stream.Collectors;
+
 public class FilenameSanitizer {
 
-    private static final String NOT_ALLOWED = "[?*/\\=\"]";
+    private FilenameSanitizer() {}
 
     public static String sanitize(String filename) {
-        return filename.replaceAll(NOT_ALLOWED, "_");
+        return filename.codePoints().mapToObj(codePoint -> {
+            if (!Character.isBmpCodePoint(codePoint)) {
+                return "(" + Base62.encode(codePoint) + ")";
+            }
+            if (Character.isLetterOrDigit(codePoint)) {
+                return new String(Character.toChars(codePoint));
+            }
+            if (Character.charCount(codePoint) == 1) {
+                char c = Character.toChars(codePoint)[0];
+                if (okToUse(c)) {
+                    return Character.toString(c);
+                } else {
+                    return "(" + Base62.encode(codePoint) + ")";
+                }
+            } else {
+                return "(" + Base62.encode(codePoint) + ")";
+            }
+        }).collect(Collectors.joining());
+    }
+
+    private static boolean okToUse(char c) {
+        return c == '.' || c == '-' || c == '_';
     }
 }

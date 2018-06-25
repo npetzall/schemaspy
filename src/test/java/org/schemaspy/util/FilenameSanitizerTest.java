@@ -25,8 +25,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FilenameSanitizerTest {
 
     @Test
-    public void willReplaceNotAllowedWithUnderscore() {
+    public void willKeepAlpaDigitsAndHypeUnderscorePeriodEncodeOthers() {
         assertThat(FilenameSanitizer.sanitize("this/is/not*ok/at\"all"))
-                .isEqualTo("this_is_not_ok_at_all");
+                .isEqualTo("this(l)is(l)not(g)ok(l)at(Y)all");
+    }
+
+    @Test
+    public void willNotProduceSameResultForStringWithDifferentIllegalChar() {
+        String first = FilenameSanitizer.sanitize("a/b");
+        String second = FilenameSanitizer.sanitize("a:b");
+        assertThat(first).isNotEqualTo(second);
     }
 }
