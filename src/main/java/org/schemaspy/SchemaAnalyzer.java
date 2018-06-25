@@ -37,6 +37,7 @@ import org.schemaspy.output.xml.dom.XmlProducerUsingDOM;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
 import org.schemaspy.util.Dot;
+import org.schemaspy.util.FilenameSanitizer;
 import org.schemaspy.util.LineWriter;
 import org.schemaspy.util.ResourceWriter;
 import org.schemaspy.view.*;
@@ -153,7 +154,7 @@ public class SchemaAnalyzer {
                     config.setSchema(schema);
 
                 LOGGER.info("Analyzing {}", schema);
-                File outputDirForSchema = new File(outputDir, schema);
+                File outputDirForSchema = new File(outputDir, FilenameSanitizer.sanitize(schema));
                 db = this.analyze(schema, config, outputDirForSchema, progressListener);
                 if (db == null) //if any of analysed schema returns null
                     return null;

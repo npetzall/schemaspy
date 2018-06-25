@@ -21,6 +21,8 @@
  */
 package org.schemaspy.view;
 
+import org.schemaspy.util.FilenameSanitizer;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.DatabaseMetaData;
@@ -29,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * The page that contains links to the various schemas that were analyzed
@@ -68,6 +71,7 @@ public class HtmlMultipleSchemasIndexPage extends HtmlFormatter {
         scopes.put("schemas", schemas);
         scopes.put("catalog", catalog);
         scopes.put("schemasNumber", Integer.toString(schemas.size()));
+        scopes.put("sanitizeName", (Function<String,String>) s -> FilenameSanitizer.sanitize(s));
 
         scopes.put("multipleSchemas", true);
 
