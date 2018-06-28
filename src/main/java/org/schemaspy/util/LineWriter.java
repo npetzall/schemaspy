@@ -49,7 +49,7 @@ public class LineWriter extends BufferedWriter {
         this(new OutputStreamWriter(out, charset), sz);
     }
 
-    private LineWriter(Writer out, int sz) {
+    protected LineWriter(Writer out, int sz) {
         // by this point a charset has already been specified
         super(out, sz);
         this.out = out;
