@@ -21,6 +21,8 @@ package org.schemaspy.util;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.schemaspy.input.dbms.DbSpecificConfig;
+import org.schemaspy.input.dbms.DbSpecificOption;
 import org.schemaspy.testing.Logger;
 import org.schemaspy.testing.LoggingRule;
 

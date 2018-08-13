@@ -27,9 +27,9 @@ package org.schemaspy;
 
 import org.schemaspy.cli.CommandLineArgumentParser;
 import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.db.config.PropertiesResolver;
+import org.schemaspy.input.dbms.DbSpecificConfig;
+import org.schemaspy.input.dbms.config.PropertiesResolver;
 import org.schemaspy.model.InvalidConfigurationException;
-import org.schemaspy.util.DbSpecificConfig;
 import org.schemaspy.util.Dot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

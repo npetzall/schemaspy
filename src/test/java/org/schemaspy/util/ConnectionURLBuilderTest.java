@@ -20,6 +20,7 @@ package org.schemaspy.util;
 
 import org.junit.Test;
 import org.schemaspy.Config;
+import org.schemaspy.input.dbms.ConnectionURLBuilder;
 
 import java.io.IOException;
 import java.util.Properties;

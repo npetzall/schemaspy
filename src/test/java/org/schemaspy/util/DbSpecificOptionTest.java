@@ -20,6 +20,7 @@ package org.schemaspy.util;
 
 import org.hamcrest.core.IsNull;
 import org.junit.Test;
+import org.schemaspy.input.dbms.DbSpecificOption;
 
 import static org.junit.Assert.assertThat;
 
