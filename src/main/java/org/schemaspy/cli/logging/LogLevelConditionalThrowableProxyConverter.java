@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with SchemaSpy. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.schemaspy.logging;
+package org.schemaspy.cli.logging;
 
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
