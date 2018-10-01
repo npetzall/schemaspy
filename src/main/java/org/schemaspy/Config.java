@@ -29,8 +29,8 @@ import org.schemaspy.cli.CommandLineArgumentParser;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.db.config.PropertiesResolver;
 import org.schemaspy.model.InvalidConfigurationException;
+import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 import org.schemaspy.util.DbSpecificConfig;
-import org.schemaspy.util.Dot;
 import org.schemaspy.view.HtmlConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -981,7 +981,7 @@ public final class Config implements HtmlConfig {
      * over using this method.
      */
     public void setRenderer(String renderer) {
-        Dot.getInstance().setRenderer(renderer);
+        GraphvizWrapper.getInstance().setRenderer(renderer);
     }
 
     /**
@@ -993,7 +993,7 @@ public final class Config implements HtmlConfig {
         if (renderer != null)
             setRenderer(renderer);
 
-        return Dot.getInstance().getRenderer();
+        return GraphvizWrapper.getInstance().getRenderer();
     }
 
     /**
@@ -1010,7 +1010,7 @@ public final class Config implements HtmlConfig {
     public void setHighQuality(boolean highQuality) {
         this.highQuality = highQuality;
         lowQuality = !highQuality;
-        Dot.getInstance().setHighQuality(highQuality);
+        GraphvizWrapper.getInstance().setHighQuality(highQuality);
     }
 
     /**
@@ -1021,11 +1021,11 @@ public final class Config implements HtmlConfig {
             highQuality = options.remove("-hq");
             if (highQuality) {
                 // use whatever is the default unless explicitly specified otherwise
-                Dot.getInstance().setHighQuality(highQuality);
+                GraphvizWrapper.getInstance().setHighQuality(highQuality);
             }
         }
 
-        highQuality = Dot.getInstance().isHighQuality();
+        highQuality = GraphvizWrapper.getInstance().isHighQuality();
         return highQuality;
     }
 
@@ -1037,11 +1037,11 @@ public final class Config implements HtmlConfig {
             lowQuality = options.remove("-lq");
             if (lowQuality) {
                 // use whatever is the default unless explicitly specified otherwise
-                Dot.getInstance().setHighQuality(!lowQuality);
+                GraphvizWrapper.getInstance().setHighQuality(!lowQuality);
             }
         }
 
-        lowQuality = !Dot.getInstance().isHighQuality();
+        lowQuality = !GraphvizWrapper.getInstance().isHighQuality();
         return lowQuality;
     }
 

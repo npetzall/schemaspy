@@ -20,7 +20,7 @@
  */
 package org.schemaspy.view;
 
-import org.schemaspy.util.Dot;
+import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 
 /**
  * @author John Currier
@@ -33,14 +33,14 @@ public class HtmlDiagramFormatter {
     protected HtmlDiagramFormatter() {
     }
 
-    protected Dot getDot() {
-        Dot dot = Dot.getInstance();
-        if (!dot.exists()) {
+    protected GraphvizWrapper getDot() {
+        GraphvizWrapper graphvizWrapper = GraphvizWrapper.getInstance();
+        if (!graphvizWrapper.exists()) {
             if (!printedNoDotWarning) {
                 printedNoDotWarning = true;
                 System.err.println();
-                System.err.println("Warning: Failed to run dot.");
-                System.err.println("   Download " + dot.getSupportedVersions());
+                System.err.println("Warning: Failed to run graphviz.");
+                System.err.println("   Download " + graphvizWrapper.getSupportedVersions());
                 System.err.println("   from www.graphviz.org and make sure that dot is either in your path");
                 System.err.println("   or point to where you installed Graphviz with the -gv option.");
                 System.err.println("   Generated pages will not contain a diagramtic view of table relationships.");
@@ -49,18 +49,18 @@ public class HtmlDiagramFormatter {
             return null;
         }
 
-        if (!dot.isValid()) {
+        if (!graphvizWrapper.isValid()) {
             if (!printedInvalidVersionWarning) {
                 printedInvalidVersionWarning = true;
                 System.err.println();
-                System.err.println("Warning: Invalid version of Graphviz dot detected (" + dot.getGraphvizVersion() + ").");
-                System.err.println("   SchemaSpy requires " + dot.getSupportedVersions() + ". from www.graphviz.org.");
+                System.err.println("Warning: Invalid version of Graphviz dot detected (" + graphvizWrapper.getGraphvizVersion() + ").");
+                System.err.println("   SchemaSpy requires " + graphvizWrapper.getSupportedVersions() + ". from www.graphviz.org.");
                 System.err.println("   Generated pages will not contain a diagramatic view of table relationships.");
             }
 
             return null;
         }
 
-        return dot;
+        return graphvizWrapper;
     }
 }

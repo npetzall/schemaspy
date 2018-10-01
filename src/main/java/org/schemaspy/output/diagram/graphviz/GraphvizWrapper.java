@@ -1,31 +1,28 @@
 /*
- * Copyright (C) 2004 - 2011 John Currier
- * Copyright (C) 2016 Rafal Kasa
- * Copyright (C) 2017 Wojciech Kasa
- * Copyright (C) 2017 Nils Petzaell
- * Copyright (C) 2017 Daniel Watt
+ * Copyright (C) 2018 Nils Petzaell
  *
- * This file is a part of the SchemaSpy project (http://schemaspy.org).
+ * This file is part of SchemaSpy.
  *
- * SchemaSpy is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * SchemaSpy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * SchemaSpy is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with SchemaSpy. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.schemaspy.util;
+package org.schemaspy.output.diagram.graphviz;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.schemaspy.Config;
+import org.schemaspy.output.diagram.DiagramException;
+import org.schemaspy.util.GraphvizVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +41,9 @@ import java.util.regex.Pattern;
  * @author Nils Petzaell
  * @author Daniel Watt
  */
-public class Dot {
+public class GraphvizWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static Dot instance = new Dot();
+    private static GraphvizWrapper instance = new GraphvizWrapper();
     private final GraphvizVersion graphvizVersion;
     private final GraphvizVersion supportedGraphvizVersion = new GraphvizVersion("2.26");
     private final GraphvizVersion badGraphvizVersion = new GraphvizVersion("2.31");
@@ -61,7 +58,7 @@ public class Dot {
     private static final String GD_RENDERER = ":gd";
     private static final String EMPTY_RENDERER = "";
 
-    private Dot() {
+    private GraphvizWrapper() {
         String versionText = null;
         // dot -V should return something similar to:
         //  dot graphvizVersion 2.8 (Fri Feb  3 22:38:53 UTC 2006)
@@ -94,7 +91,7 @@ public class Dot {
         validatedRenderers.add("");
     }
 
-    public static Dot getInstance() {
+    public static GraphvizWrapper getInstance() {
         return instance;
     }
 
@@ -273,7 +270,7 @@ public class Dot {
     /**
      * Using the specified .dot file generates an image returning the image's image map.
      */
-    public String generateDiagram(File dotFile, File diagramFile) throws DotFailure {
+    public String generateDiagram(File dotFile, File diagramFile) throws DiagramException {
         StringBuilder mapBuffer = new StringBuilder(1024);
 
         BufferedReader mapReader = null;
@@ -301,30 +298,22 @@ public class Dot {
             }
             int rc = process.waitFor();
             if (rc != 0)
-                throw new DotFailure("'" + commandLine + "' failed with return code " + rc);
+                throw new DiagramException("'" + commandLine + "' failed with return code " + rc);
             if (!diagramFile.exists())
-                throw new DotFailure("'" + commandLine + "' failed to create output file");
+                throw new DiagramException("'" + commandLine + "' failed to create output file");
 
             // dot generates post-HTML 4.0.1 output...convert trailing />'s to >'s
             return mapBuffer.toString().replace("/>", ">");
         } catch (InterruptedException interrupted) {
             throw new RuntimeException(interrupted);
-        } catch (DotFailure failed) {
+        } catch (DiagramException failed) {
             FileUtils.deleteQuietly(diagramFile);
             throw failed;
         } catch (IOException failed) {
             FileUtils.deleteQuietly(diagramFile);
-            throw new DotFailure("'" + commandLine + "' failed with exception " + failed);
+            throw new DiagramException("'" + commandLine + "' failed with exception " + failed);
         } finally {
             IOUtils.closeQuietly(mapReader);
-        }
-    }
-
-    public class DotFailure extends IOException {
-        private static final long serialVersionUID = 3833743270181351987L;
-
-        public DotFailure(String msg) {
-            super(msg);
         }
     }
 

@@ -35,10 +35,12 @@ import org.schemaspy.model.*;
 import org.schemaspy.model.xml.SchemaMeta;
 import org.schemaspy.output.OutputException;
 import org.schemaspy.output.OutputProducer;
+import org.schemaspy.output.diagram.DiagramProducer;
+import org.schemaspy.output.diagram.graphviz.DiagramProducerUsingGraphvizWrapper;
+import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 import org.schemaspy.output.xml.dom.XmlProducerUsingDOM;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
-import org.schemaspy.util.Dot;
 import org.schemaspy.util.ResourceWriter;
 import org.schemaspy.util.Writers;
 import org.schemaspy.view.*;
@@ -301,6 +303,7 @@ public class SchemaAnalyzer {
         prepareLayoutFiles(outputDir);
 
         progressListener.graphingSummaryProgressed();
+        DiagramProducer diagramProducer = new DiagramProducerUsingGraphvizWrapper(GraphvizWrapper.getInstance(), outputDir);
 
         boolean showDetailedTables = tables.size() <= config.getMaxDetailedTables();
         final boolean includeImpliedConstraints = config.isImpliedConstraintsEnabled();
@@ -337,7 +340,7 @@ public class SchemaAnalyzer {
             impliedConstraints.addAll(DbAnalyzer.getImpliedConstraints(tables));
 
         List<Table> orphans = DbAnalyzer.getOrphans(tables);
-        config.setHasOrphans(!orphans.isEmpty() && Dot.getInstance().isValid());
+        config.setHasOrphans(!orphans.isEmpty() && GraphvizWrapper.getInstance().isValid());
         config.setHasRoutines(!db.getRoutines().isEmpty());
 
         progressListener.graphingSummaryProgressed();
@@ -370,7 +373,7 @@ public class SchemaAnalyzer {
         FileUtils.forceMkdir(orphansDir);
         HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(mustacheCompiler);
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("orphans.html").toFile())) {
-            htmlOrphansPage.write(orphans, orphansDir, outputDir.toString(), writer);
+            htmlOrphansPage.write(orphans, orphansDir, outputDir.toString(),diagramProducer, writer);
         }
 
         progressListener.graphingSummaryProgressed();

@@ -19,6 +19,7 @@
  */
 package org.schemaspy.util;
 
+import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 import org.schemaspy.view.MustacheTableDiagram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +41,9 @@ import java.util.List;
 public class DiagramUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static void generateDiagram(String diagramName, Dot dot, File dotFile, File diagramFile, List<MustacheTableDiagram> diagrams, boolean isActive, boolean isImplied) throws IOException {
+    public static void generateDiagram(String diagramName, GraphvizWrapper graphvizWrapper, File dotFile, File diagramFile, List<MustacheTableDiagram> diagrams, boolean isActive, boolean isImplied) throws IOException {
         if (dotFile.exists()) {
-            String mapDegreesDotFile = dot.generateDiagram(dotFile, diagramFile);
+            String mapDegreesDotFile = graphvizWrapper.generateDiagram(dotFile, diagramFile);
             createDiagram(diagramName, diagramFile, mapDegreesDotFile, diagrams, isActive, isImplied);
         } else {
             Files.deleteIfExists(dotFile.toPath());

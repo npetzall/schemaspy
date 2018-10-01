@@ -21,8 +21,8 @@
 package org.schemaspy.view;
 
 import org.schemaspy.model.Table;
+import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 import org.schemaspy.util.DiagramUtil;
-import org.schemaspy.util.Dot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,23 +48,23 @@ public class HtmlTableDiagrammer extends HtmlDiagramFormatter {
 
     public boolean write(Table table, File diagramDir, List<MustacheTableDiagram> diagrams) {
         try {
-            Dot dot = getDot();
-            if (dot == null) return false;
+            GraphvizWrapper graphvizWrapper = getDot();
+            if (graphvizWrapper == null) return false;
 
             File oneDegreeDotFile = new File(diagramDir, table.getName() + ".1degree.dot");
-            File oneDegreeDiagramFile = new File(diagramDir, table.getName() + ".1degree." + dot.getFormat());
+            File oneDegreeDiagramFile = new File(diagramDir, table.getName() + ".1degree." + graphvizWrapper.getFormat());
             File twoDegreesDotFile = new File(diagramDir, table.getName() + ".2degrees.dot");
-            File twoDegreesDiagramFile = new File(diagramDir, table.getName() + ".2degrees." + dot.getFormat());
+            File twoDegreesDiagramFile = new File(diagramDir, table.getName() + ".2degrees." + graphvizWrapper.getFormat());
             File oneImpliedDotFile = new File(diagramDir, table.getName() + ".implied1degrees.dot");
-            File oneImpliedDiagramFile = new File(diagramDir, table.getName() + ".implied1degrees." + dot.getFormat());
+            File oneImpliedDiagramFile = new File(diagramDir, table.getName() + ".implied1degrees." + graphvizWrapper.getFormat());
             File twoImpliedDotFile = new File(diagramDir, table.getName() + ".implied2degrees.dot");
-            File twoImpliedDiagramFile = new File(diagramDir, table.getName() + ".implied2degrees." + dot.getFormat());
+            File twoImpliedDiagramFile = new File(diagramDir, table.getName() + ".implied2degrees." + graphvizWrapper.getFormat());
 
 
-            DiagramUtil.generateDiagram("One", dot, oneDegreeDotFile, oneDegreeDiagramFile, diagrams, true, false);
-            DiagramUtil.generateDiagram("Two degrees", dot, twoDegreesDotFile, twoDegreesDiagramFile, diagrams, false, false);
-            DiagramUtil.generateDiagram("One implied", dot, oneImpliedDotFile, oneImpliedDiagramFile, diagrams, false, true);
-            DiagramUtil.generateDiagram("Two implied", dot, twoImpliedDotFile, twoImpliedDiagramFile, diagrams, false, true);
+            DiagramUtil.generateDiagram("One", graphvizWrapper, oneDegreeDotFile, oneDegreeDiagramFile, diagrams, true, false);
+            DiagramUtil.generateDiagram("Two degrees", graphvizWrapper, twoDegreesDotFile, twoDegreesDiagramFile, diagrams, false, false);
+            DiagramUtil.generateDiagram("One implied", graphvizWrapper, oneImpliedDotFile, oneImpliedDiagramFile, diagrams, false, true);
+            DiagramUtil.generateDiagram("Two implied", graphvizWrapper, twoImpliedDotFile, twoImpliedDiagramFile, diagrams, false, true);
 
         } catch (IOException dotFailure) {
             LOGGER.error("There was an error writing a dot file",dotFailure);

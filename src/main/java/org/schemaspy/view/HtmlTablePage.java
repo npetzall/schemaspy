@@ -28,8 +28,8 @@ import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
 import org.schemaspy.model.TableIndex;
+import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 import org.schemaspy.util.DiagramUtil;
-import org.schemaspy.util.Dot;
 import org.schemaspy.util.Markdown;
 import org.schemaspy.util.Writers;
 import org.slf4j.Logger;
@@ -85,7 +85,7 @@ public class HtmlTablePage {
 
         List<MustacheTableDiagram> diagrams = new ArrayList<>();
         Object graphvizExists = generateDiagrams(table, stats, outputDir, diagrams);
-        String graphvizVersion = Dot.getInstance().getSupportedVersions().substring(4);
+        String graphvizVersion = GraphvizWrapper.getInstance().getSupportedVersions().substring(4);
         LOGGER.debug("Writing table page -> {}", table.getName());
 
         PageData pageData = new PageData.Builder()
@@ -159,8 +159,8 @@ public class HtmlTablePage {
      * @throws IOException
      */
     private boolean generateDots(Table table, File diagramDir, WriteStats stats, File outputDir) throws IOException {
-        Dot dot = Dot.getInstance();
-        String extension = dot == null ? imageFormat : dot.getFormat();
+        GraphvizWrapper graphvizWrapper = GraphvizWrapper.getInstance();
+        String extension = graphvizWrapper == null ? imageFormat : graphvizWrapper.getFormat();
 
         File oneDegreeDotFile = new File(diagramDir, table.getName() + ".1degree.dot");
         File oneDegreeDiagramFile = new File(diagramDir, table.getName() + ".1degree." + extension);

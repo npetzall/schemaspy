@@ -20,6 +20,7 @@ package org.schemaspy.util;
 
 import org.junit.Test;
 import org.schemaspy.Config;
+import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -32,15 +33,15 @@ import static org.junit.Assume.assumeThat;
 /**
  * @author Nils Petzaell
  */
-public class DotTest {
+public class GraphvizWrapperTest {
 
     @Test
     public void version2_26_0() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         assumeThat(System.getProperty("os.name"), is("Linux"));
         Config config = Config.getInstance();
         config.setGraphvizDir(Paths.get("src/test/resources/dotFakes/2.26.0").toAbsolutePath().toFile());
-        Dot dot = createDot();
-        assertThat(dot.isValid()).isTrue();
+        GraphvizWrapper graphvizWrapper = createDot();
+        assertThat(graphvizWrapper.isValid()).isTrue();
     }
 
     @Test
@@ -48,8 +49,8 @@ public class DotTest {
         assumeThat(System.getProperty("os.name"), is("Linux"));
         Config config = Config.getInstance();
         config.setGraphvizDir(Paths.get("src/test/resources/dotFakes/2.28.0").toAbsolutePath().toFile());
-        Dot dot = createDot();
-        assertThat(dot.isValid()).isFalse();
+        GraphvizWrapper graphvizWrapper = createDot();
+        assertThat(graphvizWrapper.isValid()).isFalse();
     }
 
     @Test
@@ -57,16 +58,16 @@ public class DotTest {
         assumeThat(System.getProperty("os.name"), is("Linux"));
         Config config = Config.getInstance();
         config.setGraphvizDir(Paths.get("src/test/resources/dotFakes/2.32.0").toAbsolutePath().toFile());
-        Dot dot = createDot();
-        assertThat(dot.isValid()).isTrue();
+        GraphvizWrapper graphvizWrapper = createDot();
+        assertThat(graphvizWrapper.isValid()).isTrue();
     }
 
-    private Dot createDot() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private GraphvizWrapper createDot() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         assumeThat(System.getProperty("os.name"), is("Linux"));
-        Constructor<Dot> ctor = Dot.class.getDeclaredConstructor(new Class[0]);
+        Constructor<GraphvizWrapper> ctor = GraphvizWrapper.class.getDeclaredConstructor(new Class[0]);
         ctor.setAccessible(true);
-        Dot dot = ctor.newInstance();
-        return dot;
+        GraphvizWrapper graphvizWrapper = ctor.newInstance();
+        return graphvizWrapper;
     }
 
 }
