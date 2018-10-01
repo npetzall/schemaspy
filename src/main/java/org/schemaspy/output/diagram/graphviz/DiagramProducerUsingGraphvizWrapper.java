@@ -27,20 +27,20 @@ import java.io.File;
 public class DiagramProducerUsingGraphvizWrapper implements DiagramProducer {
 
     private final GraphvizWrapper graphvizWrapper;
-    private final File outputDir;
+    private final File diagramDir;
     private final File summaryDir;
     private final File orphanDir;
 
     public DiagramProducerUsingGraphvizWrapper(GraphvizWrapper graphvizWrapper, File outputDir) {
         this.graphvizWrapper = graphvizWrapper;
-        this.outputDir = new File(outputDir, "diagrams");
-        this.summaryDir = new File(outputDir, "summary");
-        this.orphanDir = new File(outputDir, "orphans");
+        this.diagramDir = new File(outputDir, "diagrams");
+        this.summaryDir = new File(diagramDir, "summary");
+        this.orphanDir = new File(diagramDir, "orphans");
         createDirs();
     }
 
     private void createDirs() {
-        outputDir.mkdirs();
+        diagramDir.mkdirs();
         summaryDir.mkdirs();
         orphanDir.mkdirs();
     }
@@ -54,7 +54,7 @@ public class DiagramProducerUsingGraphvizWrapper implements DiagramProducer {
 
     @Override
     public DiagramResults generateTableDiagram(File dotFile, String diagramName) throws DiagramException {
-        File diagramFile = new File(outputDir, diagramName + "." + graphvizWrapper.getFormat());
+        File diagramFile = new File(diagramDir, diagramName + "." + graphvizWrapper.getFormat());
         String diagramMap = graphvizWrapper.generateDiagram(dotFile, diagramFile);
         return new DiagramResults(diagramFile, diagramMap);
     }

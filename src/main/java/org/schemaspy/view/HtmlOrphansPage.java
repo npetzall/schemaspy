@@ -49,7 +49,7 @@ import java.util.*;
  * @author Daniel Watt
  * @author Nils Petzaell
  */
-public class HtmlOrphansPage extends HtmlDiagramFormatter {
+public class HtmlOrphansPage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
