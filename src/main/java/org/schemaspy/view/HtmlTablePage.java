@@ -83,7 +83,7 @@ public class HtmlTablePage {
             tableColumns.add(new MustacheTableColumn(column, indexes, mustacheCompiler.getRootPath(1)));
         }
 
-        List<MustacheTableDiagram> diagrams = new ArrayList<>();
+        List<MustacheDiagram> diagrams = new ArrayList<>();
         Object graphvizExists = generateDiagrams(table, stats, outputDir, diagrams);
         String graphvizVersion = GraphvizWrapper.getInstance().getSupportedVersions().substring(4);
         LOGGER.debug("Writing table page -> {}", table.getName());
@@ -217,7 +217,7 @@ public class HtmlTablePage {
         return false;
     }
 
-    private Object generateDiagrams(Table table, WriteStats stats, File outputDir, List<MustacheTableDiagram> diagrams) throws IOException {
+    private Object generateDiagrams(Table table, WriteStats stats, File outputDir, List<MustacheDiagram> diagrams) throws IOException {
         Object graphviz = new Object();
 
         File diagramsDir = new File(outputDir, "diagrams");

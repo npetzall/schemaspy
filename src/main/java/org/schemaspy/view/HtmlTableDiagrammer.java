@@ -46,7 +46,7 @@ public class HtmlTableDiagrammer extends HtmlDiagramFormatter {
         return instance;
     }
 
-    public boolean write(Table table, File diagramDir, List<MustacheTableDiagram> diagrams) {
+    public boolean write(Table table, File diagramDir, List<MustacheDiagram> diagrams) {
         try {
             GraphvizWrapper graphvizWrapper = getDot();
             if (graphvizWrapper == null) return false;

@@ -26,8 +26,7 @@ package org.schemaspy.view;
 
 import org.schemaspy.model.Table;
 import org.schemaspy.output.diagram.DiagramException;
-import org.schemaspy.output.diagram.DiagramProducer;
-import org.schemaspy.output.diagram.DiagramResults;
+import org.schemaspy.output.html.mustache.MustacheDiagramFactory;
 import org.schemaspy.util.Writers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,16 +55,17 @@ public class HtmlOrphansPage {
     private static final int KB_64 = 64 * 1024;
 
     private final MustacheCompiler mustacheCompiler;
+    private final MustacheDiagramFactory mustacheDiagramFactory;
 
-    public HtmlOrphansPage(MustacheCompiler mustacheCompiler) {
+    public HtmlOrphansPage(MustacheCompiler mustacheCompiler, MustacheDiagramFactory mustacheDiagramFactory) {
         this.mustacheCompiler = mustacheCompiler;
+        this.mustacheDiagramFactory = mustacheDiagramFactory;
     }
 
     public boolean write(
             List<Table> orphanTables,
             File diagramDir,
             String outputDir,
-            DiagramProducer diagramProducer,
             Writer writer
     ) throws IOException {
 
@@ -83,8 +83,7 @@ public class HtmlOrphansPage {
             }
         });
 
-        StringBuilder maps = new StringBuilder(KB_64);
-        List<MustacheTable> mustacheTables = new ArrayList<>();
+        List<MustacheDiagram> mustacheDiagrams = new ArrayList<>();
         for (Table table : orphanTables) {
             String dotBaseFilespec = table.getName();
 
@@ -95,11 +94,9 @@ public class HtmlOrphansPage {
             } catch (IOException e) {
                 throw new IOException(e);
             }
-            if (Objects.nonNull(diagramProducer)) {
+            if (Objects.nonNull(mustacheDiagramFactory)) {
                 try {
-                    DiagramResults results = diagramProducer.generateOrphanDiagram(dotFile, dotBaseFilespec + ".1degree");
-                    maps.append(results.getDiagramMap());
-                    mustacheTables.add(new MustacheTable(table, results.getDiagramFile().getName()));
+                    mustacheDiagrams.add(mustacheDiagramFactory.generateOrphanDiagram(table.getName(), dotFile, dotBaseFilespec + ".1degree"));
                 } catch (DiagramException dotFailure) {
                     LOGGER.error("Failed to write Orphan '{}'", table.getName(), dotFailure);
                     return false;
@@ -109,10 +106,7 @@ public class HtmlOrphansPage {
 
         PageData pageData = new PageData.Builder()
                 .templateName("orphans.html")
-                .scriptName("")
-                .addToScope("mustacheTables", mustacheTables)
-                .addToScope("maps", maps)
-                .depth(0)
+                .addToScope("mustacheDiagrams", mustacheDiagrams)
                 .getPageData();
 
         try {

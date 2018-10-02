@@ -38,6 +38,7 @@ import org.schemaspy.output.OutputProducer;
 import org.schemaspy.output.diagram.DiagramProducer;
 import org.schemaspy.output.diagram.graphviz.DiagramProducerUsingGraphvizWrapper;
 import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
+import org.schemaspy.output.html.mustache.MustacheDiagramFactory;
 import org.schemaspy.output.xml.dom.XmlProducerUsingDOM;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
@@ -303,7 +304,6 @@ public class SchemaAnalyzer {
         prepareLayoutFiles(outputDir);
 
         progressListener.graphingSummaryProgressed();
-        DiagramProducer diagramProducer = new DiagramProducerUsingGraphvizWrapper(GraphvizWrapper.getInstance(), outputDir);
 
         boolean showDetailedTables = tables.size() <= config.getMaxDetailedTables();
         final boolean includeImpliedConstraints = config.isImpliedConstraintsEnabled();
@@ -361,6 +361,8 @@ public class SchemaAnalyzer {
         }
 
         MustacheCompiler mustacheCompiler = new MustacheCompiler(db.getName(), config);
+        DiagramProducer diagramProducer = new DiagramProducerUsingGraphvizWrapper(GraphvizWrapper.getInstance(), outputDir);
+        MustacheDiagramFactory mustacheDiagramFactory = new MustacheDiagramFactory(diagramProducer);
 
         HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage(mustacheCompiler);
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("relationships.html").toFile())) {
@@ -371,9 +373,9 @@ public class SchemaAnalyzer {
 
         File orphansDir = new File(outputDir, "diagrams/orphans");
         FileUtils.forceMkdir(orphansDir);
-        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(mustacheCompiler);
+        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(mustacheCompiler, mustacheDiagramFactory);
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("orphans.html").toFile())) {
-            htmlOrphansPage.write(orphans, orphansDir, outputDir.toString(),diagramProducer, writer);
+            htmlOrphansPage.write(orphans, orphansDir, outputDir.toString(), writer);
         }
 
         progressListener.graphingSummaryProgressed();

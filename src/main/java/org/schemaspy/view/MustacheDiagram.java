@@ -18,12 +18,14 @@
  */
 package org.schemaspy.view;
 
+import org.schemaspy.output.diagram.DiagramResults;
+
 /**
  * Created by rkasa on 2016-03-26.
  *
  * @author Rafal Kasa
  */
-public class MustacheTableDiagram {
+public class MustacheDiagram {
     private String name;
     private String fileName;
     private String map;
@@ -31,6 +33,16 @@ public class MustacheTableDiagram {
     private String mapName;
     private String active;
     private boolean isImplied;
+
+    public MustacheDiagram() {}
+
+    public MustacheDiagram(String diagramName, DiagramResults diagramResults) {
+        name = diagramName;
+        id  = diagramName.replaceAll("\\s", "") + "Img";
+        fileName = diagramResults.getDiagramFile().getName();
+        map = diagramResults.getDiagramMap();
+        mapName = diagramResults.getDiagramMapName();
+    }
 
     public String getName() {
         return name;

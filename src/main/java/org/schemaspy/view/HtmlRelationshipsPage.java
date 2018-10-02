@@ -77,7 +77,7 @@ public class HtmlRelationshipsPage extends HtmlDiagramFormatter {
             File largeImpliedDotFile = new File(diagramDir, dotBaseFilespec + ".implied.large.dot");
             File largeImpliedDiagramFile = new File(diagramDir, dotBaseFilespec + ".implied.large." + graphvizWrapper.getFormat());
 
-            List<MustacheTableDiagram> diagrams = new ArrayList<>();
+            List<MustacheDiagram> diagrams = new ArrayList<>();
 
             if (hasRealRelationships) {
                 generateRelationshipDiagrams(listener, graphvizWrapper, compactRelationshipsDotFile, compactRelationshipsDiagramFile, largeRelationshipsDotFile, largeRelationshipsDiagramFile, diagrams);
@@ -114,7 +114,7 @@ public class HtmlRelationshipsPage extends HtmlDiagramFormatter {
         }
     }
 
-    private static void generateRelationshipDiagrams(ProgressListener listener, GraphvizWrapper graphvizWrapper, File compactRelationshipsDotFile, File compactRelationshipsDiagramFile, File largeRelationshipsDotFile, File largeRelationshipsDiagramFile, List<MustacheTableDiagram> diagrams) throws IOException {
+    private static void generateRelationshipDiagrams(ProgressListener listener, GraphvizWrapper graphvizWrapper, File compactRelationshipsDotFile, File compactRelationshipsDiagramFile, File largeRelationshipsDotFile, File largeRelationshipsDiagramFile, List<MustacheDiagram> diagrams) throws IOException {
         try {
             listener.graphingSummaryProgressed();
             DiagramUtil.generateDiagram("Compact", graphvizWrapper, compactRelationshipsDotFile, compactRelationshipsDiagramFile, diagrams, false, false);
@@ -130,7 +130,7 @@ public class HtmlRelationshipsPage extends HtmlDiagramFormatter {
         }
     }
 
-    private static void generateImpliedRelationshipDiagrams(ProgressListener listener, GraphvizWrapper graphvizWrapper, File compactImpliedDotFile, File compactImpliedDiagramFile, File largeImpliedDotFile, File largeImpliedDiagramFile, List<MustacheTableDiagram> diagrams) throws IOException {
+    private static void generateImpliedRelationshipDiagrams(ProgressListener listener, GraphvizWrapper graphvizWrapper, File compactImpliedDotFile, File compactImpliedDiagramFile, File largeImpliedDotFile, File largeImpliedDiagramFile, List<MustacheDiagram> diagrams) throws IOException {
         try {
             listener.graphingSummaryProgressed();
             DiagramUtil.generateDiagram("Compact Implied", graphvizWrapper, compactImpliedDotFile, compactImpliedDiagramFile, diagrams, false, true);

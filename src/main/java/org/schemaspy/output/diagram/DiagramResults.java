@@ -23,15 +23,21 @@ import java.io.File;
 public class DiagramResults {
 
     private final File diagramFile;
+    private final String diagramMapName;
     private final String diagramMap;
 
-    public DiagramResults(File diagramFile, String diagramMap) {
+    public DiagramResults(File diagramFile, String diagramMapName, String diagramMap) {
         this.diagramFile = diagramFile;
+        this.diagramMapName = diagramMapName;
         this.diagramMap = diagramMap;
     }
 
     public File getDiagramFile() {
         return diagramFile;
+    }
+
+    public String getDiagramMapName() {
+        return diagramMapName;
     }
 
     public String getDiagramMap() {

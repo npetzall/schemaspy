@@ -20,7 +20,7 @@
 package org.schemaspy.util;
 
 import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
-import org.schemaspy.view.MustacheTableDiagram;
+import org.schemaspy.view.MustacheDiagram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ import java.util.List;
 public class DiagramUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public static void generateDiagram(String diagramName, GraphvizWrapper graphvizWrapper, File dotFile, File diagramFile, List<MustacheTableDiagram> diagrams, boolean isActive, boolean isImplied) throws IOException {
+    public static void generateDiagram(String diagramName, GraphvizWrapper graphvizWrapper, File dotFile, File diagramFile, List<MustacheDiagram> diagrams, boolean isActive, boolean isImplied) throws IOException {
         if (dotFile.exists()) {
             String mapDegreesDotFile = graphvizWrapper.generateDiagram(dotFile, diagramFile);
             createDiagram(diagramName, diagramFile, mapDegreesDotFile, diagrams, isActive, isImplied);
@@ -52,8 +52,8 @@ public class DiagramUtil {
         }
     }
 
-    private static void createDiagram(String diagramName, File diagramFile, String diagramMap, List<MustacheTableDiagram> diagrams, boolean isActive, boolean isImplied) {
-        MustacheTableDiagram diagram = new MustacheTableDiagram();
+    private static void createDiagram(String diagramName, File diagramFile, String diagramMap, List<MustacheDiagram> diagrams, boolean isActive, boolean isImplied) {
+        MustacheDiagram diagram = new MustacheDiagram();
         diagram.setActive(isActive);
         diagram.setName(diagramName);
         diagram.setFileName(diagramFile.getName());
@@ -80,7 +80,7 @@ public class DiagramUtil {
         return diagramMapName;
     }
 
-    public static Object diagramExists(List<MustacheTableDiagram> diagrams) {
+    public static Object diagramExists(List<MustacheDiagram> diagrams) {
         Object exists = null;
         if  (!diagrams.isEmpty()) {
             exists = new Object();
@@ -88,9 +88,9 @@ public class DiagramUtil {
         return exists;
     }
 
-    public static void markFirstAsActive(List<MustacheTableDiagram> diagrams) {
+    public static void markFirstAsActive(List<MustacheDiagram> diagrams) {
         if (diagrams != null && !diagrams.isEmpty()) {
-            MustacheTableDiagram diagram = diagrams.get(0);
+            MustacheDiagram diagram = diagrams.get(0);
             if (diagram != null) {
                 diagram.setActive(true);
             }
