@@ -39,6 +39,7 @@ import org.schemaspy.output.diagram.DiagramProducer;
 import org.schemaspy.output.diagram.graphviz.DiagramProducerUsingGraphvizWrapper;
 import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 import org.schemaspy.output.html.mustache.MustacheDiagramFactory;
+import org.schemaspy.output.html.mustache.MustacheTableDiagramFactory;
 import org.schemaspy.output.xml.dom.XmlProducerUsingDOM;
 import org.schemaspy.service.DatabaseService;
 import org.schemaspy.service.SqlService;
@@ -429,7 +430,8 @@ public class SchemaAnalyzer {
         LOGGER.info("Completed summary in {} seconds", duration / 1000);
         LOGGER.info("Writing/diagramming details");
         SqlAnalyzer sqlAnalyzer = new SqlAnalyzer(db.getDbmsMeta().getAllKeywords(), db.getTables(), db.getViews());
-        HtmlTablePage htmlTablePage = new HtmlTablePage(mustacheCompiler, sqlAnalyzer, config.getImageFormat());
+        MustacheTableDiagramFactory mustacheTableDiagramFactory = new MustacheTableDiagramFactory(mustacheDiagramFactory, outputDir);
+        HtmlTablePage htmlTablePage = new HtmlTablePage(mustacheCompiler, sqlAnalyzer, mustacheTableDiagramFactory);
         for (Table table : tables) {
             progressListener.graphingDetailsProgressed(table);
             LOGGER.debug("Writing details of {}", table.getName());

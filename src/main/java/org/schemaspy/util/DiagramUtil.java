@@ -61,7 +61,7 @@ public class DiagramUtil {
         String diagramId = diagramName.replace(" ", "").toLowerCase();
         diagram.setId(diagramId + "DegreeImg");
         diagram.setMapName(diagramMapName(diagramMap));
-        diagram.setIsImplied(isImplied);
+        diagram.setImplied(isImplied);
         diagrams.add(diagram);
     }
 

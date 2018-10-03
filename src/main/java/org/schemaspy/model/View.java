@@ -21,6 +21,8 @@
  */
 package org.schemaspy.model;
 
+import java.util.Objects;
+
 /**
  * Treat views as tables that have no rows and are represented by the SQL that
  * defined them.
@@ -45,8 +47,7 @@ public class View extends Table {
                 String name, String remarks, String viewDefinition) {
         super(db, catalog, schema, name, remarks);
 
-        if (viewDefinition != null && viewDefinition.trim().length() > 0)
-            this.viewDefinition = viewDefinition;
+        setViewDefinition(viewDefinition);
     }
 
     /**
@@ -63,6 +64,10 @@ public class View extends Table {
     }
 
     public void setViewDefinition(String viewDefinition) {
-        this.viewDefinition = viewDefinition;
+        if (Objects.nonNull(viewDefinition) && viewDefinition.trim().length() > 0) {
+            this.viewDefinition = viewDefinition.trim();
+        } else {
+            this.viewDefinition = null;
+        }
     }
 }

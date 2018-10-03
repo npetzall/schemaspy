@@ -96,7 +96,7 @@
 				<p title='{{table.columns.size}} columns'>Table contained <span id="recordNumber">{{table.numRows}}</span> rows<p/>
 			</div>
 		</div>
-		{{#indexExists}}
+		{{^indexes.isEmpty}}
 		<div class="box box-primary">
 			<div class="box-header with-border">
               <i class="fa fa-sitemap"></i>
@@ -132,9 +132,8 @@
 				</table>
 			</div><!-- /.box-body -->
 		</div>
-		{{/indexExists}}
-		{{#graphvizExists}}
-		{{#diagramExists}}
+		{{/indexes.isEmpty}}
+		{{^diagrams.isEmpty}}
 		<div class="box box-primary">
 			<div class="box-header with-border">
               <i class="fa fa-code-fork"></i>
@@ -167,17 +166,16 @@
 			</div>
 		  </div><!-- /.box-body -->
 		</div>
-	    {{/diagramExists}}
-		{{/graphvizExists}}
-		{{^graphvizExists}}
+	    {{/diagrams.isEmpty}}
+		{{^diagrams}}{{^table.isView}}
 		<div class="alert alert-warning alert-dismissible">
 			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 			<h4><i class="icon fa fa-warning"></i> Graphviz Needed!</h4>
 			<p>SchemaSpy was unable to generate a diagram of table relationships.</br>
 			SchemaSpy requires Graphviz {{graphvizVersion}} from <a href='http://www.graphviz.org' target='_blank'>www.graphviz.org</a>.</p>
 	    </div>
-		{{/graphvizExists}}
-		{{#definitionExists}}
+		{{/table.isView}}{{/diagrams}}
+		{{#table.viewDefinition}}
 		<div class="box box-primary">
 			<div class="box-header with-border">
 			  <i class="fa fa-file-code-o"></i>
@@ -191,7 +189,7 @@
 			  </div>
 			</div>	
 			<div class="box-body">
-				<textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">{{sqlCode}}</textarea>
+				<textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">{{{table.viewDefinition}}}</textarea>
 				<div style="padding-top: 5px;"><hr></div>
 				<div class="box box-solid">
 					<div class="box-header with-border">
@@ -210,5 +208,5 @@
 				 </div>
 			</div><!-- /.box-body -->
 		</div>
-		{{/definitionExists}}
+		{{/table.viewDefinition}}
       </section>

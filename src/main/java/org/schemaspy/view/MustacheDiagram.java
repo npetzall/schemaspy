@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 Rafal Kasa
+ * Copyright (C) 2018 Nils Petzall
  *
  * This file is part of SchemaSpy.
  *
@@ -24,6 +25,7 @@ import org.schemaspy.output.diagram.DiagramResults;
  * Created by rkasa on 2016-03-26.
  *
  * @author Rafal Kasa
+ * @author Nils Petzall
  */
 public class MustacheDiagram {
     private String name;
@@ -31,8 +33,8 @@ public class MustacheDiagram {
     private String map;
     private String id;
     private String mapName;
-    private String active;
-    private boolean isImplied;
+    private String active = "";
+    private boolean isImplied = false;
 
     public MustacheDiagram() {}
 
@@ -96,7 +98,7 @@ public class MustacheDiagram {
         return isImplied;
     }
 
-    public void setIsImplied(boolean isImplied) {
+    public void setImplied(boolean isImplied) {
         this.isImplied = isImplied;
     }
 }

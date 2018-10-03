@@ -19,6 +19,7 @@
 package org.schemaspy.output.diagram;
 
 import java.io.File;
+import java.util.Objects;
 
 public class DiagramResults {
 
@@ -29,7 +30,12 @@ public class DiagramResults {
     public DiagramResults(File diagramFile, String diagramMapName, String diagramMap) {
         this.diagramFile = diagramFile;
         this.diagramMapName = diagramMapName;
-        this.diagramMap = diagramMap;
+        if (Objects.nonNull(diagramMap)) {
+            this.diagramMap = diagramMap.trim();
+        } else {
+            this.diagramMap = "";
+        }
+
     }
 
     public File getDiagramFile() {
