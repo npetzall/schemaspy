@@ -54,6 +54,11 @@ public class DiagramProducerUsingGraphvizWrapper implements DiagramProducer {
     }
 
     @Override
+    public String implementationDetails() {
+        return "Graphviz dot " + graphvizWrapper.getGraphvizVersion().toString();
+    }
+
+    @Override
     public DiagramResults generateOrphanDiagram(File dotFile, String diagramName) throws DiagramException {
         File diagramFile = new File(orphanDir, diagramName + "." + graphvizWrapper.getFormat());
         String diagramMap = graphvizWrapper.generateDiagram(dotFile, diagramFile);

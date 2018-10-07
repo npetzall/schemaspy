@@ -54,9 +54,15 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -310,6 +316,9 @@ public class SchemaAnalyzer {
         boolean showDetailedTables = tables.size() <= config.getMaxDetailedTables();
         final boolean includeImpliedConstraints = config.isImpliedConstraintsEnabled();
 
+        Path htmlInfoFile = outputDir.toPath().resolve("html.info");
+        Files.deleteIfExists(htmlInfoFile);
+        writeInfo("date", ZonedDateTime.now().format(DateTimeFormatter.ofPattern("EEE MMM dd HH:mm z yyyy")), htmlInfoFile);
         // if evaluating a 'ruby on rails-based' database then connect the columns
         // based on RoR conventions
         // note that this is done before 'hasRealRelationships' gets evaluated so
@@ -319,6 +328,7 @@ public class SchemaAnalyzer {
 
         MustacheCompiler mustacheCompiler = new MustacheCompiler(db.getName(), config);
         DiagramProducer diagramProducer = new DiagramProducerUsingGraphvizWrapper(GraphvizWrapper.getInstance(), outputDir);
+        writeInfo("diagramProducer", diagramProducer.implementationDetails(), htmlInfoFile);
         MustacheDiagramFactory mustacheDiagramFactory = new MustacheDiagramFactory(diagramProducer);
         MustacheSummaryDiagramFactory mustacheSummaryDiagramFactory = new MustacheSummaryDiagramFactory(mustacheDiagramFactory, outputDir);
         MustacheSummaryDiagramResults summaryDiagramResults = mustacheSummaryDiagramFactory.generateSummaryDiagrams(db, tables, includeImpliedConstraints, showDetailedTables, progressListener);
@@ -422,6 +432,14 @@ public class SchemaAnalyzer {
         IOFileFilter notHtmlFilter = FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".html"));
         FileFilter filter = FileFilterUtils.and(notHtmlFilter);
         ResourceWriter.copyResources(url, outputDir, filter);
+    }
+
+    private static void writeInfo(String key, String value, Path infoFile) {
+        try {
+            Files.write(infoFile, (key + "=" + value).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
+        } catch (IOException e) {
+            LOGGER.error("Failed to write '{}', to '{}'", key + "=" + value, infoFile);
+        }
     }
 
     private Connection getConnection(Config config) throws IOException {

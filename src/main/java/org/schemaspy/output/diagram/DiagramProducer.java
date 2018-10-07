@@ -21,6 +21,9 @@ package org.schemaspy.output.diagram;
 import java.io.File;
 
 public interface DiagramProducer {
+
+    String implementationDetails();
+
     DiagramResults generateOrphanDiagram(File dotFile, String diagramName);
     DiagramResults generateTableDiagram(File dotFile, String diagramName);
     DiagramResults generateSummaryDiagram(File dotFile, String diagramName);
