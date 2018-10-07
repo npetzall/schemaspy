@@ -21,6 +21,7 @@
 package org.schemaspy.util;
 
 import junit.framework.TestCase;
+import org.schemaspy.output.diagram.graphviz.GraphvizVersion;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

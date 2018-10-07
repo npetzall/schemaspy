@@ -39,6 +39,8 @@ import org.schemaspy.output.diagram.DiagramProducer;
 import org.schemaspy.output.diagram.graphviz.DiagramProducerUsingGraphvizWrapper;
 import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 import org.schemaspy.output.html.mustache.MustacheDiagramFactory;
+import org.schemaspy.output.html.mustache.MustacheSummaryDiagramFactory;
+import org.schemaspy.output.html.mustache.MustacheSummaryDiagramResults;
 import org.schemaspy.output.html.mustache.MustacheTableDiagramFactory;
 import org.schemaspy.output.xml.dom.XmlProducerUsingDOM;
 import org.schemaspy.service.DatabaseService;
@@ -52,7 +54,6 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -298,7 +299,7 @@ public class SchemaAnalyzer {
     }
 
     private void generateHtmlDoc(Config config, ProgressListener progressListener, File outputDir, Database db, long duration, Collection<Table> tables) throws IOException {
-        PrintWriter out;
+
         LOGGER.info("Gathered schema details in {} seconds", duration / 1000);
         LOGGER.info("Writing/graphing summary");
 
@@ -316,64 +317,25 @@ public class SchemaAnalyzer {
         if (config.isRailsEnabled())
             DbAnalyzer.getRailsConstraints(db.getTablesMap());
 
-        File summaryDir = new File(outputDir, "diagrams/summary");
-
-        // generate the compact form of the relationships .dot file
-        String dotBaseFilespec = "relationships";
-        out = Writers.newPrintWriter(new File(summaryDir, dotBaseFilespec + ".real.compact.dot"));
-        WriteStats stats = new WriteStats(tables);
-        DotFormatter.getInstance().writeRealRelationships(db, tables, true, showDetailedTables, stats, out, outputDir);
-        boolean hasRealRelationships = stats.getNumTablesWritten() > 0 || stats.getNumViewsWritten() > 0;
-        out.close();
-
-        if (hasRealRelationships) {
-            // real relationships exist so generate the 'big' form of the relationships .dot file
-            progressListener.graphingSummaryProgressed();
-            out = Writers.newPrintWriter(new File(summaryDir, dotBaseFilespec + ".real.large.dot"));
-            DotFormatter.getInstance().writeRealRelationships(db, tables, false, showDetailedTables, stats, out, outputDir);
-            out.close();
-        }
-
-        // getting implied constraints has a side-effect of associating the parent/child tables, so don't do it
-        // here unless they want that behavior
-        List<ImpliedForeignKeyConstraint> impliedConstraints = new ArrayList();
-        if (includeImpliedConstraints)
-            impliedConstraints.addAll(DbAnalyzer.getImpliedConstraints(tables));
-
-        List<Table> orphans = DbAnalyzer.getOrphans(tables);
-        config.setHasOrphans(!orphans.isEmpty() && GraphvizWrapper.getInstance().isValid());
-        config.setHasRoutines(!db.getRoutines().isEmpty());
-
-        progressListener.graphingSummaryProgressed();
-
-        File impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.compact.dot");
-        out = Writers.newPrintWriter(impliedDotFile);
-        boolean hasImplied = DotFormatter.getInstance().writeAllRelationships(db, tables, true, showDetailedTables, stats, out, outputDir);
-
-        Set<TableColumn> excludedColumns = stats.getExcludedColumns();
-        out.close();
-        if (hasImplied) {
-            impliedDotFile = new File(summaryDir, dotBaseFilespec + ".implied.large.dot");
-            out = Writers.newPrintWriter(impliedDotFile);
-            DotFormatter.getInstance().writeAllRelationships(db, tables, false, showDetailedTables, stats, out, outputDir);
-            out.close();
-        } else {
-            Files.deleteIfExists(impliedDotFile.toPath());
-        }
-
         MustacheCompiler mustacheCompiler = new MustacheCompiler(db.getName(), config);
         DiagramProducer diagramProducer = new DiagramProducerUsingGraphvizWrapper(GraphvizWrapper.getInstance(), outputDir);
         MustacheDiagramFactory mustacheDiagramFactory = new MustacheDiagramFactory(diagramProducer);
-
+        MustacheSummaryDiagramFactory mustacheSummaryDiagramFactory = new MustacheSummaryDiagramFactory(mustacheDiagramFactory, outputDir);
+        MustacheSummaryDiagramResults summaryDiagramResults = mustacheSummaryDiagramFactory.generateSummaryDiagrams(db, tables, includeImpliedConstraints, showDetailedTables, progressListener);
         HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage(mustacheCompiler);
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("relationships.html").toFile())) {
-            htmlRelationshipsPage.write(summaryDir,dotBaseFilespec, hasRealRelationships, hasImplied, progressListener, writer);
+            htmlRelationshipsPage.write(
+                    summaryDiagramResults.getDiagrams(),
+                    summaryDiagramResults.hasRealRelationships(),
+                    !summaryDiagramResults.getImpliedConstraints().isEmpty(),
+                    progressListener, writer);
         }
 
         progressListener.graphingSummaryProgressed();
 
         File orphansDir = new File(outputDir, "diagrams/orphans");
         FileUtils.forceMkdir(orphansDir);
+        List<Table> orphans = DbAnalyzer.getOrphans(tables);
         HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(mustacheCompiler, mustacheDiagramFactory);
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("orphans.html").toFile())) {
             htmlOrphansPage.write(orphans, orphansDir, outputDir.toString(), writer);
@@ -383,7 +345,7 @@ public class SchemaAnalyzer {
 
         HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(mustacheCompiler, config.getDescription());
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("index.html").toFile())) {
-            htmlMainIndexPage.write(db, tables, impliedConstraints, writer);
+            htmlMainIndexPage.write(db, tables, summaryDiagramResults.getImpliedConstraints(), writer);
         }
 
         progressListener.graphingSummaryProgressed();
@@ -399,7 +361,7 @@ public class SchemaAnalyzer {
 
         HtmlAnomaliesPage htmlAnomaliesPage = new HtmlAnomaliesPage(mustacheCompiler);
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("anomalies.html").toFile())) {
-            htmlAnomaliesPage.write(tables, impliedConstraints, writer);
+            htmlAnomaliesPage.write(tables, summaryDiagramResults.getImpliedConstraints(), writer);
         }
 
         progressListener.graphingSummaryProgressed();
@@ -436,7 +398,7 @@ public class SchemaAnalyzer {
             progressListener.graphingDetailsProgressed(table);
             LOGGER.debug("Writing details of {}", table.getName());
             try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("tables").resolve(table.getName()+".html").toFile())) {
-                htmlTablePage.write(table, outputDir, stats, writer);
+                htmlTablePage.write(table, outputDir, summaryDiagramResults.getStats(), writer);
             }
         }
     }

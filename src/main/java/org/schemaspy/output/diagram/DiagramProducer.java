@@ -21,7 +21,7 @@ package org.schemaspy.output.diagram;
 import java.io.File;
 
 public interface DiagramProducer {
-    DiagramResults generateOrphanDiagram(File dotFile, String diagramName) throws DiagramException;
-    DiagramResults generateTableDiagram(File dotFile, String diagramName) throws DiagramException;
-    DiagramResults generateSummaryDiagram(File dotFile, String diagramName) throws DiagramException;
+    DiagramResults generateOrphanDiagram(File dotFile, String diagramName);
+    DiagramResults generateTableDiagram(File dotFile, String diagramName);
+    DiagramResults generateSummaryDiagram(File dotFile, String diagramName);
 }

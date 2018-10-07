@@ -72,7 +72,7 @@ public class DbAnalyzer {
         }
 
         sortColumnsByTable(columnsWithoutParents);
-        List<ImpliedForeignKeyConstraint> impliedConstraints = new ArrayList<ImpliedForeignKeyConstraint>();
+        List<ImpliedForeignKeyConstraint> impliedConstraints = new ArrayList<>();
         
         for (TableColumn childColumn : columnsWithoutParents) {
             DatabaseObject columnWithoutParent = new DatabaseObject(childColumn);
@@ -180,7 +180,7 @@ public class DbAnalyzer {
      * @return List
      */
     public static List<ForeignKeyConstraint> getForeignKeyConstraints(Collection<Table> tables) {
-        List<ForeignKeyConstraint> constraints = new ArrayList<ForeignKeyConstraint>();
+        List<ForeignKeyConstraint> constraints = new ArrayList<>();
 
         for (Table table : tables) {
             constraints.addAll(table.getForeignKeys());
@@ -190,7 +190,7 @@ public class DbAnalyzer {
     }
 
     public static List<Table> getOrphans(Collection<Table> tables) {
-        List<Table> orphans = new ArrayList<Table>();
+        List<Table> orphans = new ArrayList<>();
 
         for (Table table : tables) {
             if (table.isOrphan(false) && !table.isView()) {

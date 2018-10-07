@@ -34,20 +34,17 @@ public class MustacheDiagramFactory {
 
     public MustacheDiagram generateOrphanDiagram(String name, File dotFile, String diagramName) {
         DiagramResults results = diagramProducer.generateOrphanDiagram(dotFile, diagramName);
-        MustacheDiagram mustacheDiagram = new MustacheDiagram(name, results);
-        return mustacheDiagram;
+        return new MustacheDiagram(name, results);
     }
 
     public MustacheDiagram generateTableDiagram(String name, File dotFile, String diagramName) {
         DiagramResults results = diagramProducer.generateTableDiagram(dotFile, diagramName);
-        MustacheDiagram mustacheDiagram = new MustacheDiagram(name, results);
-        return mustacheDiagram;
+        return new MustacheDiagram(name, results);
     }
 
     public MustacheDiagram generateSummaryDiagram(String name, File dotFile, String diagramName) {
         DiagramResults results = diagramProducer.generateSummaryDiagram(dotFile, diagramName);
-        MustacheDiagram mustacheDiagram = new MustacheDiagram(name, results);
-        return mustacheDiagram;
+        return new MustacheDiagram(name, results);
     }
 
 }

@@ -65,7 +65,7 @@ public class HtmlOutputValidator {
             }).collect(Collectors.toList());
         }
         assertThat(actualPaths.size()).isGreaterThan(0);
-        SoftAssertions softAssertions = new SoftAssertions();
+        SoftAssertions softAssertions = new SilentSoftAssertions();
         for (Path actual : actualPaths) {
             Path expected = Paths.get(expectedPath.toString(), actualPath.relativize(actual).toString());
             if (expected.toFile().exists()) {
@@ -81,11 +81,12 @@ public class HtmlOutputValidator {
     }
 
     public static void hasSameContent(Path actualFile, Path expectedFile) throws IOException {
-        SoftAssertions softAssertions = new SoftAssertions();
+        SoftAssertions softAssertions = new SilentSoftAssertions();
         List<String> actualLines = Files.readAllLines(actualFile, StandardCharsets.UTF_8);
         List<String> expectedLines = Files.readAllLines(expectedFile, StandardCharsets.UTF_8);
         softAssertions.assertThat(actualLines).as("%s doesn't have the expected number of lines: %s", actualFile.toString(), expectedLines.size()).hasSameSizeAs(expectedLines);
         softAssertions.assertThat(actualLines).usingElementComparator(htmlComparator).as("%s isn't as expected", actualFile.toString()).containsAll(expectedLines);
         softAssertions.assertAll();
     }
+
 }

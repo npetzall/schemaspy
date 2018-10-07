@@ -40,7 +40,7 @@ public class MustacheDiagram {
 
     public MustacheDiagram(String diagramName, DiagramResults diagramResults) {
         name = diagramName;
-        id  = diagramName.replaceAll("\\s", "") + "Img";
+        id  = diagramName.replaceAll("\\s", "").toLowerCase() + "DegreeImg";
         fileName = diagramResults.getDiagramFile().getName();
         map = diagramResults.getDiagramMap();
         mapName = diagramResults.getDiagramMapName();
