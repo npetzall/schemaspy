@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Nils Petzaell
+ * Copyright (C) 2018 Nils Petzaell
  *
  * This file is part of SchemaSpy.
  *
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with SchemaSpy. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.schemaspy.util;
+package org.schemaspy.output.diagram.graphviz;
 
 import org.junit.Test;
 import org.schemaspy.Config;
-import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
