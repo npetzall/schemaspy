@@ -26,7 +26,6 @@ import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
-import org.schemaspy.output.diagram.graphviz.GraphvizWrapper;
 import org.schemaspy.view.DotNode.DotNodeConfig;
 
 import java.io.File;
@@ -224,7 +223,6 @@ public class DotFormatter {
     }
 
     private void writeHeader(String diagramName, boolean showLabel, PrintWriter dot) {
-        dot.println("// dot " + GraphvizWrapper.getInstance().getGraphvizVersion() + " on " + System.getProperty("os.name") + " " + System.getProperty("os.version"));
         dot.println("// SchemaSpy rev " + new Revision());
         dot.println("digraph \"" + diagramName + "\" {");
         dot.println("  graph [");
