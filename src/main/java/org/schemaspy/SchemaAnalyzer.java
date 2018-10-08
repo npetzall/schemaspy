@@ -436,7 +436,7 @@ public class SchemaAnalyzer {
 
     private static void writeInfo(String key, String value, Path infoFile) {
         try {
-            Files.write(infoFile, (key + "=" + value).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
+            Files.write(infoFile, (key + "=" + value + "\n").getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
         } catch (IOException e) {
             LOGGER.error("Failed to write '{}', to '{}'", key + "=" + value, infoFile);
         }
