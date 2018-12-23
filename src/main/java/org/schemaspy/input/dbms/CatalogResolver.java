@@ -18,7 +18,7 @@
  */
 package org.schemaspy.input.dbms;
 
-import org.schemaspy.model.InvalidConfigurationException;
+import org.schemaspy.input.dbms.exceptions.InvalidConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

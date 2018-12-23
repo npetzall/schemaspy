@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.schemaspy.model.InvalidConfigurationException;
+import org.schemaspy.input.dbms.exceptions.InvalidConfigurationException;
 
 import java.io.IOException;
 import java.net.URL;

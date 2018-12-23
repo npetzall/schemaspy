@@ -19,7 +19,7 @@
 package org.schemaspy.input.dbms;
 
 import org.junit.Test;
-import org.schemaspy.model.InvalidConfigurationException;
+import org.schemaspy.input.dbms.exceptions.InvalidConfigurationException;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

@@ -24,7 +24,6 @@ import org.schemaspy.input.dbms.validator.NameValidator;
 import org.schemaspy.input.dbms.xml.SchemaMeta;
 import org.schemaspy.input.dbms.xml.TableMeta;
 import org.schemaspy.model.*;
-import org.schemaspy.util.DurationFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

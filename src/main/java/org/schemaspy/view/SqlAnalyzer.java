@@ -20,9 +20,9 @@
  */
 package org.schemaspy.view;
 
+import org.schemaspy.model.CaseInsensitiveMap;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.View;
-import org.schemaspy.util.CaseInsensitiveMap;
 
 import java.util.*;
 

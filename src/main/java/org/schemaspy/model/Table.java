@@ -25,7 +25,6 @@ package org.schemaspy.model;
 
 import org.schemaspy.input.dbms.xml.TableColumnMeta;
 import org.schemaspy.input.dbms.xml.TableMeta;
-import org.schemaspy.util.CaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

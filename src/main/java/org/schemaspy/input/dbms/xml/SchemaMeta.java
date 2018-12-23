@@ -19,7 +19,7 @@
 package org.schemaspy.input.dbms.xml;
 
 import org.schemaspy.Config;
-import org.schemaspy.model.InvalidConfigurationException;
+import org.schemaspy.input.dbms.exceptions.InvalidConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;

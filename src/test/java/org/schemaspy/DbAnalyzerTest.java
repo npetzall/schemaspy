@@ -25,11 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.schemaspy.model.Database;
-import org.schemaspy.model.ImpliedForeignKeyConstraint;
-import org.schemaspy.model.Table;
-import org.schemaspy.model.TableColumn;
-import org.schemaspy.util.CaseInsensitiveMap;
+import org.schemaspy.model.*;
 
 import java.util.ArrayList;
 import java.util.List;

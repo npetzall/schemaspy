@@ -20,9 +20,9 @@ package org.schemaspy.input.dbms.service;
 
 import org.schemaspy.Config;
 import org.schemaspy.input.dbms.DbDriverLoader;
+import org.schemaspy.input.dbms.exceptions.InvalidConfigurationException;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.DbmsMeta;
-import org.schemaspy.model.InvalidConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -19,6 +19,7 @@
 package org.schemaspy.model;
 
 import org.junit.Test;
+import org.schemaspy.input.dbms.exceptions.InvalidConfigurationException;
 import org.testcontainers.shaded.io.netty.util.internal.StringUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;

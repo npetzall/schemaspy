@@ -23,8 +23,6 @@
  */
 package org.schemaspy.model;
 
-import org.schemaspy.util.CaseInsensitiveMap;
-
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;

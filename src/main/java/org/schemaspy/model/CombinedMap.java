@@ -19,8 +19,6 @@
  */
 package org.schemaspy.model;
 
-import org.schemaspy.util.CaseInsensitiveMap;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
