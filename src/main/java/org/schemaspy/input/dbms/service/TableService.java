@@ -23,7 +23,6 @@ import org.schemaspy.input.dbms.xml.ForeignKeyMeta;
 import org.schemaspy.input.dbms.xml.TableColumnMeta;
 import org.schemaspy.input.dbms.xml.TableMeta;
 import org.schemaspy.model.*;
-import org.schemaspy.util.Markdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +55,6 @@ public class TableService {
     }
 
     public void gatheringTableDetails(Database db, Table table) throws SQLException {
-        markDownRegistryPage(table);
         initColumns(db, table);
         initIndexes(db, table);
         initPrimaryKeys(table);
@@ -687,8 +685,4 @@ public class TableService {
         }
     }
 
-    private static void markDownRegistryPage(Table table) {
-        String tablePath = "tables/" + table.getName() + ".html";
-        Markdown.registryPage(table.getName(), tablePath);
-    }
 }
