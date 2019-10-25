@@ -3,8 +3,9 @@
     <xs:element name="schemaMeta">
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="comments" minOccurs="0"/>
-                <xs:element ref="tables"/>
+                <xs:element ref="comments" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tables" minOccurs="0"/>
+                <xs:element ref="routines" minOccurs="0"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -18,7 +19,7 @@
     <xs:element name="tables">
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="table" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="table" minOccurs="1" maxOccurs="unbounded"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -165,6 +166,26 @@
         	</xs:attribute>
         	<xs:attribute name="table" type="xs:string" use="required" />
         	<xs:attribute name="column" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="routines">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="routine" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="routine">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="comments" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Will add comments/remarks to output (html/xsd)
+                        Will replace comments/remarks that have been retrieved from database.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 </xs:schema>

@@ -20,6 +20,8 @@
  */
 package org.schemaspy.model;
 
+import org.schemaspy.input.dbms.xml.RoutineMeta;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class Routine implements Comparable<Routine> {
     private final boolean deterministic;
     private final String dataAccess;
     private final String securityType;
-    private final String comment;
+    private String comment;
     private final String returnType;
     private final List<RoutineParameter> params = new ArrayList<>();
 
@@ -166,5 +168,9 @@ public class Routine implements Comparable<Routine> {
 
     private <T> T coalesce(T a, T b) {
         return a!=null ? a : b;
+    }
+
+    public void update(RoutineMeta routineMeta) {
+        this.comment = routineMeta.comments;
     }
 }

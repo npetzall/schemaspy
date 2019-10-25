@@ -25,9 +25,7 @@ package org.schemaspy.input.dbms.service;
 
 import org.schemaspy.Config;
 import org.schemaspy.input.dbms.service.helper.BasicTableMeta;
-import org.schemaspy.input.dbms.service.helper.RemoteTableIdentifier;
 import org.schemaspy.input.dbms.xml.SchemaMeta;
-import org.schemaspy.input.dbms.xml.TableMeta;
 import org.schemaspy.model.*;
 import org.schemaspy.validator.NameValidator;
 import org.slf4j.Logger;
@@ -56,20 +54,18 @@ import static org.schemaspy.input.dbms.service.ColumnLabel.TABLE_NAME;
  * @author Nils Petzaell
  */
 public class DatabaseService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final long THIRTY_MINUTES = 1000L*60L*30L;
 
     private final Clock clock;
 
     private final SqlService sqlService;
-
     private final TableService tableService;
     private final ViewService viewService;
     private final RoutineService routineService;
     private final SequenceService sequenceService;
-
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final UpdateService updateService;
 
     public DatabaseService(Clock clock, SqlService sqlService, TableService tableService, ViewService viewService, RoutineService routineService, SequenceService sequenceService) {
         this.clock = Objects.requireNonNull(clock);
@@ -78,6 +74,7 @@ public class DatabaseService {
         this.viewService = Objects.requireNonNull(viewService);
         this.routineService = Objects.requireNonNull(routineService);
         this.sequenceService = Objects.requireNonNull(sequenceService);
+        this.updateService = new UpdateService(tableService);
     }
 
     public void gatherSchemaDetails(Config config, Database db, SchemaMeta schemaMeta, ProgressListener listener) throws SQLException {
@@ -108,7 +105,7 @@ public class DatabaseService {
         listener.startedConnectingTables();
 
         connectTables(db, listener);
-        updateFromXmlMetadata(db, schemaMeta);
+        updateService.updateFromXmlMetadata(db, schemaMeta);
     }
     
     private void initCatalogs(Database db) throws SQLException {
@@ -233,59 +230,6 @@ public class DatabaseService {
         }
 
         return types.toArray(new String[types.size()]);
-    }
-
-    /**
-     * Take the supplied XML-based metadata and update our model of the schema with it
-     *
-     * @param schemaMeta
-     * @throws SQLException
-     */
-    private void updateFromXmlMetadata(Database db, SchemaMeta schemaMeta) throws SQLException {
-        if (Objects.isNull(schemaMeta)) {
-            return;
-        }
-        if (Objects.nonNull(schemaMeta.getComments())) {
-            db.getSchema().setComment(schemaMeta.getComments());
-        }
-
-        // done in three passes:
-        // 1: create any new tables
-        // 2: add/mod columns
-        // 3: connect
-
-        // add the newly defined tables and columns first
-        for (TableMeta tableMeta : schemaMeta.getTables()) {
-            Table table;
-
-            if (tableMeta.getRemoteSchema() != null || tableMeta.getRemoteCatalog() != null) {
-                // will add it if it doesn't already exist
-                table = tableService.addLogicalRemoteTable(db, RemoteTableIdentifier.from(tableMeta), db.getSchema().getName());
-            } else {
-                table = db.getLocals().get(tableMeta.getName());
-
-                if (table == null) {
-                    // new table defined only in XML metadata
-                    table = new LogicalTable(db, db.getCatalog().getName(), db.getSchema().getName(), tableMeta.getName(), tableMeta.getComments());
-                    db.getTablesMap().put(table.getName(), table);
-                }
-            }
-
-            table.update(tableMeta);
-        }
-
-        // then tie the tables together
-        for (TableMeta tableMeta : schemaMeta.getTables()) {
-            Table table;
-
-            if (tableMeta.getRemoteCatalog() != null || tableMeta.getRemoteSchema() != null) {
-                table = db.getRemoteTablesMap().get(db.getRemoteTableKey(tableMeta.getRemoteCatalog(), tableMeta.getRemoteSchema(), tableMeta.getName()));
-            } else {
-                table = db.getLocals().get(tableMeta.getName());
-            }
-
-            tableService.connect(db, table, tableMeta, db.getLocals());
-        }
     }
 
     private void connectTables(Database db, ProgressListener listener) throws SQLException {

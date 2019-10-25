@@ -23,6 +23,8 @@ import org.junit.Test;
 import org.schemaspy.testing.Logger;
 import org.schemaspy.testing.LoggingRule;
 
+import java.nio.file.Paths;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -59,6 +61,12 @@ public class SchemaMetaTest {
     public void okCommentsInColumn() {
         SchemaMeta schemaMeta = new SchemaMeta("src/test/resources/model/xml/commentsInColumn.xml", "dbname", "schemaName");
         assertThat(LOGGING.getLog()).doesNotContain("deprecated");
+    }
+
+    @Test
+    public void canParseRoutineComments() {
+        SchemaMeta schemaMeta = new SchemaMeta(Paths.get("src","test","resources","unit","schemameta","with_routines.xml").toString(), "dbName", "schemaName");
+        assertThat(schemaMeta.getRoutines()).usingElementComparator((rm1, rm2) -> rm1.name.compareTo(rm2.name) + rm1.comments.compareTo(rm2.comments)).containsExactly(new RoutineMeta("r_a","r_c"), new RoutineMeta("r_aa", "r_cc"));
     }
 
 }

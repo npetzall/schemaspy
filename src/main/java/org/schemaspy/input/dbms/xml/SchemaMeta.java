@@ -61,6 +61,7 @@ public class SchemaMeta {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final List<TableMeta> tables = new ArrayList<>();
+    private final List<RoutineMeta> routines = new ArrayList<>();
     private final String comments;
     private final File metaFile;
 
@@ -96,13 +97,22 @@ public class SchemaMeta {
             comments = null;
 
         NodeList tablesNodes = doc.getElementsByTagName("tables");
-        if (tablesNodes != null) {
+        if (tablesNodes != null && tablesNodes.getLength() > 0) {
             NodeList tableNodes = ((Element)tablesNodes.item(0)).getElementsByTagName("table");
 
             for (int i = 0; i < tableNodes.getLength(); ++i) {
                 Node tableNode = tableNodes.item(i);
                 TableMeta tableMeta = new TableMeta(tableNode);
                 tables.add(tableMeta);
+            }
+        }
+
+        NodeList routinesNodes = doc.getElementsByTagName("routines");
+        if (routinesNodes != null && routinesNodes.getLength() > 0) {
+            NodeList routineNodes = ((Element)routinesNodes.item(0)).getElementsByTagName("routine");
+            for (int i = 0; i < routineNodes.getLength(); i++) {
+                Node routineNode = routineNodes.item(i);
+                routines.add(RoutineMeta.from(routineNode));
             }
         }
     }
@@ -120,6 +130,10 @@ public class SchemaMeta {
 
     public List<TableMeta> getTables() {
         return tables;
+    }
+
+    public List<RoutineMeta> getRoutines() {
+        return routines;
     }
 
     private void validate(Document document) throws SAXException, IOException {

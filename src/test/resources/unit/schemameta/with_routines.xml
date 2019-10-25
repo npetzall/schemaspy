@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schemaMeta xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://schemaspy.org/xsd/schemaMeta.xsd" >
+    <routines>
+        <routine name="r_a" comments="r_c"/>
+        <routine name="r_aa" comments="r_cc"/>
+    </routines>
+</schemaMeta>
