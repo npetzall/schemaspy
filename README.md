@@ -1,6 +1,6 @@
 # [Schema Spy](http://schemaspy.org/) -  [schemaspy.org](http://schemaspy.org/)
 
-[![Build Status](https://travis-ci.org/schemaspy/schemaspy.svg?branch=master)](https://travis-ci.org/schemaspy/schemaspy)
+[![Master build](https://github.com/npetzall/schemaspy/actions/workflows/master.yml/badge.svg)](https://github.com/npetzall/schemaspy/actions/workflows/master.yml)
 [![Documentation Status](https://readthedocs.org/projects/schemaspy/badge/?version=latest)](http://schemaspy.readthedocs.io/en/latest/?badge=latest)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=org.schemaspy%3Aschemaspy&metric=alert_status)](https://sonarcloud.io/dashboard?id=org.schemaspy%3Aschemaspy)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.schemaspy%3Aschemaspy&metric=coverage)](https://sonarcloud.io/dashboard?id=org.schemaspy%3Aschemaspy)
