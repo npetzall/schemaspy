@@ -55,6 +55,7 @@ jobs:
           -P sonar
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.organization=${{ secrets.SONAR_ORG || github.repository_owner }}
+          -Dsonar.projectKey="org.${{ github.repository_owner }}:schemaspy"
           verify
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
