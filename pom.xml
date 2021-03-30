@@ -517,7 +517,8 @@
         <profile>
             <id>sonar</id>
             <properties>
-                  <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco/unit/jacoco.xml,${project.build.directory}/jacoco/integration/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+                <sonar.projectKey>org.schemaspy:schemaspy</sonar.projectKey>
+                <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco/unit/jacoco.xml,${project.build.directory}/jacoco/integration/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
             </properties>     
             <build>
                 <plugins>
