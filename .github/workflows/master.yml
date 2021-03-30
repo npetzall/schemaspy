@@ -33,7 +33,7 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Build, Test
-        if: ${{ secrets.SONAR_TOKEN == null }}
+        if: ${{ env.SONAR_TOKEN == null }}
         run: >
           ./mvnw
           --batch-mode
@@ -41,8 +41,11 @@ jobs:
           --errors
           --show-version
           verify
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Build, Test, Sonar
-        if: ${{ secrets.SONAR_TOKEN != null }}
+        if: ${{ env.SONAR_TOKEN != null }}
         run: >
           ./mvnw
           --batch-mode
