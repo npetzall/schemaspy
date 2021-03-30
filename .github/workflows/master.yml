@@ -54,7 +54,7 @@ jobs:
           --show-version
           -P sonar
           -Dsonar.host.url=https://sonarcloud.io
-          -Dsonar.organization=${{ github.repository_owner }}
+          -Dsonar.organization=${{ secrets.SONAR_ORG || github.repository_owner }}
           verify
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
