@@ -56,7 +56,14 @@
         <connection>scm:git:git://github.com/schemaspy/schemaspy.git</connection>
         <developerConnection>scm:git:git@github.com:schemaspy/schemaspy.git</developerConnection>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>Github Packages SchemaSpy</name>
+            <url>https://maven.pkg.github.com/schemaspy/schemaspy</url>
+        </repository>
+    </distributionManagement>
     <developers>
         <developer>
             <id>rafalkasa</id>
@@ -318,7 +325,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
-
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>

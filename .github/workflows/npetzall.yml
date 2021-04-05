@@ -1,17 +1,16 @@
-name: Main build
+name: Npetzall Test Builds
 
 on:
   push:
     branches:
-      - main
-      - master
+      - github_actions
     paths-ignore:
       - '*.md'
       - 'docs/**'
 
 jobs:
   build:
-    if: ${{ github.repository_owner == "schemaspy" }}
+    if: ${{ github.repository_owner == "npetzall" }}
     runs-on: ubuntu-latest
 
     steps:
@@ -36,29 +35,23 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
-      - name: Build, Test, Sonar
+      - name: Build, Test
         run: >
           ./mvnw
           --batch-mode
           --update-snapshots
           --errors
           --show-version
-          -P sonar
-          -Dsonar.host.url=https://sonarcloud.io
           verify
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: Deploy to Github Packages
-        if: success()
-        run: ./mvnw deploy
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
       - name: Build docker image
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           context: .
+          push: false
           tags: "${{ github.repository }}:snapshot"
           build-args: |
             GIT_BRANCH=${{ github.ref }}
