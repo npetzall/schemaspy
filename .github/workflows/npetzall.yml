@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    if: ${{ github.repository_owner == "npetzall" }}
+    if: ${{ github.repository_owner == 'npetzall' }}
     runs-on: ubuntu-latest
 
     steps:
