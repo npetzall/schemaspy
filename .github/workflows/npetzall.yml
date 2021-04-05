@@ -17,6 +17,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
       - name: Setup JDK 11
         uses: actions/setup-java@v1
         with:
@@ -54,7 +55,7 @@ jobs:
           push: false
           tags: "${{ github.repository }}:snapshot"
           build-args: |
-            GIT_BRANCH=${{ github.ref }}
-            GIT_REVISION=${GITHUB_REF##*/}
+            GIT_BRANCH=${BRANCH_NAME}
+            GIT_REVISION=${{ github.sha }}}
       - name: Inspect
         run: docker inspect ${{ steps.docker_build.outputs.digest }}
