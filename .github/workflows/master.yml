@@ -60,6 +60,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
+          push: true
           tags: "${{ github.repository }}:snapshot"
           build-args: |
             GIT_BRANCH=${{ env.BRANCH_NAME }}
