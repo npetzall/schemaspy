@@ -53,7 +53,7 @@ jobs:
           mkdir gh-pages
           cp .github/pages/* gh-pages/
           cp target/schemaspy-*.jar gh-pages/
-          echo "{\"version\": \"$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)\", \"filename\": \"$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout).jar\"}" >> gh-pages/latest.json
+          echo "{\"version\": \"$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)\", \"filename\": \"$(./mvnw help:evaluate -Dexpression=project.build.finalName -q -DforceStdout).jar\"}" >> gh-pages/latest.json
 
       - name: Deploy to gh-pages
         if: success()
