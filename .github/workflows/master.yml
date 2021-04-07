@@ -65,5 +65,3 @@ jobs:
           build-args: |
             GIT_BRANCH=${{ env.BRANCH_NAME }}
             GIT_REVISION=${{ github.sha }}
-      - name: Inspect
-        run: docker inspect ${{ steps.docker_build.outputs.digest }}

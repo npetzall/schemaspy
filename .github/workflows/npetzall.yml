@@ -47,7 +47,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Create latest.json
+        if: success()
+        run: |
+          mkdir gh-pages
+          cp .github/pages/* gh-pages/
+          cp target/schemaspy-*.jar gh-pages/
+          echo "{\"version\": \"$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)\", \"filename\": \"$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout).jar\"}" >> gh-pages/latest.json
+
+      - name: Deploy to gh-pages
+        if: success()
+        uses: crazy-max/ghaction-github-pages@b8f8d291c97fe0edd9fb4ee73018163593418e8f
+        with:
+          target_branch: gh-pages
+          build_dir: gh-pages
+          jekyll: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build docker image
+        if: success()
         id: docker_build
         uses: docker/build-push-action@v2
         with:
@@ -58,4 +76,5 @@ jobs:
             GIT_BRANCH=${{ env.BRANCH_NAME }}
             GIT_REVISION=${{ github.sha }}
       - name: Inspect
+        if: success()
         run: docker inspect ${{ steps.docker_build.outputs.digest }}
