@@ -488,6 +488,7 @@
                 <configuration>
                     <arguments>-Dmaven.javadoc.skip=true -Dmaven.deploy.skip=true</arguments>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <scmCommentPrefix>chore(release): </scmCommentPrefix>
                 </configuration>
             </plugin>
         </plugins>
