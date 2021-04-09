@@ -6,9 +6,11 @@ on:
       release_version:
         description: 'Version to release [n.n.n]'
         required: true
+        default: "[n.n.n]"
       next_development_version:
         description: 'Next development version [n.n.n]'
         required: true
+        default: "[n.n.n+1]"
 
 jobs:
   release:
@@ -17,7 +19,7 @@ jobs:
 
     steps:
       - name: Check Inputs
-        run: echo "$RELEASE_VERSION > $NEXT_VERSION"
+        run: echo "Create $RELEASE_VERSION and swith to $NEXT_VERSION"
         env:
           RELEASE_VERSION: ${{ github.event.inputs.release_version }}
           NEXT_VERSION: ${{ github.event.inputs.next_development_version }}
