@@ -17,8 +17,7 @@ jobs:
 
     steps:
       - name: Check Inputs
-        run: |
-          [[ "${{ github.event.inputs.release_version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "${{ github.event.inputs.next_development_version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+        run: [[ "${{ github.event.inputs.release_version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ "${{ github.event.inputs.next_development_version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
       - name: Everything is awesome
         if: success()
         run: echo "Everything is actually awesome"
