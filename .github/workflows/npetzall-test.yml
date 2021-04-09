@@ -1,4 +1,4 @@
-name: Npetzall Manual Test
+name: Npetzall Manual Tests
 
 on:
   workflow_dispatch:
