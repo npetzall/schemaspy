@@ -17,11 +17,11 @@ jobs:
 
     steps:
       - name: Check Inputs
-        run: '[[ $RELEASE_VERSION =~ $VERSION_PATTERN ]] && [[ $NEXT_VERSION =~ $VERSION_PATTERN ]]'
+        run: ([[ $RELEASE_VERSION =~ $VERSION_PATTERN ]] && [[ $NEXT_VERSION =~ $VERSION_PATTERN ]])
         env:
           RELEASE_VERSION: ${{ github.event.inputs.release_version }}
           NEXT_VERSION: ${{ github.event.inputs.next_development_version }}
-          VERSION_PATTERN: '^[0-9]+\.[0-9]+\.[0-9]+$'
+          VERSION_PATTERN: '^[0-9]+\\.[0-9]+\\.[0-9]+$'
       - name: Everything is awesome
         if: success()
         run: echo "Everything is actually awesome"
