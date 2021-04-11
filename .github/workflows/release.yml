@@ -52,7 +52,7 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
       - name: Create/Update draft
         if: success()
-        uses: npetzall/release-ready-action@82794515cee7889ff4f67cd3d5a110eae96bbbfd
+        uses: npetzall/release-ready-action@8132d4ddbb70196b11b9d6083e2f3587e856bf37
         id: drafting
         with:
           draft-tag: "v${{ github.event.inputs.release_version }}"
