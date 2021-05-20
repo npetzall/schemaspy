@@ -49,8 +49,8 @@ public class TableColumn {
     private Boolean isUnique;
     private Object defaultValue;
     private String comments;
-    private final Map<TableColumn, ForeignKeyConstraint> parents = new HashMap<>();
-    private final Map<TableColumn, ForeignKeyConstraint> children = new TreeMap<>(new ColumnComparator());
+    private final Map<TableColumn, Set<ForeignKeyConstraint>> parents = new HashMap<>();
+    private final Map<TableColumn, Set<ForeignKeyConstraint>> children = new TreeMap<>(new ColumnComparator());
     private boolean allowImpliedParents = true;
     private boolean allowImpliedChildren = true;
     private boolean isExcluded = false;
@@ -368,7 +368,8 @@ public class TableColumn {
      * @param constraint
      */
     public void addParent(TableColumn parent, ForeignKeyConstraint constraint) {
-        parents.put(parent, constraint);
+        parents.putIfAbsent(parent, new HashSet<>());
+        parents.get(parent).add(constraint);
         table.addedParent();
     }
 
@@ -403,7 +404,7 @@ public class TableColumn {
     /**
      * Returns the constraint that connects this column to the specified column (this 'child' column to specified 'parent' column)
      */
-    public ForeignKeyConstraint getParentConstraint(TableColumn parent) {
+    public Set<ForeignKeyConstraint> getParentConstraint(TableColumn parent) {
         return parents.get(parent);
     }
 
@@ -412,7 +413,7 @@ public class TableColumn {
      *
      * @return the removed {@link ForeignKeyConstraint}
      */
-    public ForeignKeyConstraint removeAParentFKConstraint() {
+    public Set<ForeignKeyConstraint> removeAParentFKConstraint() {
         return parents.entrySet().stream().findFirst().map(entry ->  {
             parents.remove(entry.getKey());
             entry.getKey().removeChild(this);
@@ -425,7 +426,7 @@ public class TableColumn {
      *
      * @return the removed constraint, or <code>null</code> if none were available to be removed
      */
-    public ForeignKeyConstraint removeAChildFKConstraint() {
+    public Set<ForeignKeyConstraint> removeAChildFKConstraint() {
         return children.entrySet().stream().findFirst().map(entry ->  {
             children.remove(entry.getKey());
             entry.getKey().removeParent(this);
@@ -440,7 +441,8 @@ public class TableColumn {
      * @param constraint
      */
     public void addChild(TableColumn child, ForeignKeyConstraint constraint) {
-        children.put(child, constraint);
+        children.putIfAbsent(child, new HashSet<>());
+        children.get(child).add(constraint);
         table.addedChild();
     }
 
@@ -475,7 +477,7 @@ public class TableColumn {
      * returns the constraint that connects the specified column to this column
      * (specified 'child' to this 'parent' column)
      */
-    public ForeignKeyConstraint getChildConstraint(TableColumn child) {
+    public Set<ForeignKeyConstraint> getChildConstraint(TableColumn child) {
         return children.get(child);
     }
 

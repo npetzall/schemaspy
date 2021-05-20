@@ -35,7 +35,7 @@ public class InformixContainer<SELF extends InformixContainer<SELF>> extends Jdb
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    static final String IMAGE = "ibmcom/informix-developer-database";
+    public static final String IMAGE = "ibmcom/informix-developer-database";
     static final Integer INFORMIX_PORT = 9088;
 
     public InformixContainer(){
@@ -53,7 +53,7 @@ public class InformixContainer<SELF extends InformixContainer<SELF>> extends Jdb
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:informix-sqli://"+ getContainerIpAddress() + ":" + getJdbcPort()+ "/sysmaster:INFORMIXSERVER=dev";
+        return "jdbc:informix-sqli://"+ getContainerIpAddress() + ":" + getJdbcPort()+ "/sysmaster:INFORMIXSERVER=informix";
     }
 
     @Override
@@ -101,10 +101,10 @@ public class InformixContainer<SELF extends InformixContainer<SELF>> extends Jdb
     @Override
     protected void waitUntilContainerStarted() {
         super.waitUntilContainerStarted();
-        LOGGER.info("Restart container");
+        /*LOGGER.info("Restart container");
         dockerClient.restartContainerCmd(containerId).exec();
         updateContainerInfo();
-        super.waitUntilContainerStarted();
+        super.waitUntilContainerStarted();*/
     }
 
     private void updateContainerInfo() {

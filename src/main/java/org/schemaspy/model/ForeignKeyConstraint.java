@@ -29,6 +29,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static java.sql.DatabaseMetaData.*;
 
@@ -362,21 +363,15 @@ public class ForeignKeyConstraint implements Comparable<ForeignKeyConstraint> {
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj instanceof ForeignKeyConstraint) {
-            ForeignKeyConstraint other = (ForeignKeyConstraint)obj;
-            return parentTable == other.parentTable && childTable == other.childTable;
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ForeignKeyConstraint that = (ForeignKeyConstraint) o;
+        return name.equals(that.name) && parentTable.equals(that.parentTable) && Objects.equals(parentColumns, that.parentColumns) && childTable.equals(that.childTable) && Objects.equals(childColumns, that.childColumns);
     }
 
     @Override
     public int hashCode() {
-        int result = parentTable != null ? parentTable.hashCode() : 0;
-        result = 31 * result + (childTable != null ? childTable.hashCode() : 0);
-        return result;
+        return Objects.hash(name, parentTable, parentColumns, childTable, childColumns);
     }
 }

@@ -19,6 +19,7 @@
  */
 package org.schemaspy.output.dot.schemaspy;
 
+import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
 
@@ -99,7 +100,7 @@ public class DotConnectorFinder {
                 continue;
             if (targetTable == null && !includeExcluded && parentColumn.isExcluded())
                 continue;
-            boolean implied = column.getParentConstraint(parentColumn).isImplied();
+            boolean implied = column.getParentConstraint(parentColumn).stream().allMatch(ForeignKeyConstraint::isImplied);
             if (!implied || includeImplied) {
                 relatedConnectors.add(new DotConnector(parentColumn, column, implied));
             }
@@ -111,7 +112,7 @@ public class DotConnectorFinder {
                 continue;
             if (targetTable == null && !includeExcluded && childColumn.isExcluded())
                 continue;
-            boolean implied = column.getChildConstraint(childColumn).isImplied();
+            boolean implied = column.getChildConstraint(childColumn).stream().allMatch(ForeignKeyConstraint::isImplied);
             if (!implied || includeImplied) {
                 relatedConnectors.add(new DotConnector(column, childColumn, implied));
             }

@@ -96,15 +96,19 @@ public class XmlColumnFormatter {
         DOMUtil.appendAttribute(columnNode, "remarks", column.getComments() == null ? "" : column.getComments());
 
         for (TableColumn childColumn : column.getChildren()) {
-            Node childNode = document.createElement("child");
-            columnNode.appendChild(childNode);
-            appendForeignKeyAttributes(childNode, childColumn, column.getChildConstraint(childColumn));
+            for (ForeignKeyConstraint foreignKeyConstraint : column.getChildConstraint(childColumn)) {
+                Node childNode = document.createElement("child");
+                columnNode.appendChild(childNode);
+                appendForeignKeyAttributes(childNode, childColumn, foreignKeyConstraint);
+            }
         }
 
         for (TableColumn parentColumn : column.getParents()) {
-            Node parentNode = document.createElement("parent");
-            columnNode.appendChild(parentNode);
-            appendForeignKeyAttributes(parentNode, parentColumn, column.getParentConstraint(parentColumn));
+            for(ForeignKeyConstraint foreignKeyConstraint: column.getParentConstraint(parentColumn)) {
+                Node parentNode = document.createElement("parent");
+                columnNode.appendChild(parentNode);
+                appendForeignKeyAttributes(parentNode, parentColumn, foreignKeyConstraint);
+            }
         }
 
         return columnNode;

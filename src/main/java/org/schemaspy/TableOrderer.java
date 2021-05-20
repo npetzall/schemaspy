@@ -200,9 +200,9 @@ public class TableOrderer {
     private static boolean removeSelfReferencingConstraints(List<Table> remainingTables, Collection<ForeignKeyConstraint> recursiveConstraints) {
         boolean foundSimpleRecursion = false;
         for (Table potentialRecursiveTable : remainingTables) {
-            ForeignKeyConstraint recursiveConstraint = potentialRecursiveTable.removeSelfReferencingConstraint();
+            Set<ForeignKeyConstraint> recursiveConstraint = potentialRecursiveTable.removeSelfReferencingConstraint();
             if (recursiveConstraint != null) {
-                recursiveConstraints.add(recursiveConstraint);
+                recursiveConstraints.addAll(recursiveConstraint);
                 foundSimpleRecursion = true;
             }
         }
@@ -223,8 +223,8 @@ public class TableOrderer {
             });
             byParentChildDelta.addAll(remainingTables);
             Table recursiveTable = byParentChildDelta.iterator().next(); // this one has the largest delta
-            ForeignKeyConstraint removedConstraint = recursiveTable.removeAForeignKeyConstraint();
-            recursiveConstraints.add(removedConstraint);
+            Set<ForeignKeyConstraint> removedConstraint = recursiveTable.removeAForeignKeyConstraint();
+            recursiveConstraints.addAll(removedConstraint);
         }
     }
 }

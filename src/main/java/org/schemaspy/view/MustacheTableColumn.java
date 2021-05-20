@@ -159,8 +159,8 @@ public class MustacheTableColumn {
 
         for (TableColumn relativeColumn : relativeColumns) {
 
-            ForeignKeyConstraint constraint = dumpParents ? relativeColumn.getChildConstraint(this.column) : relativeColumn.getParentConstraint(this.column);
-            MustacheTableColumnRelatives relative = new MustacheTableColumnRelatives(relativeColumn, constraint);
+            Set<ForeignKeyConstraint> constraints = dumpParents ? relativeColumn.getChildConstraint(this.column) : relativeColumn.getParentConstraint(this.column);
+            MustacheTableColumnRelatives relative = new MustacheTableColumnRelatives(relativeColumn, constraints);
 
             relatives.add(relative);
         }

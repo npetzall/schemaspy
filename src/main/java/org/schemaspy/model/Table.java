@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * A <code>Table</code> is one of the basic building blocks of SchemaSpy
@@ -408,7 +409,7 @@ public class Table implements Comparable<Table> {
      *
      * @return
      */
-    public ForeignKeyConstraint removeSelfReferencingConstraint() {
+    public Set<ForeignKeyConstraint> removeSelfReferencingConstraint() {
         return remove(getSelfReferencingConstraint());
     }
 
@@ -417,18 +418,20 @@ public class Table implements Comparable<Table> {
      * <p>
      * This is a more drastic removal solution that was proposed by Remke Rutgers
      *
-     * @param constraint
+     * @param constraints
      */
-    private ForeignKeyConstraint remove(ForeignKeyConstraint constraint) {
-        if (constraint != null) {
-            for (int i = 0; i < constraint.getChildColumns().size(); i++) {
-                TableColumn childColumn = constraint.getChildColumns().get(i);
-                TableColumn parentColumn = constraint.getParentColumns().get(i);
-                childColumn.removeParent(parentColumn);
-                parentColumn.removeChild(childColumn);
+    private Set<ForeignKeyConstraint> remove(Set<ForeignKeyConstraint> constraints) {
+        if (constraints != null) {
+            for(ForeignKeyConstraint constraint :  constraints) {
+                for (int i = 0; i < constraint.getChildColumns().size(); i++) {
+                    TableColumn childColumn = constraint.getChildColumns().get(i);
+                    TableColumn parentColumn = constraint.getParentColumns().get(i);
+                    childColumn.removeParent(parentColumn);
+                    parentColumn.removeChild(childColumn);
+                }
             }
         }
-        return constraint;
+        return constraints;
     }
 
     /**
@@ -436,7 +439,7 @@ public class Table implements Comparable<Table> {
      *
      * @return
      */
-    private ForeignKeyConstraint getSelfReferencingConstraint() {
+    private Set<ForeignKeyConstraint> getSelfReferencingConstraint() {
         for (TableColumn column : columns.values()) {
             for (TableColumn parentColumn : column.getParents()) {
                 if (compareTo(parentColumn.getTable()) == 0) {
@@ -452,23 +455,23 @@ public class Table implements Comparable<Table> {
      *
      * @return
      */
-    public List<ForeignKeyConstraint> removeNonRealForeignKeys() {
-        List<ForeignKeyConstraint> nonReals = new ArrayList<>();
+    public Set<ForeignKeyConstraint> removeNonRealForeignKeys() {
+        Set<ForeignKeyConstraint> nonReals = new HashSet<>();
 
         for (TableColumn column : columns.values()) {
             for (TableColumn parentColumn : column.getParents()) {
-                ForeignKeyConstraint constraint = column.getParentConstraint(parentColumn);
-                if (constraint != null && !constraint.isReal()) {
-                    nonReals.add(constraint);
+                for(ForeignKeyConstraint constraint : column.getParentConstraint(parentColumn)) {
+                    if (constraint != null && !constraint.isReal()) {
+                        nonReals.add(constraint);
+                    }
                 }
             }
         }
 
         // remove constraints outside of above loop to prevent
         // concurrent modification exceptions while iterating
-        for (ForeignKeyConstraint constraint : nonReals) {
-            remove(constraint);
-        }
+
+        remove(nonReals);
 
         return nonReals;
     }
@@ -498,8 +501,7 @@ public class Table implements Comparable<Table> {
 
         for (TableColumn column : columns.values()) {
             for (TableColumn childColumn : column.getChildren()) {
-                if (!column.getChildConstraint(childColumn).isImplied())
-                    ++numChildren;
+                numChildren += column.getChildConstraint(childColumn).stream().filter(fk -> !fk.isImplied()).count();
             }
         }
 
@@ -531,8 +533,7 @@ public class Table implements Comparable<Table> {
 
         for (TableColumn column : columns.values()) {
             for (TableColumn parentColumn : column.getParents()) {
-                if (!column.getParentConstraint(parentColumn).isImplied())
-                    ++numParents;
+                numParents += column.getParentConstraint(parentColumn).stream().filter(fk -> !fk.isImplied()).count();
             }
         }
 
@@ -546,7 +547,7 @@ public class Table implements Comparable<Table> {
      *
      * @return
      */
-    public ForeignKeyConstraint removeAForeignKeyConstraint() {
+    public Set<ForeignKeyConstraint> removeAForeignKeyConstraint() {
         final List<TableColumn> sortedColumns = getColumns();
         int numParents = 0;
         int numChildren = 0;
@@ -559,7 +560,7 @@ public class Table implements Comparable<Table> {
         }
 
         for (TableColumn column : sortedColumns) {
-            ForeignKeyConstraint constraint;
+            Set<ForeignKeyConstraint> constraint;
             if (numParents <= numChildren)
                 constraint = column.removeAParentFKConstraint();
             else
@@ -677,11 +678,11 @@ public class Table implements Comparable<Table> {
 
         for (TableColumn column : columns.values()) {
             for (TableColumn parentColumn : column.getParents()) {
-                if (!column.getParentConstraint(parentColumn).isImplied())
+                if (column.getParentConstraint(parentColumn).stream().anyMatch(fk -> !fk.isImplied()))
                     return false;
             }
             for (TableColumn childColumn : column.getChildren()) {
-                if (!column.getChildConstraint(childColumn).isImplied())
+                if (column.getChildConstraint(childColumn).stream().anyMatch(fk -> !fk.isImplied()))
                     return false;
             }
         }

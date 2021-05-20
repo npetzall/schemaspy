@@ -22,6 +22,8 @@ import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
 
+import java.util.Set;
+
 /**
  * Created by rkasa on 2016-03-24.
  *
@@ -30,15 +32,15 @@ import org.schemaspy.model.TableColumn;
 public class MustacheTableColumnRelatives {
     private TableColumn column;
     private Table table;
-    private ForeignKeyConstraint constraint;
+    private Set<ForeignKeyConstraint> constraints;
     private String path;
 
-    public MustacheTableColumnRelatives(ForeignKeyConstraint constraint) {
-        this.constraint = constraint;
+    public MustacheTableColumnRelatives(Set<ForeignKeyConstraint> constraints) {
+        this.constraints = constraints;
     }
 
-    public MustacheTableColumnRelatives(TableColumn column, ForeignKeyConstraint constraint) {
-        this(constraint);
+    public MustacheTableColumnRelatives(TableColumn column, Set<ForeignKeyConstraint> constraints) {
+        this(constraints);
         this.column = column;
         this.table = column.getTable();
         this.path = table.isRemote() ? ("../../" + FileNameGenerator.generate(table.getContainer()) + "/tables/") : "";
@@ -52,8 +54,8 @@ public class MustacheTableColumnRelatives {
         return path;
     }
 
-    public ForeignKeyConstraint getConstraint() {
-        return constraint;
+    public Set<ForeignKeyConstraint> getConstraint() {
+        return constraints;
     }
 
     public TableColumn getColumn() {

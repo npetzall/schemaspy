@@ -201,11 +201,11 @@ public class DotTableFormatter implements Relationships {
                     continue;
                 }
 
-                ForeignKeyConstraint constraint = column.getChildConstraint(childColumn);
-                if (includeImplied || !constraint.isImplied())
+                Set<ForeignKeyConstraint> constraints = column.getChildConstraint(childColumn);
+                if (includeImplied || constraints.stream().anyMatch(fk -> !fk.isImplied()))
                     relatedColumns.add(childColumn);
                 else
-                    skippedImpliedConstraints.add(constraint);
+                    skippedImpliedConstraints.addAll(constraints);
             }
 
             for (TableColumn parentColumn : column.getParents()) {
@@ -213,11 +213,11 @@ public class DotTableFormatter implements Relationships {
                     continue;
                 }
 
-                ForeignKeyConstraint constraint = column.getParentConstraint(parentColumn);
-                if (includeImplied || !constraint.isImplied())
+                Set<ForeignKeyConstraint> constraints = column.getParentConstraint(parentColumn);
+                if (includeImplied || constraints.stream().anyMatch(fk -> !fk.isImplied()))
                     relatedColumns.add(parentColumn);
                 else
-                    skippedImpliedConstraints.add(constraint);
+                    skippedImpliedConstraints.addAll(constraints);
             }
         }
 
