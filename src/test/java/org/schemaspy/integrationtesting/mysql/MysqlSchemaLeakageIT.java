@@ -117,12 +117,12 @@ public class MysqlSchemaLeakageIT {
                 arguments.getCatalog(),
                 arguments.getSchema()
         );
-        new DatabaseServiceFactory(sqlService).simple(config).gatherSchemaDetails(database, null, progressListener);
+        new DatabaseServiceFactory(sqlService).simple(config, false).gatherSchemaDetails(database, null, progressListener);
         MysqlSchemaLeakageIT.database = database;
     }
 
     @Test
     public void shouldHaveNoViews() {
-        assertThat(database.getViews().size()).isEqualTo(0);
+        assertThat(database.getViews()).isEmpty();
     }
 }

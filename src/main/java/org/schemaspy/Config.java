@@ -85,7 +85,6 @@ public final class Config implements HtmlConfig {
     private Map<String, String> dbSpecificOptions;
     private String dbType;
     private List<String> schemas;
-    private boolean oneOfMultipleSchemas;
     private String user;
     private Boolean singleSignOn;
     private String password;
@@ -838,22 +837,6 @@ public final class Config implements HtmlConfig {
         if (evaluateAll == null)
             evaluateAll = options.remove("-all");
         return evaluateAll;
-    }
-
-    /**
-     * Returns true if we're evaluating a bunch of schemas in one go and
-     * at this point we're evaluating a specific schema.
-     *
-     * @return boolean if we are processing multiple schemas
-     */
-    @Override
-    public boolean isOneOfMultipleSchemas() {
-        return oneOfMultipleSchemas;
-    }
-
-    public void setOneOfMultipleSchemas(boolean oneOfMultipleSchemas) {
-        // set by SchemaAnalyzer.analyzeMultipleSchemas function.
-        this.oneOfMultipleSchemas = oneOfMultipleSchemas;
     }
 
     /**

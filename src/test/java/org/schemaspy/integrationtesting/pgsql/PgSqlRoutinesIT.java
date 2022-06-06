@@ -105,7 +105,7 @@ public class PgSqlRoutinesIT {
                 arguments.getCatalog(),
                 arguments.getSchema()
         );
-        new DatabaseServiceFactory(sqlService).simple(config).gatherSchemaDetails(database, null, progressListener);
+        new DatabaseServiceFactory(sqlService).simple(config, false).gatherSchemaDetails(database, null, progressListener);
         PgSqlRoutinesIT.database = database;
     }
 
@@ -117,7 +117,7 @@ public class PgSqlRoutinesIT {
 
     @Test
     public void databaseShouldHave8Routines() {
-        assertThat(database.getRoutines().size()).isEqualTo(10);
+        assertThat(database.getRoutines()).hasSize(10);
     }
 
     @Test
@@ -127,6 +127,6 @@ public class PgSqlRoutinesIT {
 
     @Test
     public void routineFilmInStockHas3Parameters() {
-        assertThat(database.getRoutinesMap().get("film_in_stock(integer, integer)").getParameters().size()).isEqualTo(3);
+        assertThat(database.getRoutinesMap().get("film_in_stock(integer, integer)").getParameters()).hasSize(3);
     }
 }

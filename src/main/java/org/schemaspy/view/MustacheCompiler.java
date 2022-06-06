@@ -49,12 +49,15 @@ public class MustacheCompiler {
     private final String databaseName;
     private final HtmlConfig htmlConfig;
     private final DataTableConfig dataTableConfig;
+
+    private final boolean multiSchema;
     private final MustacheFactory mustacheFactory;
 
-    public MustacheCompiler(String databaseName, HtmlConfig htmlConfig, DataTableConfig dataTableConfig) {
+    public MustacheCompiler(String databaseName, HtmlConfig htmlConfig, DataTableConfig dataTableConfig, boolean multiSchema) {
         this.databaseName = databaseName;
         this.htmlConfig = htmlConfig;
         this.dataTableConfig = dataTableConfig;
+        this.multiSchema = multiSchema;
         this.mustacheFactory = new DefaultMustacheFactory(new MustacheCustomResolver(htmlConfig.getTemplateDirectory()));
     }
 
@@ -90,7 +93,7 @@ public class MustacheCompiler {
 
     private String getRootPathToHome(int depth) {
         String path = getRootPath(depth);
-        if (htmlConfig.isOneOfMultipleSchemas()) {
+        if (multiSchema) {
             path += "../";
         }
         return path;

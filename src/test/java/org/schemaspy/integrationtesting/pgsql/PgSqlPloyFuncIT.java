@@ -106,7 +106,7 @@ public class PgSqlPloyFuncIT {
                 arguments.getCatalog(),
                 arguments.getSchema()
         );
-        new DatabaseServiceFactory(sqlService).simple(config).gatherSchemaDetails(database, null, progressListener);
+        new DatabaseServiceFactory(sqlService).simple(config, false).gatherSchemaDetails(database, null, progressListener);
         PgSqlPloyFuncIT.database = database;
     }
 
@@ -118,7 +118,7 @@ public class PgSqlPloyFuncIT {
 
     @Test
     public void hasThreeFunctions() {
-        assertThat(database.getRoutines().size()).isEqualTo(3);
+        assertThat(database.getRoutines()).hasSize(3);
     }
 
     @Test

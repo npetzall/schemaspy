@@ -114,14 +114,12 @@ public class SchemaAnalyzer {
         // if -all(evaluteAll) or -schemas given then analyzeMultipleSchemas
         List<String> schemas = config.getSchemas();
         if (schemas != null || config.isEvaluateAllEnabled()) {
-            // set flag which later on used for generation rootPathtoHome link.
-            config.setOneOfMultipleSchemas(true);
-            return this.analyzeMultipleSchemas(config, databaseServiceFactory.simple(config), progressListener);
+            return this.analyzeMultipleSchemas(config, databaseServiceFactory.simple(config, true), progressListener);
         } else {
             File outputDirectory = commandLineArguments.getOutputDirectory();
             Objects.requireNonNull(outputDirectory);
             String schema = commandLineArguments.getSchema();
-            return analyze(schema, config, false, outputDirectory, databaseServiceFactory.simple(config), progressListener);
+            return analyze(schema, config, false, outputDirectory, databaseServiceFactory.simple(config, false), progressListener);
         }
     }
 
@@ -174,7 +172,7 @@ public class SchemaAnalyzer {
 
             prepareLayoutFiles(outputDir);
             DataTableConfig dataTableConfig = new DataTableConfig(config, commandLineArguments);
-            MustacheCompiler mustacheCompiler = new MustacheCompiler(dbName, config, dataTableConfig);
+            MustacheCompiler mustacheCompiler = new MustacheCompiler(dbName, config, dataTableConfig, true);
             HtmlMultipleSchemasIndexPage htmlMultipleSchemasIndexPage = new HtmlMultipleSchemasIndexPage(mustacheCompiler);
             try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve(INDEX_DOT_HTML).toFile())) {
                 htmlMultipleSchemasIndexPage.write(mustacheCatalog, mustacheSchemas, config.getDescription(), getDatabaseProduct(meta), writer);
@@ -220,7 +218,7 @@ public class SchemaAnalyzer {
             catalog = new CatalogResolver(databaseMetaData).resolveCatalog(catalog);
             schema = new SchemaResolver(databaseMetaData).resolveSchema(schema);
 
-            SchemaMeta schemaMeta = commandLineArguments.getSchemaMeta() == null ? null : new SchemaMeta(commandLineArguments.getSchemaMeta(), dbName, schema, config.isOneOfMultipleSchemas());
+            SchemaMeta schemaMeta = commandLineArguments.getSchemaMeta() == null ? null : new SchemaMeta(commandLineArguments.getSchemaMeta(), dbName, schema, multiSchema);
             if (commandLineArguments.isHtmlEnabled()) {
                 FileUtils.forceMkdir(new File(outputDir, "tables"));
                 FileUtils.forceMkdir(new File(outputDir, "diagrams/summary"));
@@ -244,7 +242,7 @@ public class SchemaAnalyzer {
 
             if (tables.isEmpty()) {
                 dumpNoTablesMessage(schema, config.getUser(), databaseMetaData, config.getTableInclusions() != null);
-                if (!config.isOneOfMultipleSchemas()) // don't bail if we're doing the whole enchilada
+                if (!multiSchema) // don't bail if we're doing the whole enchilada
                     throw new EmptySchemaException();
             }
 
@@ -258,7 +256,7 @@ public class SchemaAnalyzer {
                         try {
                             outputProducer.generate(db, outputDir);
                         } catch (OutputException oe) {
-                            if (config.isOneOfMultipleSchemas()) {
+                            if (multiSchema) {
                                 LOGGER.warn("Failed to produce output", oe);
                             } else {
                                 throw oe;
@@ -372,7 +370,7 @@ public class SchemaAnalyzer {
                 LOGGER.error("RelationShipDiagramError", exception)
         );
         DataTableConfig dataTableConfig = new DataTableConfig(config, commandLineArguments);
-        MustacheCompiler mustacheCompiler = new MustacheCompiler(db.getName(), config, dataTableConfig);
+        MustacheCompiler mustacheCompiler = new MustacheCompiler(db.getName(), config, dataTableConfig, multiSchema);
 
         HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage(mustacheCompiler);
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("relationships.html").toFile())) {

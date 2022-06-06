@@ -109,12 +109,12 @@ public class PgSqlRelationshipErrorIT {
                 arguments.getCatalog(),
                 arguments.getSchema()
         );
-        new DatabaseServiceFactory(sqlService).simple(config).gatherSchemaDetails(database, null, progressListener);
+        new DatabaseServiceFactory(sqlService).simple(config, false).gatherSchemaDetails(database, null, progressListener);
         PgSqlRelationshipErrorIT.database = database;
     }
 
     @Test
     public void onlyHasSingleRemoteTable() {
-        assertThat(database.getRemoteTables().size()).isEqualTo(1);
+        assertThat(database.getRemoteTables()).hasSize(1);
     }
 }

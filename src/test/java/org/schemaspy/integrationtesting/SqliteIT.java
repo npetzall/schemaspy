@@ -83,17 +83,17 @@ public class SqliteIT {
                 arguments.getCatalog(),
                 arguments.getSchema()
         );
-        new DatabaseServiceFactory(sqlService).simple(config).gatherSchemaDetails(database, null, progressListener);
+        new DatabaseServiceFactory(sqlService).simple(config, false).gatherSchemaDetails(database, null, progressListener);
         this.database = database;
     }
 
     @Test
     public void databaseContainsTable() {
-        assertThat(database.getTables().size()).isEqualTo(11);
+        assertThat(database.getTables()).hasSize(11);
     }
 
     @Test
     public void databaseTablePlaylistsContainsPrimaryKey() {
-        assertThat(database.getTablesMap().get("playlists").getPrimaryColumns().size()).isGreaterThanOrEqualTo(1);
+        assertThat(database.getTablesMap().get("playlists").getPrimaryColumns()).isNotEmpty();
     }
 }

@@ -113,13 +113,13 @@ public class MSSQLServerCheckConstraintIT {
                 arguments.getCatalog(),
                 arguments.getSchema()
         );
-        new DatabaseServiceFactory(sqlService).simple(config).gatherSchemaDetails(database, null, progressListener);
+        new DatabaseServiceFactory(sqlService).simple(config, false).gatherSchemaDetails(database, null, progressListener);
         MSSQLServerCheckConstraintIT.database = database;
     }
 
     @Test
     public void databaseShouldBePopulatedWithTableTest() {
         Table range = database.getTablesMap().get("range");
-        assertThat(range.getCheckConstraints().size()).isEqualTo(1);
+        assertThat(range.getCheckConstraints()).hasSize(1);
     }
 }

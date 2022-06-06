@@ -13,7 +13,7 @@ public class DatabaseServiceFactory {
         this.sqlService = sqlService;
     }
 
-    public DatabaseService simple(Config config) {
+    public DatabaseService simple(Config config, boolean multiSchema) {
         return new DatabaseService(
                 clock,
                 sqlService,
@@ -27,7 +27,7 @@ public class DatabaseServiceFactory {
                 new TableService(
                         sqlService,
                         config.isExportedKeysEnabled(),
-                        config.isOneOfMultipleSchemas(),
+                        multiSchema,
                         config.getTableInclusions(),
                         config.getTableExclusions(),
                         config.getDbProperties(),

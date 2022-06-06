@@ -107,7 +107,7 @@ public class InformixIndexIT {
                 arguments.getCatalog(),
                 arguments.getSchema()
         );
-        new DatabaseServiceFactory(sqlService).simple(config).gatherSchemaDetails(database, null, progressListener);
+        new DatabaseServiceFactory(sqlService).simple(config, false).gatherSchemaDetails(database, null, progressListener);
         InformixIndexIT.database = database;
     }
 
@@ -127,13 +127,13 @@ public class InformixIndexIT {
     @Test
     public void tableTestShouldHaveTwoIndexes() {
         Table table = getTable("test");
-        assertThat(table.getIndexes().size()).isEqualTo(2);
+        assertThat(table.getIndexes()).hasSize(2);
     }
 
     @Test
     public void tableTestIndex_test_index_shouldHaveThreeColumns() {
         TableIndex index = getTable("test").getIndex("test_index");
-        assertThat(index.getColumns().size()).isEqualTo(3);
+        assertThat(index.getColumns()).hasSize(3);
     }
 
     private Table getTable(String tableName) {
