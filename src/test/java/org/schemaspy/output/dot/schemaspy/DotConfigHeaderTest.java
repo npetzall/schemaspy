@@ -5,7 +5,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 import org.schemaspy.output.dot.DotConfig;
 
-public class DotConfigHeaderTest {
+class DotConfigHeaderTest {
 
     /**
      * Given the name of a font,
@@ -38,17 +38,7 @@ public class DotConfigHeaderTest {
                             }
 
                             @Override
-                            public boolean useRelativeLinks() {
-                                return false;
-                            }
-
-                            @Override
                             public boolean isNumRowsEnabled() {
-                                return false;
-                            }
-
-                            @Override
-                            public boolean isOneOfMultipleSchemas() {
                                 return false;
                             }
                         },
@@ -89,17 +79,7 @@ public class DotConfigHeaderTest {
                             }
 
                             @Override
-                            public boolean useRelativeLinks() {
-                                return false;
-                            }
-
-                            @Override
                             public boolean isNumRowsEnabled() {
-                                return false;
-                            }
-
-                            @Override
-                            public boolean isOneOfMultipleSchemas() {
                                 return false;
                             }
                         },

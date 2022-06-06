@@ -326,9 +326,7 @@ public class SchemaMetaIT {
                     config.getFontSize()
                 ),
                 config.isRankDirBugEnabled(),
-                false,
-                config.isNumRowsEnabled(),
-                config.isOneOfMultipleSchemas()
+                config.isNumRowsEnabled()
             ),
                 new AddTableNodeLinkFactory(false, new WithTargetTopTableNodeLinkFactory(new FromBaseTableNodeLinkFactory()))
         );

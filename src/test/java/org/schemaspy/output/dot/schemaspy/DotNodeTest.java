@@ -107,8 +107,6 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         false,
-                        false,
-                        false,
                         false
                 )
         ), "trivialAndDetails.txt");
@@ -124,8 +122,6 @@ class DotNodeTest {
                         false),
                 new SimpleDotConfig(
                         fontConfig,
-                        false,
-                        false,
                         false,
                         false
                 )
@@ -143,8 +139,6 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         false,
-                        false,
-                        false,
                         false
                 )
         ), "noTrivialNoDetails.txt");
@@ -161,8 +155,6 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         false,
-                        false,
-                        false,
                         false
                 )
         ), "noTrivialAndDetails.txt");
@@ -178,8 +170,6 @@ class DotNodeTest {
                         true),
                 new SimpleDotConfig(
                         fontConfig,
-                        false,
-                        false,
                         false,
                         false
                 )
@@ -202,9 +192,7 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         true,
-                        false,
-                        true,
-                        false
+                        true
                 )
         );
         assertDotNode(dotNode, "excludedColumn.txt");
@@ -236,9 +224,7 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         true,
-                        false,
-                        true,
-                        false
+                        true
                 )
         );
         table.setNumRows(1);
@@ -257,9 +243,7 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         true,
-                        false,
-                        true,
-                        false
+                        true
                 )
         );
         table.setNumRows(2);
@@ -278,8 +262,6 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         true,
-                        false,
-                        false,
                         false
                 )
         );
@@ -297,9 +279,7 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         false,
-                        false,
-                        false,
-                        true
+                        false
                 )
         );
         assertThat(dotNode.value()).contains("tooltip=\"&lt;table&gt;");
@@ -320,9 +300,7 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         false,
-                        false,
-                        false,
-                        true
+                        false
                 )
         );
         assertThat(dotNode.value()).contains("<TD PORT=\"&lt;A&gt;.type\" ALIGN=\"LEFT\">&lt;t&gt;</TD>");
@@ -343,9 +321,7 @@ class DotNodeTest {
                 new SimpleDotConfig(
                         fontConfig,
                         false,
-                        false,
-                        false,
-                        true
+                        false
                 )
         );
         assertThat(dotNode.value()).contains("[&lt;D&gt;]");

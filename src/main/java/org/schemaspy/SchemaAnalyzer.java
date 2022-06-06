@@ -347,9 +347,7 @@ public class SchemaAnalyzer {
                 config.getFontSize()
             ),
             config.isRankDirBugEnabled(),
-            "svg".equalsIgnoreCase(diagramFactory.getDiagramFormat()),
-            config.isNumRowsEnabled(),
-            config.isOneOfMultipleSchemas()
+            config.isNumRowsEnabled()
         );
         MustacheDiagramFactory mustacheDiagramFactory = new MustacheDiagramFactory(diagramFactory);
         ImpliedConstraintsFinder impliedConstraintsFinder = new ImpliedConstraintsFinder();

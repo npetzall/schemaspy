@@ -25,16 +25,12 @@ public class SimpleDotConfig implements DotConfig {
 
     private final FontConfig fontConfig;
     private final boolean rankDirBugEnabled;
-    private final boolean relativeLinks;
     private final boolean numRowsEnabled;
-    private final boolean multiSchema;
 
-    public SimpleDotConfig(FontConfig fontConfig, boolean rankDirBugEnabled, boolean relativeLinks, boolean numRowsEnabled, boolean multiSchema) {
+    public SimpleDotConfig(FontConfig fontConfig, boolean rankDirBugEnabled, boolean numRowsEnabled) {
         this.fontConfig = fontConfig;
         this.rankDirBugEnabled = rankDirBugEnabled;
-        this.relativeLinks = relativeLinks;
         this.numRowsEnabled = numRowsEnabled;
-        this.multiSchema = multiSchema;
     }
 
     @Override
@@ -57,17 +53,8 @@ public class SimpleDotConfig implements DotConfig {
     }
 
     @Override
-    public boolean useRelativeLinks() {
-        return relativeLinks;
-    }
-
-    @Override
     public boolean isNumRowsEnabled() {
         return numRowsEnabled;
     }
 
-    @Override
-    public boolean isOneOfMultipleSchemas() {
-        return multiSchema;
-    }
 }
