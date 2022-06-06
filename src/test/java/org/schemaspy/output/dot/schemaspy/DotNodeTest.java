@@ -23,6 +23,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.schemaspy.SimpleDotConfig;
 import org.schemaspy.model.*;
+import org.schemaspy.output.dot.schemaspy.link.RelativeTableNodeLinkFactory;
+import org.schemaspy.output.dot.schemaspy.link.TableNodeLinkFactory;
+import org.schemaspy.output.dot.schemaspy.link.WithTargetTopTableNodeLinkFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -38,7 +41,7 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Nils Petzaell
  */
-public class DotNodeTest {
+class DotNodeTest {
 
     private static final Path expectations = Paths.get("src", "test", "resources", "dotnode");
 
@@ -51,6 +54,8 @@ public class DotNodeTest {
     private static final Database database = mock(Database.class);
     private static final Table localTable = new LogicalTable(database, "catalog", "schema", "a table", "comment");
     private static final Table remoteTable = new RemoteTable(database, "catalog", "schema", "a table", "remote");
+
+    private final TableNodeLinkFactory tableNodeLinkFactory = new WithTargetTopTableNodeLinkFactory(new RelativeTableNodeLinkFactory());
 
     @BeforeAll
     static void setup() {
@@ -92,202 +97,92 @@ public class DotNodeTest {
     }
 
     @Test
-    void pathRelativeLinksLocal() {
-        DotNode dotNode = new DotNode(
-            localTable,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                true
-            )
-        );
-        assertThat(dotNode.value()).contains("URL=\"a_table_4867c34f.html\"");
-    }
-
-    @Test
-    void pathRelativeLinksRemote() {
-        DotNode dotNode = new DotNode(
-            remoteTable,
-            false,
-            new DotNodeConfig(
-                true,
-                true
-            ),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                true,
-                false,
-                true
-            )
-        );
-        assertThat(dotNode.value()).contains("URL=\"../../../schema/tables/a_table_4867c34f.html\"");
-    }
-
-    @Test
-    void pathFromRootLocal() {
-        DotNode dotNode = new DotNode(
-            localTable,
-            true,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                true
-            )
-        );
-        assertThat(dotNode.value()).contains("URL=\"tables/a_table_4867c34f.html\"");
-    }
-
-    @Test
-    void pathFromRootRemote() {
-        DotNode dotNode = new DotNode(
-            remoteTable,
-            true,
-            new DotNodeConfig(
-                true,
-                true
-            ),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                true
-            )
-        );
-        assertThat(dotNode.value()).contains("URL=\"../schema/tables/a_table_4867c34f.html\"");
-    }
-
-    @Test
-    void defaultPathLocal() {
-        DotNode dotNode = new DotNode(
-            localTable,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                true
-            )
-        );
-        assertThat(dotNode.value()).contains("URL=\"a_table_4867c34f.html\"");
-    }
-
-    @Test
-    void defaultPathRemote() {
-        DotNode dotNode = new DotNode(
-            remoteTable,
-            false,
-            new DotNodeConfig(
-                true,
-                true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                true
-            )
-        );
-        assertThat(dotNode.value()).contains("URL=\"../../schema/tables/a_table_4867c34f.html\"");
-    }
-
-    @Test
     void trivialAndDetails() throws IOException {
         assertDotNode(new DotNode(
-            localTable,
-            false,
-            new DotNodeConfig(
-                true,
-                true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                false
-            )
+                localTable,
+                tableNodeLinkFactory,
+                new DotNodeConfig(
+                        true,
+                        true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        false,
+                        false,
+                        false,
+                        false
+                )
         ), "trivialAndDetails.txt");
     }
 
     @Test
     void trivialNoDetails() throws IOException {
         assertDotNode(new DotNode(
-            localTable,
-            false,
-            new DotNodeConfig(
-                true,
-                false),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                false
-            )
+                localTable,
+                tableNodeLinkFactory,
+                new DotNodeConfig(
+                        true,
+                        false),
+                new SimpleDotConfig(
+                        fontConfig,
+                        false,
+                        false,
+                        false,
+                        false
+                )
         ), "trivialNoDetails.txt");
     }
 
     @Test
     void noTrivialNoDetails() throws IOException {
         assertDotNode(new DotNode(
-            localTable,
-            false,
-            new DotNodeConfig(
-                false,
-                false),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                false
-            )
+                localTable,
+                tableNodeLinkFactory,
+                new DotNodeConfig(
+                        false,
+                        false),
+                new SimpleDotConfig(
+                        fontConfig,
+                        false,
+                        false,
+                        false,
+                        false
+                )
         ), "noTrivialNoDetails.txt");
     }
 
     @Test
     void noTrivialAndDetails() throws IOException {
         assertDotNode(new DotNode(
-            localTable,
-            false,
-            new DotNodeConfig(
-                false,
-                true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                false
-            )
+                localTable,
+                tableNodeLinkFactory,
+                new DotNodeConfig(
+                        false,
+                        true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        false,
+                        false,
+                        false,
+                        false
+                )
         ), "noTrivialAndDetails.txt");
     }
 
     @Test
     void trivialAndDetailsWithShowImplied() throws IOException {
         DotNode dotNode = new DotNode(
-            localTable,
-            false,
-            new DotNodeConfig(
-                true,
-                true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                false
-            )
+                localTable,
+                tableNodeLinkFactory,
+                new DotNodeConfig(
+                        true,
+                        true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        false,
+                        false,
+                        false,
+                        false
+                )
         );
         dotNode.setShowImplied(true);
         assertDotNode(dotNode, "trivialAndDetailsWithShowImplied.txt");
@@ -301,16 +196,16 @@ public class DotNodeTest {
         TableColumn excl = createColumn(table, "excl");
         excl.setExcluded(true);
         DotNode dotNode = new DotNode(
-            table,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                true,
-                false,
-                true,
-                false
-            )
+                table,
+                tableNodeLinkFactory,
+                new DotNodeConfig(true, true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        true,
+                        false,
+                        true,
+                        false
+                )
         );
         assertDotNode(dotNode, "excludedColumn.txt");
     }
@@ -320,11 +215,11 @@ public class DotNodeTest {
         List<String> expectLines = getLines(fileName);
         assertThat(actualLines).hasSameSizeAs(expectLines);
         SoftAssertions.assertSoftly(soft -> {
-            for(int i = 0; i < expectLines.size(); i++) {
+            for (int i = 0; i < expectLines.size(); i++) {
                 soft
-                    .assertThat(actualLines.get(i))
-                    .describedAs("Diff on line %s", i+1)
-                    .isEqualTo(expectLines.get(i));
+                        .assertThat(actualLines.get(i))
+                        .describedAs("Diff on line %s", i + 1)
+                        .isEqualTo(expectLines.get(i));
             }
         });
     }
@@ -335,16 +230,16 @@ public class DotNodeTest {
         TableColumn prim = createColumn(table, "prim");
         table.setPrimaryColumn(prim);
         DotNode dotNode = new DotNode(
-            table,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                true,
-                false,
-                true,
-                false
-            )
+                table,
+                tableNodeLinkFactory,
+                new DotNodeConfig(true, true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        true,
+                        false,
+                        true,
+                        false
+                )
         );
         table.setNumRows(1);
         assertThat(dotNode.value()).contains("row");
@@ -356,16 +251,16 @@ public class DotNodeTest {
         TableColumn prim = createColumn(table, "prim");
         table.setPrimaryColumn(prim);
         DotNode dotNode = new DotNode(
-            table,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                true,
-                false,
-                true,
-                false
-            )
+                table,
+                tableNodeLinkFactory,
+                new DotNodeConfig(true, true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        true,
+                        false,
+                        true,
+                        false
+                )
         );
         table.setNumRows(2);
         assertThat(dotNode.value()).contains("rows");
@@ -377,16 +272,16 @@ public class DotNodeTest {
         TableColumn prim = createColumn(table, "prim");
         table.setPrimaryColumn(prim);
         DotNode dotNode = new DotNode(
-            table,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                true,
-                false,
-                false,
-                false
-            )
+                table,
+                tableNodeLinkFactory,
+                new DotNodeConfig(true, true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        true,
+                        false,
+                        false,
+                        false
+                )
         );
         table.setNumRows(1);
         assertThat(dotNode.value()).doesNotContain("row");
@@ -396,16 +291,16 @@ public class DotNodeTest {
     void escapeHtml() {
         Table table = new LogicalTable(database, "catalog", "schema", "<table>", "comment");
         DotNode dotNode = new DotNode(
-            table,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                true
-            )
+                table,
+                tableNodeLinkFactory,
+                new DotNodeConfig(true, true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        false,
+                        false,
+                        false,
+                        true
+                )
         );
         assertThat(dotNode.value()).contains("tooltip=\"&lt;table&gt;");
     }
@@ -419,16 +314,16 @@ public class DotNodeTest {
         tableColumn.setDetailedSize(null);
         table.getColumnsMap().put("<A>", tableColumn);
         DotNode dotNode = new DotNode(
-            table,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                true
-            )
+                table,
+                tableNodeLinkFactory,
+                new DotNodeConfig(true, true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        false,
+                        false,
+                        false,
+                        true
+                )
         );
         assertThat(dotNode.value()).contains("<TD PORT=\"&lt;A&gt;.type\" ALIGN=\"LEFT\">&lt;t&gt;</TD>");
     }
@@ -442,16 +337,16 @@ public class DotNodeTest {
         tableColumn.setDetailedSize("<D>");
         table.getColumnsMap().put("<A>", tableColumn);
         DotNode dotNode = new DotNode(
-            table,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                true
-            )
+                table,
+                tableNodeLinkFactory,
+                new DotNodeConfig(true, true),
+                new SimpleDotConfig(
+                        fontConfig,
+                        false,
+                        false,
+                        false,
+                        true
+                )
         );
         assertThat(dotNode.value()).contains("[&lt;D&gt;]");
     }

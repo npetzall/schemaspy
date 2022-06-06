@@ -20,15 +20,14 @@
  */
 package org.schemaspy.output.dot.schemaspy;
 
-import org.schemaspy.model.Database;
 import org.schemaspy.model.Table;
 import org.schemaspy.output.dot.DotConfig;
+import org.schemaspy.output.dot.schemaspy.link.TableNodeLinkFactory;
 import org.schemaspy.output.dot.schemaspy.relationship.ImpliedRelationships;
 import org.schemaspy.output.dot.schemaspy.relationship.RealRelationships;
 import org.schemaspy.view.WriteStats;
 
 import java.io.PrintWriter;
-import java.util.Collection;
 
 /**
  * Format table data into .dot format to feed to Graphvis' dot program.
@@ -40,27 +39,18 @@ import java.util.Collection;
 public class DotFormatter {
 
     private final DotConfig dotConfig;
+    private final TableNodeLinkFactory tableNodeLinkFactory;
 
-    private final DotSummaryFormatter dotSummaryFormatter;
-
-    public DotFormatter(DotConfig dotConfig) {
+    public DotFormatter(DotConfig dotConfig, TableNodeLinkFactory tableNodeLinkFactory) {
         this.dotConfig = dotConfig;
-        this.dotSummaryFormatter = new DotSummaryFormatter(dotConfig);
-    }
-
-    public void writeSummaryRealRelationships(Database db, Collection<Table> tables, boolean compact, boolean showColumns, WriteStats stats, PrintWriter dot) {
-        dotSummaryFormatter.writeSummaryRealRelationships(db, tables, compact, showColumns, stats, dot);
-    }
-
-    public void writeSummaryAllRelationships(Database db, Collection<Table> tables, boolean compact, boolean showColumns, WriteStats stats, PrintWriter dot) {
-        dotSummaryFormatter.writeSummaryAllRelationships(db, tables, compact, showColumns, stats, dot);
+        this.tableNodeLinkFactory = tableNodeLinkFactory;
     }
 
     public void writeTableRealRelationships(Table table, boolean twoDegreesOfSeparation, WriteStats stats, PrintWriter dot) {
-        new RealRelationships(dotConfig, table, twoDegreesOfSeparation, stats, dot).write();
+        new RealRelationships(dotConfig, tableNodeLinkFactory, table, twoDegreesOfSeparation, stats, dot).write();
     }
 
     public void writeTableAllRelationships(Table table, boolean twoDegreesOfSeparation, WriteStats stats, PrintWriter dot) {
-        new ImpliedRelationships(dotConfig, table, twoDegreesOfSeparation, stats, dot).write();
+        new ImpliedRelationships(dotConfig, tableNodeLinkFactory, table, twoDegreesOfSeparation, stats, dot).write();
     }
 }

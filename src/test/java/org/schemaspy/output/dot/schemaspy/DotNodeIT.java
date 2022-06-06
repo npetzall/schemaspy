@@ -32,6 +32,9 @@ import org.schemaspy.output.diagram.graphviz.GraphvizDot;
 import org.schemaspy.output.dot.DotConfig;
 import org.schemaspy.output.dot.schemaspy.graph.Orphan;
 import org.schemaspy.output.dot.schemaspy.graph.Graph;
+import org.schemaspy.output.dot.schemaspy.link.RelativeTableNodeLinkFactory;
+import org.schemaspy.output.dot.schemaspy.link.TableNodeLinkFactory;
+import org.schemaspy.output.dot.schemaspy.link.WithTargetTopTableNodeLinkFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +54,8 @@ public class DotNodeIT {
 
     @ClassRule
     public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    private final TableNodeLinkFactory tableNodeLinkFactory = new WithTargetTopTableNodeLinkFactory(new RelativeTableNodeLinkFactory());
 
     private static DotConfig dotConfig =
             new SimpleDotConfig(
@@ -88,7 +93,7 @@ public class DotNodeIT {
                 new DotConfigHeader(dotConfig, false),
                 new DotNode(
                         table,
-                        true,
+                        tableNodeLinkFactory,
                         new DotNodeConfig(true, true),
                         dotConfig
                 )
@@ -119,7 +124,7 @@ public class DotNodeIT {
                 new DotConfigHeader(dotConfig, false),
                 new DotNode(
                         table,
-                        true,
+                        tableNodeLinkFactory,
                         new DotNodeConfig(true, true),
                         dotConfig
                 )

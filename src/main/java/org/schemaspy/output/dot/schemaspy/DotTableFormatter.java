@@ -32,6 +32,7 @@ import org.schemaspy.output.dot.schemaspy.edge.PairEdges;
 import org.schemaspy.output.dot.schemaspy.edge.SimpleEdges;
 import org.schemaspy.output.dot.schemaspy.graph.Digraph;
 import org.schemaspy.output.dot.schemaspy.graph.Element;
+import org.schemaspy.output.dot.schemaspy.link.TableNodeLinkFactory;
 import org.schemaspy.output.dot.schemaspy.name.*;
 import org.schemaspy.output.dot.schemaspy.relationship.Relationships;
 import org.schemaspy.view.WriteStats;
@@ -50,6 +51,7 @@ import java.util.stream.Collectors;
 public class DotTableFormatter implements Relationships {
 
     private final DotConfig dotConfig;
+    private final TableNodeLinkFactory tableNodeLinkFactory;
     private final Table table;
     private final boolean twoDegreesOfSeparation;
     private final WriteStats stats;
@@ -60,6 +62,7 @@ public class DotTableFormatter implements Relationships {
 
     public DotTableFormatter(
             final DotConfig dotConfig,
+            final TableNodeLinkFactory tableNodeLinkFactory,
             final Table table,
             final boolean twoDegreesOfSeparation,
             final WriteStats stats,
@@ -68,6 +71,7 @@ public class DotTableFormatter implements Relationships {
     ) {
         this(
                 dotConfig,
+                tableNodeLinkFactory,
                 table,
                 twoDegreesOfSeparation,
                 stats,
@@ -89,6 +93,7 @@ public class DotTableFormatter implements Relationships {
 
     public DotTableFormatter(
         final DotConfig dotConfig,
+        final TableNodeLinkFactory tableNodeLinkFactory,
         final Table table,
         final boolean twoDegreesOfSeparation,
         final WriteStats stats,
@@ -98,6 +103,7 @@ public class DotTableFormatter implements Relationships {
         final Name graph
     ) {
         this.dotConfig = dotConfig;
+        this.tableNodeLinkFactory = tableNodeLinkFactory;
         this.table = table;
         this.twoDegreesOfSeparation = twoDegreesOfSeparation;
         this.stats = stats;
@@ -173,7 +179,7 @@ public class DotTableFormatter implements Relationships {
         }
 
         // include the table itself
-        nodes.put(table, new DotNode(table, false, new DotNodeConfig(true, true), dotConfig));
+        nodes.put(table, new DotNode(table, tableNodeLinkFactory, new DotNodeConfig(true, true), dotConfig));
 
         edges.addAll(allCousinEdges);
         
@@ -264,7 +270,7 @@ public class DotTableFormatter implements Relationships {
         final Map<Table, DotNode> result = new HashMap<>();
         for (Table relatedTable : tables) {
             DotNodeConfig nodeConfigurations = new DotNodeConfig(false, false);
-            DotNode node = new DotNode(relatedTable, false, nodeConfigurations, dotConfig);
+            DotNode node = new DotNode(relatedTable, tableNodeLinkFactory, nodeConfigurations, dotConfig);
             result.put(relatedTable, node);
         }
         return result;
@@ -304,7 +310,7 @@ public class DotTableFormatter implements Relationships {
             }
 
             for (Table cousin : missing) {
-                final DotNode node = new DotNode(cousin, false, new DotNodeConfig(), dotConfig);
+                final DotNode node = new DotNode(cousin, tableNodeLinkFactory, new DotNodeConfig(), dotConfig);
                 nodes.put(cousin, node);
             }
 

@@ -26,6 +26,7 @@ import org.schemaspy.output.dot.DotConfig;
 import org.schemaspy.output.dot.schemaspy.edge.SimpleEdges;
 import org.schemaspy.output.dot.schemaspy.graph.Digraph;
 import org.schemaspy.output.dot.schemaspy.graph.Element;
+import org.schemaspy.output.dot.schemaspy.link.TableNodeLinkFactory;
 import org.schemaspy.output.dot.schemaspy.name.*;
 import org.schemaspy.view.WriteStats;
 
@@ -42,9 +43,11 @@ import java.util.*;
 public class DotSummaryFormatter {
 
     private final DotConfig dotConfig;
+    private final TableNodeLinkFactory tableNodeLinkFactory;
 
-    public DotSummaryFormatter(DotConfig dotConfig) {
+    public DotSummaryFormatter(DotConfig dotConfig, TableNodeLinkFactory tableNodeLinkFactory) {
         this.dotConfig = dotConfig;
+        this.tableNodeLinkFactory = tableNodeLinkFactory;
     }
 
     public void writeSummaryRealRelationships(Database db, Collection<Table> tables, boolean compact, boolean showColumns, WriteStats stats, PrintWriter dot) {
@@ -74,12 +77,12 @@ public class DotSummaryFormatter {
 
         for (Table table : tables) {
             if (!table.isOrphan(includeImplied)) {
-                nodes.add(new DotNode(table, true, nodeConfig, dotConfig));
+                nodes.add(new DotNode(table, tableNodeLinkFactory, nodeConfig, dotConfig));
             }
         }
 
         for (Table table : db.getRemoteTables()) {
-            nodes.add(new DotNode(table, true, nodeConfig, dotConfig));
+            nodes.add(new DotNode(table, tableNodeLinkFactory, nodeConfig, dotConfig));
         }
 
         Set<Edge> edges = new TreeSet<>();

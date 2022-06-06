@@ -24,6 +24,7 @@ import org.schemaspy.output.dot.DotConfig;
 import org.schemaspy.output.dot.schemaspy.*;
 import org.schemaspy.output.dot.schemaspy.graph.Orphan;
 import org.schemaspy.output.dot.schemaspy.graph.Graph;
+import org.schemaspy.output.dot.schemaspy.link.TableNodeLinkFactory;
 import org.schemaspy.util.Writers;
 import org.schemaspy.view.FileNameGenerator;
 import org.schemaspy.view.MustacheTableDiagram;
@@ -48,11 +49,13 @@ public class MustacheOrphanDiagramFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final DotConfig dotConfig;
+    private final TableNodeLinkFactory tableNodeLinkFactory;
     private final MustacheDiagramFactory mustacheDiagramFactory;
     private final Path orphanDir;
 
-    public MustacheOrphanDiagramFactory(DotConfig dotConfig, MustacheDiagramFactory mustacheDiagramFactory, File outputDir) {
+    public MustacheOrphanDiagramFactory(DotConfig dotConfig, TableNodeLinkFactory tableNodeLinkFactory, MustacheDiagramFactory mustacheDiagramFactory, File outputDir) {
         this.dotConfig = dotConfig;
+        this.tableNodeLinkFactory = tableNodeLinkFactory;
         this.mustacheDiagramFactory = mustacheDiagramFactory;
         orphanDir = outputDir.toPath().resolve("diagrams").resolve("orphans");
     }
@@ -85,7 +88,7 @@ public class MustacheOrphanDiagramFactory {
                         new DotConfigHeader(dotConfig, false),
                         new DotNode(
                                 table,
-                                true,
+                                tableNodeLinkFactory,
                                 new DotNodeConfig(true, true),
                                 dotConfig
                         )

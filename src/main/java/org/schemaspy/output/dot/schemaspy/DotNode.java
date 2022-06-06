@@ -28,14 +28,8 @@ import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
 import org.schemaspy.model.TableIndex;
 import org.schemaspy.output.dot.DotConfig;
-import org.schemaspy.view.FileNameGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.schemaspy.output.dot.schemaspy.link.TableNodeLinkFactory;
 
-import java.io.UnsupportedEncodingException;
-import java.lang.invoke.MethodHandles;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -51,7 +45,6 @@ import java.util.Set;
  */
 public class DotNode implements Node {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final Html html = new Html();
     private static final StyleSheet CSS = StyleSheet.getInstance();
 
@@ -59,7 +52,7 @@ public class DotNode implements Node {
     private static final String TABLES_PATH = "/tables/"; //NOSONAR
 
     private final Table table;
-    private final String path;
+    private final TableNodeLinkFactory tableNodeLinkFactory;
     private final DotNodeConfig config;
     private final DotConfig dotConfig;
     private final String lineSeparator = System.getProperty("line.separator");
@@ -67,23 +60,12 @@ public class DotNode implements Node {
 
     private boolean showImpliedRelationships;
 
-    public DotNode(Table table, boolean fromRoot, DotNodeConfig config, DotConfig dotConfig) {
+    public DotNode(Table table, TableNodeLinkFactory tableNodeLinkFactory, DotNodeConfig config, DotConfig dotConfig) {
         this.table = table;
         this.config = config;
         this.dotConfig = dotConfig;
-        this.path = createPath(fromRoot);
+        this.tableNodeLinkFactory = tableNodeLinkFactory;
         this.columnSpan = config.showColumnDetails ? "COLSPAN=\"2\" " : "COLSPAN=\"3\" ";
-    }
-
-    private String createPath(boolean fromRoot) {
-        if (dotConfig.useRelativeLinks()) {
-            return (table.isRemote() ? "../../../" + new FileNameGenerator().generate(table.getContainer()) : "../..") + TABLES_PATH;
-        }
-        if (fromRoot) {
-            return (table.isRemote() ? ("../" + new FileNameGenerator().generate(table.getContainer()) + TABLES_PATH) : "tables/");
-        }
-        return (table.isRemote() ? ("../../" + new FileNameGenerator().generate(table.getContainer()) + TABLES_PATH) : "");
-
     }
 
     public void setShowImplied(boolean showImplied) {
@@ -129,10 +111,7 @@ public class DotNode implements Node {
         }
 
         buf.append("    </TABLE>>" + lineSeparator);
-        if (!table.isRemote() || dotConfig.isOneOfMultipleSchemas()) {
-            buf.append("    URL=\"" + path + urlEncodeLink(new FileNameGenerator().generate(tableName)) + ".html\"" + lineSeparator);
-            buf.append("    target=\"_top\"" + lineSeparator);
-        }
+        buf.append(tableNodeLinkFactory.nodeLink(table).asString());
         buf.append("    tooltip=\"" + escapeHtml(fqTableName) + "\"" + lineSeparator);
         buf.append("  ];");
 
@@ -271,15 +250,6 @@ public class DotNode implements Node {
      */
     private static String escapeHtml(String string) {
         return html.escape(string);
-    }
-
-    private static String urlEncodeLink(String string) {
-        try {
-            return URLEncoder.encode(string, StandardCharsets.UTF_8.name()).replace("+","%20");
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.error("Error trying to urlEncode string [{}] with encoding [{}]", string, StandardCharsets.UTF_8.name(), e);
-            return string;
-        }
     }
 
 }

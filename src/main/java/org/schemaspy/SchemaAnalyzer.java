@@ -46,6 +46,8 @@ import org.schemaspy.output.diagram.vizjs.VizJSDot;
 import org.schemaspy.output.dot.DotConfig;
 import org.schemaspy.output.dot.schemaspy.DefaultFontConfig;
 import org.schemaspy.output.dot.schemaspy.DotFormatter;
+import org.schemaspy.output.dot.schemaspy.DotSummaryFormatter;
+import org.schemaspy.output.dot.schemaspy.link.*;
 import org.schemaspy.output.html.mustache.diagrams.*;
 import org.schemaspy.output.xml.dom.XmlProducerUsingDOM;
 import org.schemaspy.util.*;
@@ -119,7 +121,7 @@ public class SchemaAnalyzer {
             File outputDirectory = commandLineArguments.getOutputDirectory();
             Objects.requireNonNull(outputDirectory);
             String schema = commandLineArguments.getSchema();
-            return analyze(schema, config, outputDirectory, databaseServiceFactory.simple(config), progressListener);
+            return analyze(schema, config, false, outputDirectory, databaseServiceFactory.simple(config), progressListener);
         }
     }
 
@@ -163,7 +165,7 @@ public class SchemaAnalyzer {
 
                 LOGGER.info("Analyzing '{}'", schema);
                 File outputDirForSchema = new File(outputDir, new FileNameGenerator().generate(schema));
-                db = this.analyze(schema, config, outputDirForSchema, databaseService, progressListener);
+                db = this.analyze(schema, config, true, outputDirForSchema, databaseService, progressListener);
                 if (db == null) //if any of analysed schema returns null
                     return null;
                 mustacheSchemas.add(new MustacheSchema(db.getSchema(), ""));
@@ -198,7 +200,7 @@ public class SchemaAnalyzer {
         }
     }
 
-    public Database analyze(String schema, Config config, File outputDir, DatabaseService databaseService, ProgressListener progressListener) throws SQLException, IOException {
+    public Database analyze(String schema, Config config, boolean multiSchema, File outputDir, DatabaseService databaseService, ProgressListener progressListener) throws SQLException, IOException {
         try {
             LOGGER.info("Starting schema analysis");
 
@@ -248,7 +250,7 @@ public class SchemaAnalyzer {
 
             long duration = progressListener.startedGraphingSummaries();
             if (commandLineArguments.isHtmlEnabled()) {
-                generateHtmlDoc(config, commandLineArguments.useVizJS() , progressListener, outputDir, db, duration, tables);
+                generateHtmlDoc(config, multiSchema , progressListener, outputDir, db, duration, tables);
             }
 
             outputProducers.forEach(
@@ -303,7 +305,7 @@ public class SchemaAnalyzer {
         }
     }
 
-    private void generateHtmlDoc(Config config, boolean useVizJS, ProgressListener progressListener, File outputDir, Database db, long duration, Collection<Table> tables) throws IOException {
+    private void generateHtmlDoc(Config config, boolean multiSchema, ProgressListener progressListener, File outputDir, Database db, long duration, Collection<Table> tables) throws IOException {
         LOGGER.info("Gathered schema details in {} seconds", duration / SECONDS_IN_MS);
         LOGGER.info("Writing/graphing summary");
 
@@ -311,11 +313,16 @@ public class SchemaAnalyzer {
 
         prepareLayoutFiles(outputDir);
         DiagramFactory diagramFactory;
-        if (useVizJS) {
+        if (commandLineArguments.useVizJS()) {
             diagramFactory = new DiagramFactory(new VizJSDot(),outputDir);
         } else {
             diagramFactory = new DiagramFactory(new GraphvizDot(commandLineArguments.getGraphVizConfig()),outputDir);
         }
+        RelativeToDiagramTableNodeLinkFactoryBuilder relativeToDiagramTableNodeLinkFactoryBuilder =
+                new RelativeToDiagramTableNodeLinkFactoryBuilder(diagramFactory);
+        AddTableNodeLinkFactoryBuilder addTableNodeLinkFactoryBuilder =
+                new AddTableNodeLinkFactoryBuilder(multiSchema);
+
         Path htmlInfoFile = outputDir.toPath().resolve("info-html.txt");
         Files.deleteIfExists(htmlInfoFile);
         writeInfo("date", ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssZ")), htmlInfoFile);
@@ -344,10 +351,24 @@ public class SchemaAnalyzer {
             config.isNumRowsEnabled(),
             config.isOneOfMultipleSchemas()
         );
-        DotFormatter dotProducer = new DotFormatter(dotConfig);
         MustacheDiagramFactory mustacheDiagramFactory = new MustacheDiagramFactory(diagramFactory);
         ImpliedConstraintsFinder impliedConstraintsFinder = new ImpliedConstraintsFinder();
-        MustacheSummaryDiagramFactory mustacheSummaryDiagramFactory = new MustacheSummaryDiagramFactory(dotProducer, mustacheDiagramFactory, impliedConstraintsFinder, outputDir);
+        MustacheSummaryDiagramFactory mustacheSummaryDiagramFactory =
+                new MustacheSummaryDiagramFactory(
+                        new DotSummaryFormatter(
+                                dotConfig,
+                                addTableNodeLinkFactoryBuilder.withTableNodeLinkFactory(
+                                        new WithTargetTopTableNodeLinkFactory(
+                                                relativeToDiagramTableNodeLinkFactoryBuilder.withTableNodeLinkFactory(
+                                                        new FromBaseTableNodeLinkFactory()
+                                                )
+                                        )
+                                )
+                        ),
+                        mustacheDiagramFactory,
+                        impliedConstraintsFinder,
+                        outputDir
+                );
         MustacheSummaryDiagramResults results = mustacheSummaryDiagramFactory.generateSummaryDiagrams(db, tables, includeImpliedConstraints, showDetailedTables, progressListener);
         results.getOutputExceptions().stream().forEachOrdered(exception ->
                 LOGGER.error("RelationShipDiagramError", exception)
@@ -363,7 +384,18 @@ public class SchemaAnalyzer {
         progressListener.graphingSummaryProgressed();
 
         List<Table> orphans = DbAnalyzer.getOrphans(tables);
-        MustacheOrphanDiagramFactory mustacheOrphanDiagramFactory = new MustacheOrphanDiagramFactory(dotConfig, mustacheDiagramFactory, outputDir);
+        MustacheOrphanDiagramFactory mustacheOrphanDiagramFactory = new MustacheOrphanDiagramFactory(
+                dotConfig,
+                addTableNodeLinkFactoryBuilder.withTableNodeLinkFactory(
+                        new WithTargetTopTableNodeLinkFactory(
+                                relativeToDiagramTableNodeLinkFactoryBuilder.withTableNodeLinkFactory(
+                                        new FromBaseTableNodeLinkFactory()
+                                )
+                        )
+                ),
+                mustacheDiagramFactory,
+                outputDir
+        );
         List<MustacheTableDiagram> orphanDiagrams = mustacheOrphanDiagramFactory.generateOrphanDiagrams(orphans);
         HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(mustacheCompiler);
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("orphans.html").toFile())) {
@@ -420,8 +452,18 @@ public class SchemaAnalyzer {
 
         LOGGER.info("Completed summary in {} seconds", duration / SECONDS_IN_MS);
         LOGGER.info("Writing/diagramming details");
+        DotFormatter dotFormatter = new DotFormatter(
+                dotConfig,
+                addTableNodeLinkFactoryBuilder.withTableNodeLinkFactory(
+                        new WithTargetTopTableNodeLinkFactory(
+                                relativeToDiagramTableNodeLinkFactoryBuilder.withTableNodeLinkFactory(
+                                        new RelativeTableNodeLinkFactory()
+                                )
+                        )
+                )
+        );
         SqlAnalyzer sqlAnalyzer = new SqlAnalyzer(db.getDbmsMeta().getIdentifierQuoteString(), db.getDbmsMeta().getAllKeywords(), db.getTables(), db.getViews());
-        MustacheTableDiagramFactory mustacheTableDiagramFactory = new MustacheTableDiagramFactory(dotProducer, mustacheDiagramFactory, outputDir, commandLineArguments.getDegreeOfSeparation());
+        MustacheTableDiagramFactory mustacheTableDiagramFactory = new MustacheTableDiagramFactory(dotFormatter, mustacheDiagramFactory, outputDir, commandLineArguments.getDegreeOfSeparation());
         HtmlTablePage htmlTablePage = new HtmlTablePage(mustacheCompiler, sqlAnalyzer);
         for (Table table : tables) {
             List<MustacheTableDiagram> mustacheTableDiagrams = mustacheTableDiagramFactory.generateTableDiagrams(table);

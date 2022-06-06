@@ -25,7 +25,7 @@ import org.schemaspy.model.ProgressListener;
 import org.schemaspy.model.Table;
 import org.schemaspy.output.OutputException;
 import org.schemaspy.output.diagram.DiagramException;
-import org.schemaspy.output.dot.schemaspy.DotFormatter;
+import org.schemaspy.output.dot.schemaspy.DotSummaryFormatter;
 import org.schemaspy.util.Writers;
 import org.schemaspy.view.MustacheTableDiagram;
 import org.schemaspy.view.WriteStats;
@@ -49,13 +49,13 @@ public class MustacheSummaryDiagramFactory {
     private static final String FAILED_DOT = "Failed to produce dot: ";
     private static final String FAILED_DIAGRAM = "Failed to produce diagram for: ";
 
-    private final DotFormatter dotProducer;
+    private final DotSummaryFormatter dotSummaryFormatter;
     private final MustacheDiagramFactory mustacheDiagramFactory;
     private final ImpliedConstraintsFinder impliedConstraintsFinder;
     private final Path summaryDir;
 
-    public MustacheSummaryDiagramFactory(DotFormatter dotProducer, MustacheDiagramFactory mustacheDiagramFactory, ImpliedConstraintsFinder impliedConstraintsFinder, File outputDir) {
-        this.dotProducer = dotProducer;
+    public MustacheSummaryDiagramFactory(DotSummaryFormatter dotSummaryFormatter, MustacheDiagramFactory mustacheDiagramFactory, ImpliedConstraintsFinder impliedConstraintsFinder, File outputDir) {
+        this.dotSummaryFormatter = dotSummaryFormatter;
         this.mustacheDiagramFactory = mustacheDiagramFactory;
         this.impliedConstraintsFinder = impliedConstraintsFinder;
         this.summaryDir = outputDir.toPath().resolve("diagrams").resolve("summary");
@@ -83,7 +83,7 @@ public class MustacheSummaryDiagramFactory {
         if (hasRealRelationships) {
             File realCompactDot = summaryDir.resolve(FILE_PREFIX + ".real.compact.dot").toFile();
             try (PrintWriter out = Writers.newPrintWriter(realCompactDot)) {
-                dotProducer.writeSummaryRealRelationships(database, tables, true, showDetailedTables, stats, out);
+                dotSummaryFormatter.writeSummaryRealRelationships(database, tables, true, showDetailedTables, stats, out);
                 MustacheTableDiagram realCompactDiagram = mustacheDiagramFactory.generateSummaryDiagram("Compact", realCompactDot, FILE_PREFIX + ".real.compact");
                 realCompactDiagram.setActive(true);
                 diagrams.add(realCompactDiagram);
@@ -98,7 +98,7 @@ public class MustacheSummaryDiagramFactory {
 
         // getting implied constraints has a side-effect of associating the parent/child tables, so don't do it
         // here unless they want that behavior
-        List<ImpliedForeignKeyConstraint> impliedConstraints = new ArrayList();
+        List<ImpliedForeignKeyConstraint> impliedConstraints = new ArrayList<>();
         if (includeImpliedConstraints)
             impliedConstraints.addAll(impliedConstraintsFinder.find(tables));
 
@@ -116,7 +116,7 @@ public class MustacheSummaryDiagramFactory {
     private void generateRealLarge(Database database, Collection<Table> tables, boolean showDetailedTables, List<MustacheTableDiagram> diagrams, List<OutputException> outputExceptions, WriteStats stats) {
         File realLargeDot = summaryDir.resolve(FILE_PREFIX + ".real.large.dot").toFile();
         try (PrintWriter out = Writers.newPrintWriter(realLargeDot)) {
-            dotProducer.writeSummaryRealRelationships(database, tables, false, showDetailedTables, stats, out);
+            dotSummaryFormatter.writeSummaryRealRelationships(database, tables, false, showDetailedTables, stats, out);
             MustacheTableDiagram realLargeDiagram = mustacheDiagramFactory.generateSummaryDiagram("Large", realLargeDot, FILE_PREFIX + ".real.large");
             diagrams.add(realLargeDiagram);
         } catch (IOException ioexception) {
@@ -129,7 +129,7 @@ public class MustacheSummaryDiagramFactory {
     private void generateImpliedCompact(Database database, Collection<Table> tables, boolean showDetailedTables, List<MustacheTableDiagram> diagrams, List<OutputException> outputExceptions, WriteStats stats) {
         File impliedCompactDot = summaryDir.resolve(FILE_PREFIX + ".implied.compact.dot").toFile();
         try (PrintWriter out = Writers.newPrintWriter(impliedCompactDot)) {
-            dotProducer.writeSummaryAllRelationships(database, tables, true, showDetailedTables, stats, out);
+            dotSummaryFormatter.writeSummaryAllRelationships(database, tables, true, showDetailedTables, stats, out);
             MustacheTableDiagram impliedCompactDiagram = mustacheDiagramFactory.generateSummaryDiagram("Compact Implied", impliedCompactDot, FILE_PREFIX + ".implied.compact");
             impliedCompactDiagram.setIsImplied(true);
             diagrams.add(impliedCompactDiagram);
@@ -143,7 +143,7 @@ public class MustacheSummaryDiagramFactory {
     private void generateImpliedLarge(Database database, Collection<Table> tables, boolean showDetailedTables, List<MustacheTableDiagram> diagrams, List<OutputException> outputExceptions, WriteStats stats) {
         File impliedLargeDot = summaryDir.resolve(FILE_PREFIX + ".implied.large.dot").toFile();
         try (PrintWriter out = Writers.newPrintWriter(impliedLargeDot)) {
-            dotProducer.writeSummaryAllRelationships(database, tables, false, showDetailedTables, stats, out);
+            dotSummaryFormatter.writeSummaryAllRelationships(database, tables, false, showDetailedTables, stats, out);
             MustacheTableDiagram impliedLargeDiagram = mustacheDiagramFactory.generateSummaryDiagram("Large Implied", impliedLargeDot, FILE_PREFIX + ".implied.large");
             impliedLargeDiagram.setIsImplied(true);
             diagrams.add(impliedLargeDiagram);
