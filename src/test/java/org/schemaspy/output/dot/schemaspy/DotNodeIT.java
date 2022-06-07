@@ -72,7 +72,7 @@ public class DotNodeIT {
         GraphvizConfig graphvizConfig = mock(GraphvizConfig.class);
         when(graphvizConfig.isLowQuality()).thenReturn(false);
         when(graphvizConfig.getImageFormat()).thenReturn("png");
-        orphansDir = temporaryFolder.getRoot().toPath().resolve("diagrams").resolve("orphans").toFile();
+        orphansDir = temporaryFolder.getRoot();
         diagramFactory = new DiagramFactory(new GraphvizDot(graphvizConfig), temporaryFolder.getRoot());
     }
 
