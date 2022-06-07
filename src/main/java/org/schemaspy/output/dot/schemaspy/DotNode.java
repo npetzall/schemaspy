@@ -78,9 +78,6 @@ public class DotNode implements Node {
     }
 
     private String createPath(boolean fromRoot) {
-        if (dotConfig.useRelativeLinks()) {
-            return (table.isRemote() ? "../../../" + new FileNameGenerator().generate(table.getContainer()) : "../..") + TABLES_PATH;
-        }
         if (fromRoot) {
             return (table.isRemote() ? ("../" + new FileNameGenerator().generate(table.getContainer()) + TABLES_PATH) : "tables/");
         }

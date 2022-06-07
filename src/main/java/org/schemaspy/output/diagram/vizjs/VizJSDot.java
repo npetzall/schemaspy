@@ -80,8 +80,11 @@ public class VizJSDot implements DiagramProducer {
             scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).put("dotSource", dotSource);
             return (String) scriptEngine.eval("Viz(dotSource,options = { totalMemory: "+jsEngineMemorySize
                     +" , images: [" +
-                    "{ path: \"../../images/foreignKeys.png\"" + ICON_SIZE + " }," +
-                    "{ path: \"../../images/primaryKeys.png\"" + ICON_SIZE + " }]})");
+                    "{ path: \"images/foreignKeys.png\"" + ICON_SIZE + " }," +
+                    "{ path: \"../images/foreignKeys.png\"" + ICON_SIZE + " }," +
+                    "{ path: \"images/primaryKeys.png\"" + ICON_SIZE + " }," +
+                    "{ path: \"../images/primaryKeys.png\"" + ICON_SIZE + " }" +
+                    "]})");
         } catch (ScriptException e) {
             throw new IllegalArgumentException(e);
         }

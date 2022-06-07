@@ -340,7 +340,6 @@ public class SchemaAnalyzer {
                 config.getFontSize()
             ),
             config.isRankDirBugEnabled(),
-            "svg".equalsIgnoreCase(diagramFactory.getDiagramFormat()),
             config.isNumRowsEnabled(),
             config.isOneOfMultipleSchemas()
         );
