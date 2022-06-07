@@ -14,10 +14,10 @@
                                 {{#diagrams}}
                                 <div class="item">
                                     {{#isEmbed}}
-                                    <object type="image/svg+xml" id="{{id}}" data="diagrams/orphans/{{fileName}}" style="max-width:100%;" border="0" align="top"></object>
+                                    <object type="image/svg+xml" id="{{id}}" data="{{fileName}}" style="max-width:100%;" border="0" align="top"></object>
                                     {{/isEmbed}}
                                     {{^isEmbed}}
-                                    <img id="{{id}}" src="diagrams/orphans/{{fileName}}" usemap="#{{mapName}}" style="max-width:100%;" border="0" align="top">
+                                    <img id="{{id}}" src="{{fileName}}" usemap="#{{mapName}}" style="max-width:100%;" border="0" align="top">
                                     {{/isEmbed}}
                                 </div>
                                 {{/diagrams}}

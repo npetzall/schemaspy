@@ -45,7 +45,7 @@ public class MustacheTableDiagramFactory {
     public MustacheTableDiagramFactory(DotFormatter dotProducer, MustacheDiagramFactory mustacheDiagramFactory, File outputDir, int degreeOfSeparation) {
         this.dotProducer = dotProducer;
         this.mustacheDiagramFactory = mustacheDiagramFactory;
-        this.tableDir = outputDir.toPath().resolve("diagrams").resolve("tables").toFile();
+        this.tableDir = outputDir.toPath().resolve("tables").toFile();
         tableDir.mkdirs();
         this.degreeOfSeparation = degreeOfSeparation;
     }

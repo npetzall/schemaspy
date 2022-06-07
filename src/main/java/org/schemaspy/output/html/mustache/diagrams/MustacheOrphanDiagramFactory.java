@@ -22,6 +22,8 @@ import org.schemaspy.model.Table;
 import org.schemaspy.output.diagram.DiagramException;
 import org.schemaspy.output.dot.DotConfig;
 import org.schemaspy.output.dot.schemaspy.*;
+import org.schemaspy.output.dot.schemaspy.graph.Digraph;
+import org.schemaspy.output.dot.schemaspy.graph.Element;
 import org.schemaspy.output.dot.schemaspy.graph.Orphan;
 import org.schemaspy.output.dot.schemaspy.graph.Graph;
 import org.schemaspy.util.Writers;
@@ -54,51 +56,33 @@ public class MustacheOrphanDiagramFactory {
     public MustacheOrphanDiagramFactory(DotConfig dotConfig, MustacheDiagramFactory mustacheDiagramFactory, File outputDir) {
         this.dotConfig = dotConfig;
         this.mustacheDiagramFactory = mustacheDiagramFactory;
-        orphanDir = outputDir.toPath().resolve("diagrams").resolve("orphans");
+        orphanDir = outputDir.toPath();
     }
 
     public List<MustacheTableDiagram> generateOrphanDiagrams(List<Table> orphanTables) {
-
-        Collections.sort(orphanTables, (Comparator) (t1, t2) -> {
-            Integer size1 = ((Table) t1).getColumns().size();
-            Integer size2 = ((Table) t2).getColumns().size();
-            int sizeComp = size1.compareTo(size2);
-
-            if (sizeComp != 0) {
-                return sizeComp;
-            } else {
-                String name1 = ((Table) t1).getName();
-                String name2 = ((Table) t1).getName();
-                return name1.compareTo(name2);
-            }
-        });
-
         List<MustacheTableDiagram> mustacheTableDiagrams = new ArrayList<>();
-        for(Table table : orphanTables) {
-            String dotBaseFilespec = new FileNameGenerator().generate(table.getName());
+        File dotFile = orphanDir.resolve("orphans.dot").toFile();
+        try (PrintWriter dotOut = Writers.newPrintWriter(dotFile)) {
+            Graph graph = new Digraph(
+                    ()->"orphans",
+                    new DotConfigHeader(dotConfig, false),
+                    orphanTables.stream().map(table ->
+                            new DotNode(
+                                    table,
+                                    true,
+                                    new DotNodeConfig(true, true),
+                                    dotConfig
+                            )
+                    ).toArray(Element[]::new)
+            );
+            dotOut.println(graph.dot());
+            dotOut.flush();
 
-            File dotFile = orphanDir.resolve(dotBaseFilespec + ".1degree.dot").toFile();
-
-            try (PrintWriter dotOut = Writers.newPrintWriter(dotFile)) {
-                Graph graph = new Orphan(
-                        table::getName,
-                        new DotConfigHeader(dotConfig, false),
-                        new DotNode(
-                                table,
-                                true,
-                                new DotNodeConfig(true, true),
-                                dotConfig
-                        )
-                );
-                dotOut.println(graph.dot());
-                dotOut.flush();
-
-                mustacheTableDiagrams.add(mustacheDiagramFactory.generateOrphanDiagram(dotBaseFilespec, dotFile, dotBaseFilespec + ".1degree"));
-            } catch (IOException e) {
-                LOGGER.error("Failed to produce dot: {}", dotFile, e);
-            } catch (DiagramException e) {
-                LOGGER.error("Failed to produce diagram for: {}", dotFile, e);
-            }
+            mustacheTableDiagrams.add(mustacheDiagramFactory.generateOrphanDiagram("orphans", dotFile, "orphans"));
+        } catch (IOException e) {
+            LOGGER.error("Failed to produce dot: {}", dotFile, e);
+        } catch (DiagramException e) {
+            LOGGER.error("Failed to produce diagram for: {}", dotFile, e);
         }
         return mustacheTableDiagrams;
     }

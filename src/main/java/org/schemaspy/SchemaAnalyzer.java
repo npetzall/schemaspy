@@ -367,7 +367,7 @@ public class SchemaAnalyzer {
         List<MustacheTableDiagram> orphanDiagrams = mustacheOrphanDiagramFactory.generateOrphanDiagrams(orphans);
         HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(mustacheCompiler);
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("orphans.html").toFile())) {
-            htmlOrphansPage.write(orphanDiagrams, orphanDiagrams.size() == orphans.size(), writer);
+            htmlOrphansPage.write(orphanDiagrams, orphans.isEmpty() || !orphanDiagrams.isEmpty(), writer);
         }
 
         progressListener.graphingSummaryProgressed();

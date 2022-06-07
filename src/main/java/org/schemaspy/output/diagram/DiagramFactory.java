@@ -23,25 +23,20 @@ import java.io.File;
 public class DiagramFactory {
 
     private final DiagramProducer diagramProducer;
-    private final File diagramDir;
     private final File tablesDir;
     private final File summaryDir;
     private final File orphansDir;
 
     public DiagramFactory(DiagramProducer diagramProducer, File outputDir) {
         this.diagramProducer = diagramProducer;
-        this.diagramDir = new File(outputDir, "diagrams");
-        this.tablesDir = new File(diagramDir, "tables");
-        this.summaryDir = new File(diagramDir, "summary");
-        this.orphansDir = new File(diagramDir, "orphans");
+        this.tablesDir = new File(outputDir, "tables");
+        this.summaryDir = outputDir;
+        this.orphansDir = outputDir;
         createDirs();
     }
 
     private void createDirs() {
-        diagramDir.mkdirs();
         tablesDir.mkdirs();
-        summaryDir.mkdirs();
-        orphansDir.mkdirs();
     }
 
     public String getImplementationDetails() {

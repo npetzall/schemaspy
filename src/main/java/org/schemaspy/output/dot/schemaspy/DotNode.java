@@ -60,6 +60,7 @@ public class DotNode implements Node {
 
     private final Table table;
     private final String path;
+    private final String imgPath;
     private final DotNodeConfig config;
     private final DotConfig dotConfig;
     private final String lineSeparator = System.getProperty("line.separator");
@@ -72,6 +73,7 @@ public class DotNode implements Node {
         this.config = config;
         this.dotConfig = dotConfig;
         this.path = createPath(fromRoot);
+        this.imgPath = fromRoot ? "" : "../";
         this.columnSpan = config.showColumnDetails ? "COLSPAN=\"2\" " : "COLSPAN=\"3\" ";
     }
 
@@ -202,9 +204,9 @@ public class DotNode implements Node {
         buf.append("<TR ALIGN=\"LEFT\">");
         buf.append("<TD ALIGN=\"LEFT\" FIXEDSIZE=\"TRUE\" WIDTH=\"15\" HEIGHT=\"16\">");
         if (column.isPrimary()) {
-            buf.append("<IMG SRC=\"../../images/primaryKeys.png\"/>");
+            buf.append("<IMG SRC=\"" + imgPath + "images/primaryKeys.png\"/>");
         } else if (column.isForeignKey()) {
-            buf.append("<IMG SRC=\"../../images/foreignKeys.png\"/>");
+            buf.append("<IMG SRC=\"" + imgPath + "images/foreignKeys.png\"/>");
         }
         buf.append(Html.TD_END);
         buf.append("<TD ALIGN=\"LEFT\" FIXEDSIZE=\"TRUE\" WIDTH=\"" + maxWidth + "\" HEIGHT=\"16\">");
