@@ -25,36 +25,11 @@ public class DiagramFactory {
     private final DiagramProducer diagramProducer;
     private final File tablesDir;
     private final File summaryDir;
-    private final File orphansDir;
 
     public DiagramFactory(DiagramProducer diagramProducer, File outputDir) {
         this.diagramProducer = diagramProducer;
         this.tablesDir = new File(outputDir, "tables");
         this.summaryDir = outputDir;
-        this.orphansDir = outputDir;
-        createDirs();
-    }
-
-    private void createDirs() {
-        tablesDir.mkdirs();
-    }
-
-    public String getImplementationDetails() {
-        return diagramProducer.getImplementationDetails();
-    }
-
-    public String getDiagramFormat() {
-        return diagramProducer.getDiagramFormat();
-    }
-
-    public DiagramResults generateOrphanDiagram(File dotFile, String diagramName) {
-        try {
-            File diagramFile = new File(orphansDir, diagramName + "." + diagramProducer.getDiagramFormat());
-            String diagramMap = diagramProducer.generateDiagram(dotFile, diagramFile);
-            return new DiagramResults(diagramFile, diagramMap, diagramProducer.getDiagramFormat());
-        } catch (DiagramException diagramException) {
-            throw new DiagramException("Failed to generate Orphan diagram", diagramException);
-        }
     }
 
     public DiagramResults generateTableDiagram(File dotFile, String diagramName) {

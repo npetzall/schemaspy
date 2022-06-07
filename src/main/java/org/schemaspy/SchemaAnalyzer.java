@@ -41,6 +41,7 @@ import org.schemaspy.model.*;
 import org.schemaspy.output.OutputException;
 import org.schemaspy.output.OutputProducer;
 import org.schemaspy.output.diagram.DiagramFactory;
+import org.schemaspy.output.diagram.DiagramProducer;
 import org.schemaspy.output.diagram.graphviz.GraphvizDot;
 import org.schemaspy.output.diagram.vizjs.VizJSDot;
 import org.schemaspy.output.dot.DotConfig;
@@ -310,19 +311,15 @@ public class SchemaAnalyzer {
         markDownRegistryPages(tables);
 
         prepareLayoutFiles(outputDir);
-        DiagramFactory diagramFactory;
-        if (useVizJS) {
-            diagramFactory = new DiagramFactory(new VizJSDot(),outputDir);
-        } else {
-            diagramFactory = new DiagramFactory(new GraphvizDot(commandLineArguments.getGraphVizConfig()),outputDir);
-        }
+        DiagramProducer diagramProducer = useVizJS ? new VizJSDot() : new GraphvizDot(commandLineArguments.getGraphVizConfig());
+        DiagramFactory diagramFactory = new DiagramFactory(diagramProducer, outputDir);
         Path htmlInfoFile = outputDir.toPath().resolve("info-html.txt");
         Files.deleteIfExists(htmlInfoFile);
         writeInfo("date", ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssZ")), htmlInfoFile);
         writeInfo("os", System.getProperty("os.name") + " " + System.getProperty("os.version"), htmlInfoFile);
         writeInfo("schemaspy-version", ManifestUtils.getImplementationVersion(), htmlInfoFile);
         writeInfo("schemaspy-build", ManifestUtils.getImplementationBuild(), htmlInfoFile);
-        writeInfo("diagramImplementation", diagramFactory.getImplementationDetails(), htmlInfoFile);
+        writeInfo("diagramImplementation", diagramProducer.getImplementationDetails(), htmlInfoFile);
         progressListener.graphingSummaryProgressed();
 
         boolean showDetailedTables = tables.size() <= config.getMaxDetailedTables();
@@ -361,12 +358,17 @@ public class SchemaAnalyzer {
 
         progressListener.graphingSummaryProgressed();
 
-        List<Table> orphans = DbAnalyzer.getOrphans(tables);
-        MustacheOrphanDiagramFactory mustacheOrphanDiagramFactory = new MustacheOrphanDiagramFactory(dotConfig, mustacheDiagramFactory, outputDir);
-        List<MustacheTableDiagram> orphanDiagrams = mustacheOrphanDiagramFactory.generateOrphanDiagrams(orphans);
-        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(mustacheCompiler);
+        HtmlOrphansPage htmlOrphansPage = new HtmlOrphansPage(
+                mustacheCompiler,
+                new MustacheOrphanDiagramFactory(
+                        dotConfig,
+                        diagramProducer,
+                        outputDir
+                ),
+                tables
+        );
         try (Writer writer = Writers.newPrintWriter(outputDir.toPath().resolve("orphans.html").toFile())) {
-            htmlOrphansPage.write(orphanDiagrams, orphans.isEmpty() || !orphanDiagrams.isEmpty(), writer);
+            htmlOrphansPage.write(writer);
         }
 
         progressListener.graphingSummaryProgressed();

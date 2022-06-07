@@ -24,13 +24,16 @@
  */
 package org.schemaspy.view;
 
+import org.schemaspy.model.Table;
+import org.schemaspy.output.diagram.DiagramResults;
+import org.schemaspy.output.html.mustache.diagrams.MustacheOrphanDiagramFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.invoke.MethodHandles;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * The page that contains the all tables that aren't related to others (orphans)
@@ -45,29 +48,42 @@ import java.util.List;
 public class HtmlOrphansPage {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     private final MustacheCompiler mustacheCompiler;
+    private final MustacheOrphanDiagramFactory mustacheOrphanDiagramFactory;
+    private final Collection<Table> orphanTables;
 
-    public HtmlOrphansPage(MustacheCompiler mustacheCompiler) {
+    public HtmlOrphansPage(
+            MustacheCompiler mustacheCompiler,
+            MustacheOrphanDiagramFactory mustacheOrphanDiagramFactory,
+            Collection<Table> orphanTables
+    ) {
         this.mustacheCompiler = mustacheCompiler;
+        this.mustacheOrphanDiagramFactory = mustacheOrphanDiagramFactory;
+        this.orphanTables = orphanTables;
     }
 
-    public void write(
-            List<MustacheTableDiagram> orphanDiagrams,
-            boolean allWritten,
-            Writer writer
-    ) {
-
-        PageData pageData = new PageData.Builder()
-                .templateName("orphans.html")
-                .addToScope("diagrams", orphanDiagrams)
-                .addToScope("allWritten", allWritten)
-                .getPageData();
-
+    public void write(Writer writer) {
+        PageData pageData = createPageData();
         try {
             mustacheCompiler.write(pageData, writer);
         } catch (IOException e) {
             LOGGER.error("Failed to write orphans page", e);
         }
+    }
+
+    private PageData createPageData() {
+        if (orphanTables.isEmpty()) {
+            return new PageData.Builder()
+                    .templateName("orphans.html")
+                    .addToScope("diagram", null)
+                    .getPageData();
+        }
+
+        DiagramResults orphansDiagram = mustacheOrphanDiagramFactory.generate(orphanTables);
+
+        return new PageData.Builder()
+                .templateName("orphans.html")
+                .addToScope("diagram", orphansDiagram)
+                .getPageData();
     }
 }

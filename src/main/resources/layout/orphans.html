@@ -10,28 +10,19 @@
                             <h3 class="box-title">Orphan Tables</h3>
                         </div>
                         <div class="box-body">
+                            {{#diagram}}
                             <div id="grid" data-columns>
-                                {{#diagrams}}
                                 <div class="item">
                                     {{#isEmbed}}
-                                    <object type="image/svg+xml" id="{{id}}" data="{{fileName}}" style="max-width:100%;" border="0" align="top"></object>
+                                    <object type="image/svg+xml" id="orphans" data="{{fileName}}" style="max-width:100%;" border="0" align="top"></object>
                                     {{/isEmbed}}
                                     {{^isEmbed}}
-                                    <img id="{{id}}" src="{{fileName}}" usemap="#{{mapName}}" style="max-width:100%;" border="0" align="top">
+                                    <img id="orphans" src="{{fileName}}" usemap="#{{mapName}}" style="max-width:100%;" border="0" align="top">
                                     {{/isEmbed}}
                                 </div>
-                                {{/diagrams}}
                             </div>
-                            {{#diagrams}}{{{map}}}{{/diagrams}}
+                            {{{map}}}
+                            {{/diagram}}
                         </div>
                     </div>
-                    {{^allWritten}}
-                    <div class="alert alert-warning alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                        <h4><i class="icon fa fa-warning"></i>Not all diagrams were created</h4>
-                        <p>SchemaSpy was unable to generate diagrams for all orphan tables.<br />
-                            Check application output for details.
-                        </p>
-                    </div>
-                    {{/allWritten}}
                 </section>
