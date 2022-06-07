@@ -38,7 +38,7 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Nils Petzaell
  */
-public class DotNodeTest {
+class DotNodeTest {
 
     private static final Path expectations = Paths.get("src", "test", "resources", "dotnode");
 
@@ -92,43 +92,6 @@ public class DotNodeTest {
     }
 
     @Test
-    void pathRelativeLinksLocal() {
-        DotNode dotNode = new DotNode(
-            localTable,
-            false,
-            new DotNodeConfig(true, true),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                false,
-                false,
-                true
-            )
-        );
-        assertThat(dotNode.value()).contains("URL=\"a_table_4867c34f.html\"");
-    }
-
-    @Test
-    void pathRelativeLinksRemote() {
-        DotNode dotNode = new DotNode(
-            remoteTable,
-            false,
-            new DotNodeConfig(
-                true,
-                true
-            ),
-            new SimpleDotConfig(
-                fontConfig,
-                false,
-                true,
-                false,
-                true
-            )
-        );
-        assertThat(dotNode.value()).contains("URL=\"../../../schema/tables/a_table_4867c34f.html\"");
-    }
-
-    @Test
     void pathFromRootLocal() {
         DotNode dotNode = new DotNode(
             localTable,
@@ -136,7 +99,6 @@ public class DotNodeTest {
             new DotNodeConfig(true, true),
             new SimpleDotConfig(
                 fontConfig,
-                false,
                 false,
                 false,
                 true
@@ -158,7 +120,6 @@ public class DotNodeTest {
                 fontConfig,
                 false,
                 false,
-                false,
                 true
             )
         );
@@ -173,7 +134,6 @@ public class DotNodeTest {
             new DotNodeConfig(true, true),
             new SimpleDotConfig(
                 fontConfig,
-                false,
                 false,
                 false,
                 true
@@ -194,7 +154,6 @@ public class DotNodeTest {
                 fontConfig,
                 false,
                 false,
-                false,
                 true
             )
         );
@@ -211,7 +170,6 @@ public class DotNodeTest {
                 true),
             new SimpleDotConfig(
                 fontConfig,
-                false,
                 false,
                 false,
                 false
@@ -231,7 +189,6 @@ public class DotNodeTest {
                 fontConfig,
                 false,
                 false,
-                false,
                 false
             )
         ), "trivialNoDetails.txt");
@@ -247,7 +204,6 @@ public class DotNodeTest {
                 false),
             new SimpleDotConfig(
                 fontConfig,
-                false,
                 false,
                 false,
                 false
@@ -267,7 +223,6 @@ public class DotNodeTest {
                 fontConfig,
                 false,
                 false,
-                false,
                 false
             )
         ), "noTrivialAndDetails.txt");
@@ -283,7 +238,6 @@ public class DotNodeTest {
                 true),
             new SimpleDotConfig(
                 fontConfig,
-                false,
                 false,
                 false,
                 false
@@ -307,7 +261,6 @@ public class DotNodeTest {
             new SimpleDotConfig(
                 fontConfig,
                 true,
-                false,
                 true,
                 false
             )
@@ -341,7 +294,6 @@ public class DotNodeTest {
             new SimpleDotConfig(
                 fontConfig,
                 true,
-                false,
                 true,
                 false
             )
@@ -362,7 +314,6 @@ public class DotNodeTest {
             new SimpleDotConfig(
                 fontConfig,
                 true,
-                false,
                 true,
                 false
             )
@@ -384,7 +335,6 @@ public class DotNodeTest {
                 fontConfig,
                 true,
                 false,
-                false,
                 false
             )
         );
@@ -401,7 +351,6 @@ public class DotNodeTest {
             new DotNodeConfig(true, true),
             new SimpleDotConfig(
                 fontConfig,
-                false,
                 false,
                 false,
                 true
@@ -426,7 +375,6 @@ public class DotNodeTest {
                 fontConfig,
                 false,
                 false,
-                false,
                 true
             )
         );
@@ -447,7 +395,6 @@ public class DotNodeTest {
             new DotNodeConfig(true, true),
             new SimpleDotConfig(
                 fontConfig,
-                false,
                 false,
                 false,
                 true

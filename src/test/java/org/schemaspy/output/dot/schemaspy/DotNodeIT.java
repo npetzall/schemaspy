@@ -59,7 +59,6 @@ public class DotNodeIT {
                             Config.getInstance().getFontSize()
                     ),
                     Config.getInstance().isRankDirBugEnabled(),
-                    false,
                     Config.getInstance().isNumRowsEnabled(),
                     Config.getInstance().isOneOfMultipleSchemas()
             );
