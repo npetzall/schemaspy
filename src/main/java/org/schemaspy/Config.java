@@ -87,7 +87,6 @@ public final class Config implements HtmlConfig {
     private String dbType;
     private List<String> schemas;
     private boolean oneOfMultipleSchemas;
-    private String user;
     private Boolean singleSignOn;
     private String password;
     private Boolean promptForPassword;
@@ -240,27 +239,6 @@ public final class Config implements HtmlConfig {
 
     private static boolean hasText(String string) {
         return Objects.nonNull(string) && !string.trim().isEmpty();
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    /**
-     * User used to connect to the database.
-     * Required unless single sign-on is enabled
-     * (see {@link #setSingleSignOn(boolean)}).
-     *
-     * @return user as supplied with -u
-     */
-    public String getUser() {
-        if (user == null) {
-            if (!isSingleSignOn())
-                user = pullRequiredParam("-u");
-            else
-                user = pullParam("-u");
-        }
-        return user;
     }
 
     /**
