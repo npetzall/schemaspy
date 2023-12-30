@@ -20,7 +20,6 @@
 package org.schemaspy.view;
 
 import org.schemaspy.model.Routine;
-import org.schemaspy.util.Markdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +46,7 @@ public class HtmlRoutinePage {
                 .templateName("routines/routine.html")
                 .scriptName("routine.js")
                 .addToScope("routineName", routine.getName())
-                .addToScope("routineComment", new Markdown(routine.getComment(), mustacheCompiler.getRootPath(1)).toHtml())
+                .addToScope("routineComment", routine.getComment())
                 .addToScope("routineParameters",routine.getParameters())
                 .addToScope("routineDefinition",routine.getDefinition())
                 .depth(1)
