@@ -67,7 +67,7 @@ public class HtmlMainIndexPage {
 
         for(Table table: tables) {
             columnsAmount += table.getColumns().size();
-            String comments = new Markdown(table.getComments(), "").toHtml();
+            String comments = table.getComments();
             MustacheTable mustacheTable = new MustacheTable(table, "");
             mustacheTable.setComments(comments);
             mustacheTables.add(mustacheTable);
@@ -116,17 +116,12 @@ public class HtmlMainIndexPage {
     }
 
     private static String getXmlName(Database db) {
-        StringBuilder description = new StringBuilder();
-
-        description.append(db.getName());
         if (db.getSchema() != null) {
-            description.append('.');
-            description.append(db.getSchema().getName());
+            return db.getName() + "." + db.getSchema().getName();
         } else if (db.getCatalog() != null) {
-            description.append('.');
-            description.append(db.getCatalog().getName());
+            return db.getName() + "." + db.getCatalog().getName();
+        } else {
+            return db.getName();
         }
-
-        return description.toString();
     }
 }
