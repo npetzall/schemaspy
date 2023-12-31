@@ -27,7 +27,6 @@ import org.schemaspy.DbAnalyzer;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.ForeignKeyConstraint;
 import org.schemaspy.model.Table;
-import org.schemaspy.util.Markdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +89,7 @@ public class HtmlMainIndexPage {
                 .addToScope("anomaliesAmount", anomaliesAmount)
                 .addToScope("tables", mustacheTables)
                 .addToScope("database", database)
-                .addToScope("description", new Markdown(description, "").toHtml())
+                .addToScope("description", description)
                 .addToScope("schema", new MustacheSchema(database.getSchema(), ""))
                 .addToScope("catalog", new MustacheCatalog(database.getCatalog(), ""))
                 .addToScope("xmlName", getXmlName(database))
