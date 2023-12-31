@@ -25,6 +25,7 @@ import org.schemaspy.model.Catalog;
 import org.schemaspy.model.Database;
 import org.schemaspy.model.Schema;
 import org.schemaspy.util.DataTableConfig;
+import org.schemaspy.util.TablePathRegistry;
 
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -41,7 +42,7 @@ class HtmlMainIndexPageTest {
     void descriptionSupportsMarkdown() {
         CommandLineArguments arguments = parse("");
         DataTableConfig dataTableConfig = new DataTableConfig(arguments);
-        MustacheCompiler mustacheCompiler = new MustacheCompiler("markdownTest", "markdownTest", arguments.getHtmlConfig(), false, dataTableConfig);
+        MustacheCompiler mustacheCompiler = new MustacheCompiler("markdownTest", "markdownTest", arguments.getHtmlConfig(), false, dataTableConfig, new TablePathRegistry());
         HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(mustacheCompiler, "normal *emp* **strong**");
         StringWriter writer = new StringWriter();
         Database database = mock(Database.class);
@@ -56,7 +57,7 @@ class HtmlMainIndexPageTest {
     void noRowsTrue_RemovesRowsColumn() {
         CommandLineArguments arguments = parse("-norows");
         DataTableConfig dataTableConfig = new DataTableConfig(arguments);
-        MustacheCompiler mustacheCompiler = new MustacheCompiler("noRowsTrue", "noRowsTrue", arguments.getHtmlConfig(), false, dataTableConfig);
+        MustacheCompiler mustacheCompiler = new MustacheCompiler("noRowsTrue", "noRowsTrue", arguments.getHtmlConfig(), false, dataTableConfig, new TablePathRegistry());
         HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(mustacheCompiler, null);
         StringWriter writer = new StringWriter();
         Database database = mock(Database.class);
@@ -71,7 +72,7 @@ class HtmlMainIndexPageTest {
     void noRowsFalse_HasRowsColumn() {
         CommandLineArguments arguments = parse("");
         DataTableConfig dataTableConfig = new DataTableConfig(arguments);
-        MustacheCompiler mustacheCompiler = new MustacheCompiler("noRowsFalse", "noRowsFalse", arguments.getHtmlConfig(), false, dataTableConfig);
+        MustacheCompiler mustacheCompiler = new MustacheCompiler("noRowsFalse", "noRowsFalse", arguments.getHtmlConfig(), false, dataTableConfig, new TablePathRegistry());
         HtmlMainIndexPage htmlMainIndexPage = new HtmlMainIndexPage(mustacheCompiler, null);
         StringWriter writer = new StringWriter();
         Database database = mock(Database.class);

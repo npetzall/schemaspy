@@ -18,6 +18,13 @@
  */
 package org.schemaspy.view;
 
+import org.assertj.core.api.SoftAssertions;
+import org.junit.jupiter.api.Test;
+import org.schemaspy.cli.CommandLineArgumentParser;
+import org.schemaspy.cli.CommandLineArguments;
+import org.schemaspy.util.DataTableConfig;
+import org.schemaspy.util.TablePathRegistry;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -28,12 +35,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import org.assertj.core.api.SoftAssertions;
-import org.junit.jupiter.api.Test;
-import org.schemaspy.cli.CommandLineArgumentParser;
-import org.schemaspy.cli.CommandLineArguments;
-import org.schemaspy.util.DataTableConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,7 +48,8 @@ class MustacheCompilerTest {
             "testingSingle",
             commandLineArguments.getHtmlConfig(),
             false,
-            dataTableConfig
+            dataTableConfig,
+            new TablePathRegistry()
         );
     private final MustacheCompiler mustacheCompilerMulti =
         new MustacheCompiler(
@@ -55,7 +57,8 @@ class MustacheCompilerTest {
             null,
             commandLineArguments.getHtmlConfig(),
             true,
-            dataTableConfig
+            dataTableConfig,
+            new TablePathRegistry()
         );
 
     private CommandLineArguments parse(String...args) {
@@ -126,13 +129,13 @@ class MustacheCompilerTest {
         Path overridePath = Paths.get("target","override.html");
         CommandLineArguments arguments = parse("-template", "target");
         DataTableConfig dataTableConfig = new DataTableConfig(arguments);
-        MustacheCompiler mustacheCompiler = new MustacheCompiler("Override", "Override", arguments.getHtmlConfig(), false, dataTableConfig);
+        MustacheCompiler mustacheCompiler = new MustacheCompiler("Override", "Override", arguments.getHtmlConfig(), false, dataTableConfig, new TablePathRegistry());
         Files.deleteIfExists(overridePath);
         String before = write(mustacheCompiler);
         assertThat(before).isEqualTo("normal");
         Files.write(overridePath, "custom".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         //Create new MustacheCompiler this is to evict cache, else the already processed override.html will be used
-        mustacheCompiler = new MustacheCompiler("Override", "Override", arguments.getHtmlConfig(), false, dataTableConfig);
+        mustacheCompiler = new MustacheCompiler("Override", "Override", arguments.getHtmlConfig(), false, dataTableConfig, new TablePathRegistry());
         String after = write(mustacheCompiler);
         assertThat(after).isEqualTo("custom");
     }

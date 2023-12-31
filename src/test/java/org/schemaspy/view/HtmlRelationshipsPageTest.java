@@ -18,17 +18,18 @@
  */
 package org.schemaspy.view;
 
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Test;
 import org.schemaspy.cli.CommandLineArgumentParser;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.output.OutputException;
 import org.schemaspy.output.html.mustache.diagrams.MustacheSummaryDiagramResults;
 import org.schemaspy.util.DataTableConfig;
+import org.schemaspy.util.TablePathRegistry;
+
+import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,7 +39,7 @@ class HtmlRelationshipsPageTest {
     void willWriteErrorInformation() {
         CommandLineArguments arguments = parse("");
         DataTableConfig dataTableConfig = new DataTableConfig(arguments);
-        MustacheCompiler mustacheCompiler = new MustacheCompiler("htmlTablePage_error", "htmlTablePage_error", arguments.getHtmlConfig(), false, dataTableConfig);
+        MustacheCompiler mustacheCompiler = new MustacheCompiler("htmlTablePage_error", "htmlTablePage_error", arguments.getHtmlConfig(), false, dataTableConfig, new TablePathRegistry());
         HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage(mustacheCompiler,  true,false);
         StringWriter writer = new StringWriter();
         MustacheSummaryDiagramResults mustacheSummaryDiagramResults = new MustacheSummaryDiagramResults(Collections.emptyList(), Collections.singletonList(new OutputException("ERROR")));

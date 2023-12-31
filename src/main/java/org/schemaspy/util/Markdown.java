@@ -24,12 +24,8 @@ import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.profiles.pegdown.Extensions;
 import com.vladsch.flexmark.profiles.pegdown.PegdownOptionsAdapter;
 import com.vladsch.flexmark.util.options.DataHolder;
-import org.schemaspy.model.Table;
-import org.schemaspy.util.naming.FileNameGenerator;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,15 +38,15 @@ import java.util.regex.Pattern;
  */
 public class Markdown {
 
-    private static final HashMap<String, String> pages = new HashMap<>();
-
+    private final TablePathRegistry tablePathRegistry;
     private final String markdownText;
     private final String rootPath;
     private final Parser parser;
     private final HtmlRenderer renderer;
 
-    public Markdown(final String markdownText, final String rootPath) {
+    public Markdown(final TablePathRegistry tablePathRegistry, final String markdownText, final String rootPath) {
         this(
+                tablePathRegistry,
                 markdownText,
                 rootPath,
                 PegdownOptionsAdapter.flexmarkOptions(true,
@@ -59,8 +55,9 @@ public class Markdown {
         );
     }
 
-    public Markdown(final String markdownText, final String rootPath, final DataHolder options) {
+    public Markdown(final TablePathRegistry tablePathRegistry, final String markdownText, final String rootPath, final DataHolder options) {
         this(
+                tablePathRegistry,
                 markdownText,
                 rootPath,
                 Parser.builder(options).build(),
@@ -69,11 +66,13 @@ public class Markdown {
     }
 
     public Markdown(
+            final TablePathRegistry tablePathRegistry,
             final String markdownText,
             final String rootPath,
             final Parser parser,
             final HtmlRenderer renderer
     ) {
+        this.tablePathRegistry = tablePathRegistry;
         this.markdownText = markdownText;
         this.rootPath = rootPath;
         this.parser = parser;
@@ -90,20 +89,6 @@ public class Markdown {
                         addReferenceLink()
                 )
         ).trim();
-    }
-
-    public static void registryPage(final Collection<Table> tables) {
-        final String DOT_HTML = ".html";
-        tables.stream()
-                .filter(table -> !table.isLogical())
-                .forEach( table -> {
-                    String tablePath = "tables/" + new FileNameGenerator(table.getName()).value() + DOT_HTML;
-                    pages.put(table.getName(), tablePath);
-                });
-    }
-
-    public static String pagePath(String page) {
-        return pages.get(page);
     }
 
     private String addReferenceLink() {
@@ -133,7 +118,7 @@ public class Markdown {
                 pageLink = link.substring(0, anchorPosition);
             }
 
-            String path = rootPath+pagePath(pageLink);
+            String path = rootPath + tablePathRegistry.pathForTableName(pageLink);
             if (!"".equals(anchorLink)) {
                 path = path + "#" + anchorLink;
             }

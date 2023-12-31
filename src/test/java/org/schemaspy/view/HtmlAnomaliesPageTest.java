@@ -18,10 +18,6 @@
  */
 package org.schemaspy.view;
 
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.schemaspy.cli.CommandLineArgumentParser;
@@ -31,6 +27,11 @@ import org.schemaspy.model.Table;
 import org.schemaspy.model.TableColumn;
 import org.schemaspy.util.CaseInsensitiveMap;
 import org.schemaspy.util.DataTableConfig;
+import org.schemaspy.util.TablePathRegistry;
+
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -46,7 +47,7 @@ class HtmlAnomaliesPageTest {
         .commandLineArguments();
 
     private final DataTableConfig dataTableConfig = new DataTableConfig(commandLineArguments);
-    private final MustacheCompiler mustacheCompiler = new MustacheCompiler("anomalies", "anomalies", commandLineArguments.getHtmlConfig(), false, dataTableConfig);
+    private final MustacheCompiler mustacheCompiler = new MustacheCompiler("anomalies", "anomalies", commandLineArguments.getHtmlConfig(), false, dataTableConfig, new TablePathRegistry());
     private final HtmlAnomaliesPage htmlAnomaliesPage = new HtmlAnomaliesPage(mustacheCompiler);
 
     @BeforeEach

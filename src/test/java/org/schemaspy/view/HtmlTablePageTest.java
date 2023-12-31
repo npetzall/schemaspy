@@ -18,16 +18,17 @@
  */
 package org.schemaspy.view;
 
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Test;
 import org.schemaspy.cli.CommandLineArgumentParser;
 import org.schemaspy.cli.CommandLineArguments;
 import org.schemaspy.model.Table;
 import org.schemaspy.util.DataTableConfig;
+import org.schemaspy.util.TablePathRegistry;
+
+import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -39,7 +40,7 @@ class HtmlTablePageTest {
     void noRowsFalse_showNoRows() {
         CommandLineArguments arguments = parse("");
         DataTableConfig dataTableConfig = new DataTableConfig(arguments);
-        MustacheCompiler mustacheCompiler = new MustacheCompiler("table_noRowsFalse", "table_noRowsFalse", arguments.getHtmlConfig(), false, dataTableConfig);
+        MustacheCompiler mustacheCompiler = new MustacheCompiler("table_noRowsFalse", "table_noRowsFalse", arguments.getHtmlConfig(), false, dataTableConfig, new TablePathRegistry());
         HtmlTablePage htmlTablePage = new HtmlTablePage(mustacheCompiler, null);
         StringWriter writer = new StringWriter();
 
@@ -56,7 +57,7 @@ class HtmlTablePageTest {
     void noRowsTrue_hideNoRows() {
         CommandLineArguments arguments = parse("-norows");
         DataTableConfig dataTableConfig = new DataTableConfig(arguments);
-        MustacheCompiler mustacheCompiler = new MustacheCompiler("table_noRowsFalse", "table_noRowsFalse", arguments.getHtmlConfig(), false, dataTableConfig);
+        MustacheCompiler mustacheCompiler = new MustacheCompiler("table_noRowsFalse", "table_noRowsFalse", arguments.getHtmlConfig(), false, dataTableConfig, new TablePathRegistry());
         HtmlTablePage htmlTablePage = new HtmlTablePage(mustacheCompiler, null);
         StringWriter writer = new StringWriter();
 

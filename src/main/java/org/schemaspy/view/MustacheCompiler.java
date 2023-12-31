@@ -27,6 +27,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import org.schemaspy.util.DataTableConfig;
 import org.schemaspy.util.Markdown;
+import org.schemaspy.util.TablePathRegistry;
 import org.schemaspy.util.naming.FileNameGenerator;
 
 import java.io.IOException;
@@ -53,19 +54,22 @@ public class MustacheCompiler {
     private final HtmlConfig htmlConfig;
     private final boolean multiSchema;
     private final DataTableConfig dataTableConfig;
+    private final TablePathRegistry tablePathRegistry;
     private final MustacheFactory mustacheFactory;
 
     public MustacheCompiler(
             String databaseName,
             String schemaName, HtmlConfig htmlConfig,
             boolean multiSchema,
-            DataTableConfig dataTableConfig
+            DataTableConfig dataTableConfig,
+            TablePathRegistry tablePathRegistry
     ) {
         this.databaseName = databaseName;
         this.schemaName = schemaName;
         this.htmlConfig = htmlConfig;
         this.multiSchema = multiSchema;
         this.dataTableConfig = dataTableConfig;
+        this.tablePathRegistry = tablePathRegistry;
         this.mustacheFactory = new DefaultMustacheFactory(new MustacheCustomResolver(htmlConfig.getTemplateDirectory()));
     }
 
@@ -79,7 +83,7 @@ public class MustacheCompiler {
         pageScope.put("paginationEnabled", htmlConfig.isPaginationEnabled());
         pageScope.put("displayNumRows", htmlConfig.isNumRowsEnabled());
         pageScope.put("dataTableConfig", dataTableConfig.getPageScopeMap());
-        pageScope.put("markup", (Function<String,String>) md -> new Markdown(md, getRootPath(pageData.getDepth())).toHtml());
+        pageScope.put("markup", (Function<String,String>) md -> new Markdown(tablePathRegistry, md, getRootPath(pageData.getDepth())).toHtml());
         pageScope.putAll(pageData.getScope());
 
         Mustache mustachePage = mustacheFactory.compile(pageData.getTemplateName());

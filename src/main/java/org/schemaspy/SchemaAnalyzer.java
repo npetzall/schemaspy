@@ -57,7 +57,7 @@ import org.schemaspy.progress.ConditionalProgress;
 import org.schemaspy.progress.IfUpdateAfter;
 import org.schemaspy.util.DataTableConfig;
 import org.schemaspy.util.DefaultPrintWriter;
-import org.schemaspy.util.Markdown;
+import org.schemaspy.util.TablePathRegistry;
 import org.schemaspy.util.copy.CopyFromUrl;
 import org.schemaspy.util.filefilter.NotHtml;
 import org.schemaspy.util.naming.FileNameGenerator;
@@ -176,6 +176,7 @@ public class SchemaAnalyzer {
 
         List<Schema> collectedSchemas = new ArrayList<>();
         Catalog collectedCatalog = null;
+        TablePathRegistry tablePathRegistry = new TablePathRegistry();
         for (String schema : schemas) {
             String dbName = Objects
                 .nonNull(
@@ -192,6 +193,8 @@ public class SchemaAnalyzer {
             }
             collectedSchemas.add(db.getSchema());
             collectedCatalog = db.getCatalog();
+            tablePathRegistry.addTables(db.getTables());
+            tablePathRegistry.addTables(db.getViews());
         }
 
         if (commandLineArguments.isHtmlEnabled()) {
@@ -199,7 +202,7 @@ public class SchemaAnalyzer {
 
             DataTableConfig dataTableConfig = new DataTableConfig(commandLineArguments);
             MustacheCompiler mustacheCompiler = new MustacheCompiler(commandLineArguments.getConnectionConfig().getDatabaseName(),
-                null, commandLineArguments.getHtmlConfig(), true, dataTableConfig
+                null, commandLineArguments.getHtmlConfig(), true, dataTableConfig, tablePathRegistry
             );
             HtmlMultipleSchemasIndexPage htmlMultipleSchemasIndexPage = new HtmlMultipleSchemasIndexPage(
                 mustacheCompiler);
@@ -336,7 +339,7 @@ public class SchemaAnalyzer {
         FileUtils.forceMkdir(new File(outputDir, "tables"));
         FileUtils.forceMkdir(new File(outputDir, "diagrams/summary"));
 
-        Markdown.registryPage(tables);
+        TablePathRegistry tablePathRegistry = new TablePathRegistry().addTables(tables);
 
         new CopyFromUrl(layoutFolder.url(), outputDir, new NotHtml()).copy();
 
@@ -399,7 +402,8 @@ public class SchemaAnalyzer {
             schema,
             commandLineArguments.getHtmlConfig(),
             isOneOfMultipleSchemas,
-            dataTableConfig
+            dataTableConfig,
+                tablePathRegistry
         );
 
         HtmlRelationshipsPage htmlRelationshipsPage = new HtmlRelationshipsPage(mustacheCompiler, hasRealConstraints, !impliedConstraints.isEmpty());
