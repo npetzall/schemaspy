@@ -18,7 +18,7 @@ jobs:
       - name: Download Snapshot
         run: |
           mkdir target
-          curl -L "https://github.com/schemaspy/schemaspy/raw/gh-pages/schemaspy-7.0.0-SNAPSHOT.jar" -o target/schemaspy-7.0.0-SNAPSHOT.jar
+          curl -L "https://github.com/schemaspy/schemaspy/raw/gh-pages/schemaspy-7.0.0-SNAPSHOT.jar" -o target/schemaspy-7.0.0-SNAPSHOT-app.jar
       - name: Echo
         run: |
           echo "GITHUB_REF_NAME: $GITHUB_REF_NAME"
