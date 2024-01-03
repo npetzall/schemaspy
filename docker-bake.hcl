@@ -3,7 +3,7 @@ variable "VERSION" {
 }
 
 variable "REGISTRY" {
-  default = "docker.io/schemaspy"
+  default = "docker.io/npetzall"
 }
 
 variable "GIT_BRANCH" {
