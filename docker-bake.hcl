@@ -7,11 +7,11 @@ variable "REGISTRY" {
 }
 
 variable "GIT_BRANCH" {
-  default = ${GITHUB_REF_NAME}
+  default = $GITHUB_REF_NAME
 }
 
 variable "GIT_REVISION" {
-  default = ${GITHUB_SHA}
+  default = $GITHUB_SHA
 }
 
 group "default" {
