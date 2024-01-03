@@ -33,7 +33,6 @@ RUN apt-get update && \
 USER java
 
 FROM base
-ARG buildDir
 COPY --from=drivers /tmp/drivers_inc /drivers_inc
 ADD target/schema*-app.jar /usr/local/lib/schemaspy/schemaspy-app.jar
 ADD docker/schemaspy.sh /usr/local/bin/schemaspy
