@@ -57,7 +57,7 @@ jobs:
         uses: docker/bake-action@v4
         with:
           files: docker-bake.hcl
-          push: push
+          push: true
           targets: snapshot
           set: |
             *.cache-to=
