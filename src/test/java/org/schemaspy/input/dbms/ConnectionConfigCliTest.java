@@ -1,10 +1,11 @@
 package org.schemaspy.input.dbms;
 
+import java.io.File;
+import java.util.Properties;
+
 import com.beust.jcommander.JCommander;
 import org.junit.jupiter.api.Test;
 import org.schemaspy.util.DbSpecificConfig;
-
-import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -117,6 +118,24 @@ class ConnectionConfigCliTest {
                 .getDriverPath()
         )
             .isEqualTo("/somepath/to/driver");
+    }
+
+    @Test
+    void driverPathMulti() {
+        assertThat(
+            parse("-dp", "/somepath/to/driver" + File.pathSeparator + "/someother/path")
+                .getDriverPath()
+        )
+            .isEqualTo("/somepath/to/driver" + File.pathSeparator + "/someother/path");
+    }
+
+    @Test
+    void noDriverPathIsEmptyList() {
+        assertThat(
+            parse()
+                .getDriverPath()
+        )
+            .isEqualTo("");
     }
 
     @Test
