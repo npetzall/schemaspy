@@ -11,7 +11,12 @@ public final class DpFromIterable implements Driverpath {
     private final Iterable<String> driverPath;
 
     public DpFromIterable(final Iterable<Path> driverPath) {
-        this.driverPath = new IterableMap<>(driverPath, Path::toString);
+        this.driverPath = new IterableMap<>(
+            new IterableFilter<>(
+                driverPath,
+                new PathExist()),
+            Path::toString
+        );
     }
 
     @Override
