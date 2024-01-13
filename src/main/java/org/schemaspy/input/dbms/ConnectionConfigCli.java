@@ -1,16 +1,15 @@
 package org.schemaspy.input.dbms;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import org.schemaspy.input.dbms.driverpath.FilePathSeparator;
 import org.schemaspy.util.DbSpecificConfig;
 
 @Parameters(resourceBundle = "connectionconfigcli")
@@ -84,7 +83,8 @@ public class ConnectionConfigCli implements ConnectionConfig {
             "-dp", "--driverPath",
             "schemaspy.dp", "schemaspy.driverPath"
         },
-        descriptionKey = "driverPath"
+        descriptionKey = "driverPath",
+        splitter = FilePathSeparator.class
     )
     private List<Path> driverPath = new ArrayList<>();
 
@@ -144,8 +144,8 @@ public class ConnectionConfigCli implements ConnectionConfig {
     }
 
     @Override
-    public String getDriverPath() {
-        return driverPath.stream().map(Path::toString).collect(Collectors.joining(File.pathSeparator));
+    public Iterable<Path> getDriverPath() {
+        return driverPath;
     }
 
     public void setRemainingArguments(List<String> remainingArguments) {

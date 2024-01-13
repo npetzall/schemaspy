@@ -1,6 +1,7 @@
 package org.schemaspy.input.dbms;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import com.beust.jcommander.JCommander;
@@ -114,10 +115,12 @@ class ConnectionConfigCliTest {
     @Test
     void driverPath() {
         assertThat(
-            parse("-dp", "/somepath/to/driver")
-                .getDriverPath()
+            parse(
+                "-dp", "/somepath/to/driver"
+            ).getDriverPath()
         )
-            .isEqualTo("/somepath/to/driver");
+            .map(Path::toString)
+            .containsExactly("/somepath/to/driver");
     }
 
     @Test
@@ -126,16 +129,22 @@ class ConnectionConfigCliTest {
             parse("-dp", "/somepath/to/driver" + File.pathSeparator + "/someother/path")
                 .getDriverPath()
         )
-            .isEqualTo("/somepath/to/driver" + File.pathSeparator + "/someother/path");
+            .map(Path::toString)
+            .containsExactly(
+                "/somepath/to/driver",
+                "/someother/path"
+            );
     }
 
     @Test
-    void noDriverPathIsEmptyList() {
+    void noDriverPathIsEmptyIterable() {
         assertThat(
             parse()
                 .getDriverPath()
+                .iterator()
+                .hasNext()
         )
-            .isEqualTo("");
+            .isFalse();
     }
 
     @Test
