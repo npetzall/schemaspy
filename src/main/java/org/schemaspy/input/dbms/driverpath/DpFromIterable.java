@@ -16,15 +16,20 @@ public final class DpFromIterable implements Driverpath {
 
     public DpFromIterable(final Iterable<Path> driverPath) {
         this.driverPath = new IterableMap<>(
-            new IterableFilter<>(
-                driverPath,
-                new OnFalsePredicate<>(
-                    new PathExist(),
-                    new LogPath(
-                        "Provided driverPath is missing: '{}'",
-                        LoggerFactory.getLogger(DbDriverLoader.class),
-                        Level.WARN
-                    ))),
+            new IterableJoin<>(
+                new IterableMap<>(
+                    new IterableFilter<>(
+                        driverPath,
+                        new OnFalsePredicate<>(
+                            new PathExist(),
+                            new LogPath(
+                                "Provided driverPath is missing: '{}'",
+                                LoggerFactory.getLogger(DbDriverLoader.class),
+                                Level.WARN
+                            ))),
+                    ExpandDriverPath::new
+                )
+            ),
             Path::toString
         );
     }
