@@ -9,7 +9,7 @@ import java.util.Properties;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import org.schemaspy.input.dbms.driverpath.FilePathSeparator;
+import org.schemaspy.cli.FilePathSeparator;
 import org.schemaspy.util.DbSpecificConfig;
 
 @Parameters(resourceBundle = "connectionconfigcli")

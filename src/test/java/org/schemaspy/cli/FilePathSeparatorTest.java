@@ -1,4 +1,4 @@
-package org.schemaspy.input.dbms.driverpath;
+package org.schemaspy.cli;
 
 import java.io.File;
 import java.util.List;
