@@ -23,7 +23,7 @@ public final class DpFromIterable implements Driverpath {
                         new OnFalsePredicate<>(
                             new PathExist(),
                             new LogPath(
-                                "Provided driverPath is missing: '{}'",
+                                "Provided -dp(driverPath) is missing: '{}'",
                                 LoggerFactory.getLogger(DbDriverLoader.class),
                                 Level.WARN
                             ))),
