@@ -18,14 +18,14 @@
  */
 package org.schemaspy.input.dbms.classpath;
 
-import org.junit.jupiter.api.Test;
-import org.schemaspy.input.dbms.driverpath.Driverpath;
-
-import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
+import org.schemaspy.input.dbms.driverpath.Driverpath;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,7 +39,7 @@ class GetExistingUrlsTest {
     URI dummyNarURI = driverFolder.resolve("dummy.nar").toUri();
     URI narJarWarNotIncludedURI = driverFolder.resolve("nar.jar.war.not.included").toUri();
 
-    Driverpath dp = driverFolder::toString;
+    Driverpath dp = () -> List.of(driverFolder).iterator();
     Set<URI> uris = new GetExistingUrls(dp).paths();
 
     assertThat(uris)
@@ -51,7 +51,7 @@ class GetExistingUrlsTest {
   void willOnlyAddFileIfFileIsSpecified() {
     URI dummyJarURI = driverFolder.resolve("dummy.jar").toUri();
 
-    Driverpath dp = () -> driverFolder.resolve("dummy.jar").toString();
+    Driverpath dp = () -> List.of(driverFolder.resolve("dummy.jar")).iterator();
     Set<URI> uris = new GetExistingUrls(dp).paths();
 
     assertThat(uris)
@@ -65,9 +65,9 @@ class GetExistingUrlsTest {
     URI dummyNarURI = driverFolder.resolve("dummy.nar").toUri();
     URI narJarWarNotIncludedURI = driverFolder.resolve("nar.jar.war.not.included").toUri();
 
-    String dpFile = driverFolder.resolve("dummy.jar").toString();
-    String dpDir = driverFolder.toString();
-    Set<URI> uris = new GetExistingUrls(() -> dpFile + File.pathSeparator + dpDir).paths();
+    Path dpFile = driverFolder.resolve("dummy.jar");
+    Path dpDir = driverFolder;
+    Set<URI> uris = new GetExistingUrls(() -> List.of(dpFile, dpDir).iterator()).paths();
 
     assertThat(uris)
         .hasSize(4)

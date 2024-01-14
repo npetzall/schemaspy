@@ -1,7 +1,7 @@
 package org.schemaspy.input.dbms.driverpath;
 
-import java.io.File;
 import java.nio.file.Path;
+import java.util.Iterator;
 
 import org.schemaspy.input.dbms.DbDriverLoader;
 import org.slf4j.LoggerFactory;
@@ -12,10 +12,10 @@ import org.slf4j.event.Level;
  */
 public final class DpFromIterable implements Driverpath {
 
-    private final Iterable<String> driverPath;
+    private final Iterable<Path> driverPath;
 
     public DpFromIterable(final Iterable<Path> driverPath) {
-        this.driverPath = new IterableMap<>(
+        this.driverPath =
             new IterableJoin<>(
                 new IterableMap<>(
                     new IterableFilter<>(
@@ -29,13 +29,11 @@ public final class DpFromIterable implements Driverpath {
                             ))),
                     ExpandDriverPath::new
                 )
-            ),
-            Path::toString
-        );
+            );
     }
 
     @Override
-    public String value() {
-        return String.join(File.pathSeparator, this.driverPath);
+    public Iterator<Path> iterator() {
+        return driverPath.iterator();
     }
 }
